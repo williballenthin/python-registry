@@ -1,0 +1,17 @@
+[Desktop Entry]
+Encoding=UTF-8
+Icon=arrow-up
+Type=Service
+ServiceTypes=KPluginInfo
+
+Name=nkrecord
+Comment=The NK record of the Windows Registry
+
+X-KDE-PluginInfo-Author=Willi Ballenthin
+X-KDE-PluginInfo-Email=willi.ballenthin@gmail.com
+X-KDE-PluginInfo-Name=nkrecord
+X-KDE-PluginInfo-Version=0.1
+X-KDE-PluginInfo-Website=http://www.plugin.org/
+X-KDE-PluginInfo-Category=structure
+X-KDE-PluginInfo-License=LGPL
+X-KDE-PluginInfo-EnabledByDefault=false

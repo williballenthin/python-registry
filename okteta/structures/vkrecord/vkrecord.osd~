@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data>
+  <struct name="vkrecord">
+    <primitive name="id" type="UInt16" />
+    <primitive name="name_length" type="UInt16" />
+    <primitive name="data_length" type="UInt32" />
+    <primitive name="data_offset" type="UInt32" />
+    <primitive name="data_type" type="UInt32" />
+    <primitive name="flag" type="UInt16" />
+    <primitive name="trash" type="UInt16" />
+    <array name="name" length="name_length">
+      <primitive type="Char" />
+    </array>
+  </struct>
+</data>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data>
+  <struct name="nkrecord">
+    <primitive name="id" type="UInt16" />                    <!-- 0x0 -->
+    <primitive name="is_root_key" type="UInt16" />           <!-- 0x2 -->
+    <primitive name="write_time" type="UInt64" />            <!-- 0x4 -->
+    <primitive name="trash" type="UInt32" />     
+    <primitive name="parent_key_offset" type="UInt32" />     <!-- 0x10 -->
+    <primitive name="subkey_number" type="UInt32" />         <!-- 0x14 -->
+    <primitive name="trash" type="UInt32" />     
+    <primitive name="subkey_lf_offset" type="UInt32" />      <!-- 0x1C -->
+    <primitive name="trash" type="UInt32" />     
+    <primitive name="values_number" type="UInt32" />         <!-- 0x24 -->
+    <primitive name="value_list_offset" type="UInt32" />     <!-- 0x28 -->
+    <primitive name="sk_record_offset" type="UInt32" />      <!-- 0x2C -->
+    <primitive name="classname_offset" type="UInt32" />      <!-- 0x30 -->
+    <primitive name="trash" type="UInt32" />     
+    <primitive name="trash" type="UInt32" />     
+    <primitive name="trash" type="UInt32" />     
+    <primitive name="trash" type="UInt32" />     
+    <primitive name="trash" type="UInt32" />                 <!-- 0x44 -->
+    <primitive name="name_length" type="UInt16" />           <!-- 0x48 -->
+    <primitive name="classname_length" type="UInt16" />      <!-- 0x4A -->
+    <array name="name" length="name_length">                 
+      <primitive type="Char" />
+    </array>
+  </struct>
+</data>

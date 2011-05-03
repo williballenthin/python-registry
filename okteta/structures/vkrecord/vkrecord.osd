@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data>
+  <enumDef name="DataTypeEnum" type="UInt32">
+    <entry value="0001" name="RegSZ" />
+    <entry value="0002" name="ExpandSZ" />
+    <entry value="0003" name="RegBin" />
+    <entry value="0004" name="RegDWord" />
+    <entry value="0007" name="RegMultiSZ" />
+  </enumDef>
+  <struct name="vkrecord">
+    <primitive name="id" type="UInt16" />
+    <primitive name="name_length" type="UInt16" />
+    <primitive name="data_length" type="UInt32" />
+    <primitive name="data_offset" type="UInt32" />
+    <enum name="data_type" enum="DataTypeEnum" type="UInt32" />
+    <primitive name="flag" type="UInt16" />
+    <primitive name="trash" type="UInt16" />
+    <array name="name" length="name_length">
+      <primitive type="Char" />
+    </array>
+  </struct>
+</data>
