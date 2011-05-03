@@ -1,79 +1,149 @@
 #!/bin/python
 import sys, struct
 
-     
+# Constants
+RegSZ = 0x0001
+ExpandSZ = 0x0002
+RegBin = 0x0003
+RegDWord = 0x0004
+RegMultiSZ = 0x0007
+RegQWord = 0x000B
+RegNone = 0x0000
+RegBigEndian = 0x0005
+RegLink = 0x0006
+RegResourceList = 0x0008
+RegFullResourceDescriptor = 0x0009
+RegResourceRequirementsList = 0x000A
 
 class RegistryException(Exception):
     """
+    Base Exception class for Windows Registry access.
     """
     
     def __init__(self, value):
         """
-        
+        Constructor.
         Arguments:
-        - `value`:
+        - `value`: A string description.
         """
+        super(RegistryException, self).__init__()
         self._value = value
 
     def __str__(self):
-        return "Registry Exception(%s)" % (self._value)
-        
+        return "Registry Exception: %s" % (self._value)
 
 class ParseException(RegistryException):
     """
+    An exception to be thrown during Windows Registry parsing, such as 
+    when an invalid header is encountered.
     """
-    
     def __init__(self, value):
         """
-        
+        Constructor.
         Arguments:
-        - `value`:
+        - `value`: A string description.
         """
         super(ParseException, self).__init__(value)
 
     def __str__(self):
         return "Registry Parse Exception(%s)" % (self._value)
 
-
-
-class RegistryBlock(object):
+class UnknownTypeException(RegistryException):
     """
     """
     
-    def __init__(self, buf, offset):
+    def __init__(self, value):
         """
         
         Arguments:
-        - `buf`:
-        - `offset`:
+        - `value`:
+        """
+        super(UnknownTypeException, self).__init__(value)
+
+    def __str__(self):
+        return "Unknown Type Exception(%s)" % (self._value)
+
+class RegistryBlock(object):
+    """ 
+    Base class for structure blocks in the Windows Registry.
+    A block is associated with a offset into a byte-string.
+    """
+    def __init__(self, buf, offset, parent):
+        """
+        Constructor.
+        Arguments:
+        - `buf`: Byte string containing Windows Registry file.
+        - `offset`: The offset into the buffer at which the block starts.
         """
         self._buf = buf
         self._offset = offset
+        self._parent = parent
+
+    def unpack_word(self, offset):
+        """
+        Returns a little-endian WORD (2 bytes) from the relative offset.
+        Arguments:
+        - `offset`: The relative offset from the start of the block.
+        """
+        return struct.unpack_from("<H", self._buf, self._offset + offset)[0]
 
     def unpack_dword(self, offset):
+        """
+        Returns a little-endian DWORD (4 bytes) from the relative offset.
+        Arguments:
+        - `offset`: The relative offset from the start of the block.
+        """
         return struct.unpack_from("<I", self._buf, self._offset + offset)[0]
 
     def unpack_int(self, offset):
+        """
+        Returns a little-endian signed integer (4 bytes) from the relative offset.
+        Arguments:
+        - `offset`: The relative offset from the start of the block.
+        """
         return struct.unpack_from("<i", self._buf, self._offset + offset)[0]
 
     def unpack_qword(self, offset):
+        """
+        Returns a little-endian QWORD (8 bytes) from the relative offset.
+        Arguments:
+        - `offset`: The relative offset from the start of the block.
+        """
         return struct.unpack_from("<Q", self._buf, self._offset + offset)[0]
 
     def unpack_string(self, offset, length):
+        """
+        Returns a string from the relative offset with the given length.
+        Arguments:
+        - `offset`: The relative offset from the start of the block.
+        - `length`: The length of the string.
+        """
         return struct.unpack_from("<%ds" % (length), self._buf, self._offset + offset)[0]
+
+    def absolute_offset(self, offset):
+        """
+        Get the absolute offset from an offset relative to this block
+        Arguments:
+        - `offset`: The relative offset into this block.
+        """
+        return self._offset + offset
+
+    def parent(self):
+        return self._parent
 
 class REGFBlock(RegistryBlock):
     """
+    The Windows Registry file header.
     """
     
-    def __init__(self, buf, offset):
+    def __init__(self, buf, offset, parent):
         """
-        
+        Constructor.
         Arguments:
-        - `buf`:
-        - `offset`:
+        - `buf`: Byte string containing Windows Registry file.
+        - `offset`: The offset into the buffer at which the block starts.
         """
-        super(REGFBlock, self).__init__(buf, offset)
+        super(REGFBlock, self).__init__(buf, offset, parent)
 
         _id = self.unpack_dword(0)
         if _id != 0x66676572:
@@ -86,20 +156,20 @@ class REGFBlock(RegistryBlock):
             # the registry was not synchronized
             pass
 
-        _ts = self.unpack_qword(0xC)
+        #_ts = self.unpack_qword(0xC)
         
-        _major = self.unpack_dword(0x14)
-        _minor = self.unpack_dword(0x18)
+        #_major = self.unpack_dword(0x14)
+        #_minor = self.unpack_dword(0x18)
 
-        _first_key = self.unpack_dword(0x24)
-        _last_hbin = self.unpack_dword(0x28)
+        #_first_key = self.unpack_dword(0x24)
+        #_last_hbin = self.unpack_dword(0x28)
 
-        _hive_name = self.unpack_string(0x30, 64)
+        #_hive_name = self.unpack_string(0x30, 64)
 
         # TODO: compute checksum and check
 
     def hbins(self):
-        h = HBINBlock(self._buf, 0x1000)
+        h = HBINBlock(self._buf, 0x1000, self)
         yield h
 
         while h.has_next():
@@ -108,27 +178,18 @@ class REGFBlock(RegistryBlock):
 
 class HBINCell(RegistryBlock):
     """
+    HBIN data cell.
     """
     
-    def __init__(self, buf, offset):
+    def __init__(self, buf, offset, parent):
         """
-        
+        Constructor.
         Arguments:
-        - `buf`:
-        - `offset`:
+        - `buf`: Byte string containing Windows Registry file.
+        - `offset`: The offset into the buffer at which the block starts.
         """
-        super(HBINCell, self).__init__(buf, offset)
+        super(HBINCell, self).__init__(buf, offset, parent)
         self._size = self.unpack_int(0x0)
-
-    def is_free(self):
-        return self._size < 0
-
-    def next(self):
-        if self.is_free():
-            size = self._size * -1
-        else:
-            size = self._size
-        return HBINCell(self._buf, self._offset + size)
 
     def __str__(self):
         if self.is_free():
@@ -136,73 +197,410 @@ class HBINCell(RegistryBlock):
         else:
             return "HBIN Cell at 0x%x" % (self._offset)
 
+    def is_free(self):
+        """
+        Is the cell free?
+        """
+        return self._size > 0
+
+    def size(self):
+        if self.is_free():
+            return self._size
+        else:
+            return self._size * -1           
+        
+
+    def next(self):
+        """
+        Returns the next HBINCell, which is located immediately after this.
+        Note: This will always return an HBINCell starting at the next location
+        whether or not the buffer is large enough. The calling function should 
+        check the offset of the next HBINCell to ensure it does not overrun the
+        HBIN buffer.
+        """
+        return HBINCell(self._buf, self._offset + self.size(), self.parent())
+
     def offset(self):
+        """
+        Accessor for absolute offset of this block.
+        """
         return self._offset
+
+    def data_offset(self):
+        """
+        Get the absolute offset of the data block of this HBINCell.
+        """
+        return self._offset + 0x4
+
+    def data_id(self):
+        """
+        Get the ID string of the data block of this HBINCell.
+        """
+        return self.unpack_string(0x4, 2)
+
+class Record(RegistryBlock):
+    """
+    Abstract class for Records contained by cells in HBINs
+    """
+    
+    def __init__(self, buf, offset, parent):
+        """
+        Constructor.
+        Arguments:
+        - `buf`: Byte string containing Windows Registry file.
+        - `offset`: The offset into the buffer at which the block starts.
+        - `cell`: The parent HBINCell of the record.
+        """
+        super(Record, self).__init__(buf, offset, parent)
+
+class DataRecord(Record):
+    """
+    """
+    
+    def __init__(self, buf, offset, parent):
+        """
+        
+        Arguments:
+        - `buf`: Byte string containing Windows Registry file.
+        - `offset`: The offset into the buffer at which the block starts.
+        - `parent`: The parent cell
+        """
+        super(DataRecord, self).__init__(buf, offset, parent)
+
+    def __str__(self):
+        return "Data Record at 0x%x" % (self.absolute_offset(0x0))
+        
+
+class VKRecord(Record):
+    """
+    """
+    
+    def __init__(self, buf, offset, parent):
+        """
+        Constructor.
+        Arguments:
+        - `buf`: Byte string containing Windows Registry file.
+        - `offset`: The offset into the buffer at which the block starts.
+        - `cell`: The parent HBINCell of the record.
+        """
+        super(VKRecord, self).__init__(buf, offset, parent)
+
+        _id = self.unpack_string(0x0, 2)
+        if _id != "vk":
+            raise ParseException("Invalid VK Record ID")
+
+    def _data_type_str(self):
+        data_type = self.data_type()
+        if data_type == RegSZ:
+            return "RegSZ"
+        elif data_type == ExpandSZ:
+            return "ExpandSZ"
+        elif data_type == RegBin:
+            return "RegBin"
+        elif data_type == RegDWord:
+            return "RegDWord"
+        elif data_type == RegMultiSZ:
+            return "RegMultiSZ"
+        elif data_type == RegQWord:
+            return "RegQWord"
+        elif data_type == RegNone:
+            return "RegNone"
+        elif data_type == RegBigEndian:
+            return "RegBigEndian"
+        elif data_type == RegLink:
+            return "RegLink"
+        elif data_type == RegResourceList:
+            return "RegResourceList"
+        elif data_type == RegFullResourceDescriptor:
+            return "RegFullResourceDescriptor"
+        elif data_type == RegResourceRequirementsList:
+            return "RegResourceRequirementsList"
+
+        else:
+            raise UnknownTypeException("Unknown VK Record type 0x%x at 0x%x" % (data_type, self.absolute_offset(0x0)))
+
+    def __str__(self):
+        if self.has_name():
+            name = self.name()
+        else:
+            name = "(default)"
+        return "VKRecord(Name: %s, Type: %s) at 0x%x" % (name, 
+                                                         self._data_type_str(), 
+                                                         self.absolute_offset(0x0))
+
+    def has_name(self):
+        return self.unpack_word(0x2) == 0
+
+    def has_ascii_name(self):
+        # TODO this is NOT correct
+        if self.unpack_word(0x10) & 1 == 1:
+            print "ascii name"
+        else:
+            print "not ascii name"
+        return self.unpack_word(0x10) & 1 == 1
+
+    def name(self):
+        if self.has_name():
+            return "(default)"
+        else:
+            name_length = self.unpack_word(0x2)
+            return self.unpack_string(0x14, name_length)
+
+    def data_type(self):
+        return self.unpack_dword(0xC)        
+
+    def data_length(self):
+        return self.unpack_dword(0x4)
+
+    def data_offset(self):
+        if self.data_length() < 5 or self.data_length() >= 0x80000000:
+            return self.absolute_offset(0x8)
+        else:
+            h = self.parent()
+            while h.__class__.__name__ != "HBINBlock":
+                h = h.parent()
+
+            return h.first_hbin().absolute_offset(0x0) + self.unpack_dword(0x8)
+        
+    def data(self):
+        data_type = self.data_type()
+        data_length = self.data_length()
+        data_offset = self.data_offset()
+
+        if data_type == RegSZ:
+            if data_length >= 0x80000000:
+                # data is contained in the data_offset field
+                s = struct.unpack_from("<%ds" % (4), self._buf, data_offset)[0]
+            else:
+                # data is in some hbin-data-cell somewhere
+                d = HBINCell(self._buf, data_offset, self)
+                s = struct.unpack_from("<%ds" % (data_length), self._buf, d.data_offset())[0]
+            try:
+                s = s.decode("utf8")
+            except UnicodeDecodeError:
+                try:
+                    s = s.decode("utf16")
+                except UnicodeDecodeError:
+                    print "Well at this point you are screwed."
+                    return s.encode("utf8", errors="replace")
+            return s
+
+        elif data_type == ExpandSZ:
+            print "ExpandSZ"
+        elif data_type == RegBin:
+            print "RegBin"
+        elif data_type == RegDWord:
+            print "RegDWorD"
+        elif data_type == RegMultiSZ:
+            print "RegMultiSZ"
+        elif data_type == RegQWord:
+            print "RegQWord"
+        elif data_type == RegNone:
+            print "RegNone"
+        elif data_type == RegBigEndian:
+            print "RegBigEndian"
+        elif data_type == RegLink:
+            print "RegLink"
+        elif data_type == RegResourceList:
+            print "RegResourceList"
+        elif data_type == RegFullResourceDescriptor:
+            print "RegFullResourceDescriptor"
+        elif data_type == RegResourceRequirementsList:
+            print "RegResourceRequirementsList"
+        else:
+            raise UnknownTypeException("Unknown VK Record type 0x%x at 0x%x" % (data_type, self.absolute_offset(0x0)))
+
+
+class NKRecord(Record):
+    """
+    """
+    
+    def __init__(self, buf, offset, parent):
+        """
+        
+        Arguments:
+        - `buf`: Byte string containing Windows Registry file.
+        - `offset`: The offset into the buffer at which the block starts.
+        - `parent`: The parent HBINCell of the record.
+        """
+        super(NKRecord, self).__init__(buf, offset, parent)
+        _id = self.unpack_string(0x0, 2)
+        if _id != "nk":
+            raise ParseException("Invalid NK Record ID")
+        
+        _ts = self.unpack_qword(0x4)
+        parent_offset = self.unpack_dword(0x10)
+        subkeys_number = self.unpack_dword(0x14)
+        subkey_lf_offset = self.unpack_dword(0x1C)
+        values_number = self.unpack_dword(0x24)
+        values_list_offset = self.unpack_dword(0x28)
+        sk_record_offset = self.unpack_dword(0x2C)
+        
+    def __str__(self):
+        classname = self.classname()
+        if not self.has_classname():
+            classname = "(none)"
+
+        if self.is_root():
+            return "Root NKRecord(Class: %s, Name: %s) at 0x%x" % (classname, 
+                                                                   self.name(), 
+                                                                   self.absolute_offset(0x0))
+        else:
+            return "NKRecord(Class: %s, Name: %s) at 0x%x" % (classname, 
+                                                              self.name(), 
+                                                              self.absolute_offset(0x0))
+
+    def has_classname(self):
+        return self.unpack_dword(0x30) != 0xFFFFFFFF
+
+    def classname(self):
+        if not self.has_classname():
+            return ""
+
+        classname_offset = self.unpack_dword(0x30)
+        classname_length = self.unpack_word(0x4A)
+
+        h = self.parent()
+        while h.__class__.__name__ != "HBINBlock":
+            h = h.parent()
+
+        offset = h.first_hbin().absolute_offset(0x0) + classname_offset
+        d = HBINCell(self._buf, offset, self)
+        return struct.unpack_from("<%ds" % (classname_length), self._buf, d.data_offset())[0]
+
+
+    def name(self):
+        name_length = self.unpack_word(0x48)
+        return self.unpack_string(0x4C, name_length)
+    
+    def is_root(self):
+        return self.unpack_word(0x2) == 0x2C
+
+
+class SKRecord(Record):
+    """
+    Security Record. Contains Windows security descriptor, 
+    which defines ownership and permissions for local values
+    and subkeys.
+
+    May be referenced by multiple NK records.
+    """
+    def __init__(self, buf, offset, parent):
+        """
+        Constructor.
+        Arguments:
+        - `buf`: Byte string containing Windows Registry file.
+        - `offset`: The offset into the buffer at which the block starts.
+        - `parent`: The parent HBINCell of the record.
+        """
+        super(SKRecord, self).__init__(buf, offset, parent)
+
+        _id = self.unpack_string(0x0, 2)
+        if _id != "sk":
+            raise ParseException("Invalid SK Record ID")
+
+        self._offset_prev_sk = self.unpack_dword(0x4)
+        self._offset_next_sk = self.unpack_dword(0x8)
+
+        #ref_count = self.unpack_dword(0xC)
+        #descriptor_size = self.unpack_dword(0x10)
+        
+    def __str__(self):
+        return "SK Record at 0x%x" % (self.absolute_offset(0x0))
+
 
 class HBINBlock(RegistryBlock):
     """
     """
     
-    def __init__(self, buf, offset):
+    def __init__(self, buf, offset, parent):
         """
-        
+        Constructor.
         Arguments:
-        - `buf`:
-        - `offset`:
+        - `buf`: Byte string containing Windows Registry file.
+        - `offset`: The offset into the buffer at which the block starts.
         """
-        super(HBINBlock, self).__init__(buf, offset)
+        super(HBINBlock, self).__init__(buf, offset, parent)
 
         _id = self.unpack_dword(0)
         if _id != 0x6E696268:
             raise ParseException("Invalid HBIN ID")
 
-        _reloffset_from_first_hbin = self.unpack_dword(0x4)
         self._reloffset_next_hbin = self.unpack_dword(0x8)
         self._offset_next_hbin = self._reloffset_next_hbin + self._offset
 
     def __str__(self):
         return "HBIN at 0x%x" % (self._offset)
 
+    def first_hbin(self):
+        reloffset_from_first_hbin = self.unpack_dword(0x4)
+        return HBINBlock(self._buf, (self.absolute_offset(0x0) - reloffset_from_first_hbin), self.parent())
+
     def has_next(self):
+        """
+        Does another HBIN exist after this one?
+        """
         try:
-            HBINBlock(self._buf, self._offset_next_hbin)
+            HBINBlock(self._buf, self._offset_next_hbin, self.parent())
             return True
         except ParseException:
             return False
             
     def next(self):
- 
-        return HBINBlock(self._buf, self._offset_next_hbin)
+        """
+        Get the next HBIN after this one. 
+        """
+        return HBINBlock(self._buf, self._offset_next_hbin, self.parent())
 
     def cells(self):
-        c = HBINCell(self._buf, self._offset + 0x20)
+        """
+        Get a generator that yields each HBINCell contained in this HBIN.
+        """
+        c = HBINCell(self._buf, self._offset + 0x20, self)
 
         while c.offset() < self._offset_next_hbin:
-            yield c
+            if c.is_free():
+                r = c
+            elif c.data_id() == "vk":
+                r = VKRecord(self._buf, c.data_offset(), c)
+
+            elif c.data_id() == "nk":
+                r = NKRecord(self._buf, c.data_offset(), c)
+
+            elif c.data_id() == "lf":
+                r = c
+                print "lf"
+
+            elif c.data_id() == "sk":
+                r = SKRecord(self._buf, c.data_offset(), c)
+            else:
+                r = DataRecord(self._buf, c.data_offset(), c)
+
+            yield r
             c = c.next()
 
 class Registry(object):
     """
+    A class for parsing and reading from a Windows Registry file.
     """
     
     def __init__(self, filename):
         """
-
+        Constructor.
         Arguments:
-        - `filename`:
+        - `filename`: A string containing the filename of the Windows Registry file, such as
+        NTUSER.DAT.
         """
         self._filename = filename
         with open(filename) as f:
             self._buf = f.read()
 
-        self._regf = REGFBlock(self._buf, 0)
+        self._regf = REGFBlock(self._buf, 0, False)
 
         for h in self._regf.hbins():
             print h
             for c in h.cells():
                 print "\t%s" % (c)
-
-
 
 if __name__ == '__main__':
     Registry(sys.argv[1])
