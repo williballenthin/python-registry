@@ -431,6 +431,37 @@ class VKRecord(Record):
         else:
             raise UnknownTypeException("Unknown VK Record type 0x%x at 0x%x" % (data_type, self.offset()))
 
+class SKRecord(Record):
+    """
+    Security Record. Contains Windows security descriptor, 
+    which defines ownership and permissions for local values
+    and subkeys.
+
+    May be referenced by multiple NK records.
+    """
+    def __init__(self, buf, offset, parent):
+        """
+        Constructor.
+        Arguments:
+        - `buf`: Byte string containing Windows Registry file.
+        - `offset`: The offset into the buffer at which the block starts.
+        - `parent`: The parent HBINCell of the record.
+        """
+        super(SKRecord, self).__init__(buf, offset, parent)
+
+        _id = self.unpack_string(0x0, 2)
+        if _id != "sk":
+            raise ParseException("Invalid SK Record ID")
+
+        self._offset_prev_sk = self.unpack_dword(0x4)
+        self._offset_next_sk = self.unpack_dword(0x8)
+
+        #ref_count = self.unpack_dword(0xC)
+        #descriptor_size = self.unpack_dword(0x10)
+        
+    def __str__(self):
+        return "SK Record at 0x%x" % (self.offset())
+
 class NKRecord(Record):
     """
     """
@@ -508,36 +539,14 @@ class NKRecord(Record):
         d = HBINCell(self._buf, offset, self.parent())
         return NKRecord(self._buf, d.data_offset(), d)
 
-class SKRecord(Record):
-    """
-    Security Record. Contains Windows security descriptor, 
-    which defines ownership and permissions for local values
-    and subkeys.
+    def sk_record(self):
+        offset = self.abs_offset_from_hbin_offset(self.unpack_dword(0x2C))
 
-    May be referenced by multiple NK records.
-    """
-    def __init__(self, buf, offset, parent):
-        """
-        Constructor.
-        Arguments:
-        - `buf`: Byte string containing Windows Registry file.
-        - `offset`: The offset into the buffer at which the block starts.
-        - `parent`: The parent HBINCell of the record.
-        """
-        super(SKRecord, self).__init__(buf, offset, parent)
+        # TODO find the correct HBIN
+        d = HBINCell(self._buf, offset, self.parent())
+        return SKRecord(self._buf, d.data_offset(), d)
 
-        _id = self.unpack_string(0x0, 2)
-        if _id != "sk":
-            raise ParseException("Invalid SK Record ID")
 
-        self._offset_prev_sk = self.unpack_dword(0x4)
-        self._offset_next_sk = self.unpack_dword(0x8)
-
-        #ref_count = self.unpack_dword(0xC)
-        #descriptor_size = self.unpack_dword(0x10)
-        
-    def __str__(self):
-        return "SK Record at 0x%x" % (self.offset())
 
 
 class HBINBlock(RegistryBlock):
@@ -638,7 +647,6 @@ class Registry(object):
 
         self._regf = REGFBlock(self._buf, 0, False)
 
-
         n = False
         for h in self._regf.hbins():
             print h
@@ -653,6 +661,8 @@ class Registry(object):
         while n.has_parent_key():
             n = n.parent_key()
             print n
+
+        print n.sk_record()
 
 if __name__ == '__main__':
     Registry(sys.argv[1])
