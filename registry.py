@@ -32,6 +32,22 @@ class RegistryException(Exception):
     def __str__(self):
         return "Registry Exception: %s" % (self._value)
 
+class RegistryStructureDoesNotExist(RegistryException):
+    """
+    """
+    
+    def __init__(self, value):
+        """
+        
+        Arguments:
+        - `value`:
+        """
+        super(RegistryStructureDoesNotExist, self).__init__()
+
+    def __str__(self):
+        return "Registry Structure Does Not Exist Exception: %s" % (self._value)
+
+
 class ParseException(RegistryException):
     """
     An exception to be thrown during Windows Registry parsing, such as 
@@ -349,12 +365,20 @@ class VKRecord(Record):
             name = self.name()
         else:
             name = "(default)"
-        return "VKRecord(Name: %s, Type: %s) at 0x%x" % (name, 
+
+        data = ""
+        if self.data_type() == RegSZ:
+            data = self.data()[0:16] + "..."
+        else:
+            data = "()"
+
+        return "VKRecord(Name: %s, Type: %s, Data: %s) at 0x%x" % (name, 
                                                          self._data_type_str(), 
+                                                         data,
                                                          self.offset())
 
     def has_name(self):
-        return self.unpack_word(0x2) == 0
+        return self.unpack_word(0x2) != 0
 
     def has_ascii_name(self):
         # TODO this is NOT correct
@@ -365,8 +389,8 @@ class VKRecord(Record):
         return self.unpack_word(0x10) & 1 == 1
 
     def name(self):
-        if self.has_name():
-            return "(default)"
+        if not self.has_name():
+            return ""
         else:
             name_length = self.unpack_word(0x2)
             return self.unpack_string(0x14, name_length)
@@ -462,6 +486,37 @@ class SKRecord(Record):
     def __str__(self):
         return "SK Record at 0x%x" % (self.offset())
 
+class ValuesList(HBINCell):
+    """
+
+    """
+    
+    def __init__(self, buf, offset, parent, number):
+        """
+        
+        Arguments:
+        - `buf`:
+        - `offset`:
+        - `parent`: The parent of a ValuesList SHOULD be a NKRecord.
+        """
+        super(ValuesList, self).__init__(buf, offset, parent)
+        self._number = number
+
+    def __str__(self):
+        return "ValueList(Length: %d) at 0x%x" % (self.parent().values_number(), self.offset())
+
+    def values(self):
+        value_item = 0x0
+
+        for _ in range(0, self._number):
+            value_offset = self.abs_offset_from_hbin_offset(self.unpack_dword(value_item))
+
+            # TODO really fix the parent here
+            d = HBINCell(self._buf, value_offset, self)
+            v = VKRecord(self._buf, d.data_offset(), self)
+            value_item += 4
+            yield v
+
 class NKRecord(Record):
     """
     """
@@ -483,8 +538,8 @@ class NKRecord(Record):
         parent_offset = self.unpack_dword(0x10)
         subkeys_number = self.unpack_dword(0x14)
         subkey_lf_offset = self.unpack_dword(0x1C)
-        values_number = self.unpack_dword(0x24)
-        values_list_offset = self.unpack_dword(0x28)
+
+
         sk_record_offset = self.unpack_dword(0x2C)
         
     def __str__(self):
@@ -517,9 +572,26 @@ class NKRecord(Record):
         return struct.unpack_from("<%ds" % (classname_length), self._buf, d.data_offset())[0]
 
     def name(self):
+        """
+        Return the registry key name as a string.
+        """
         name_length = self.unpack_word(0x48)
         return self.unpack_string(0x4C, name_length)
     
+    def path(self):
+        """
+        Return the full path of the registry key as a string.
+        """
+        name = ""
+        p = self
+
+        name = "/" + name
+        name = p.name()
+        while p.has_parent_key():
+            p = p.parent_key()
+            name = p.name() + "/" + name
+        return name
+
     def is_root(self):
         return self.unpack_word(0x2) == 0x2C
 
@@ -546,8 +618,22 @@ class NKRecord(Record):
         d = HBINCell(self._buf, offset, self.parent())
         return SKRecord(self._buf, d.data_offset(), d)
 
+    def values_number(self):
+        num = self.unpack_dword(0x24)        
+        if num == 0xFFFFFFFF:
+            return 0
+        return num
 
+    def values_list(self):
+        if self.values_number() == 0:
+            raise RegistryStructureDoesNotExist("NK Record has no associated values.")
 
+        values_list_offset = self.abs_offset_from_hbin_offset(self.unpack_dword(0x28))
+        
+        # TODO fix parent here
+        d = HBINCell(self._buf, values_list_offset, self.parent())
+        # TODO I'm making a mess of the parent attribute here (parent should be `d`)
+        return ValuesList(self._buf, d.data_offset(), self)
 
 class HBINBlock(RegistryBlock):
     """
@@ -621,6 +707,18 @@ class HBINBlock(RegistryBlock):
                 r = c
                 print "lf"
 
+            elif c.data_id() == "lh":
+                r = c
+                print "lh"
+
+            elif c.data_id() == "li":
+                r = c
+                print "li"
+
+            elif c.data_id() == "ri":
+                r = c
+                print "ri"
+
             elif c.data_id() == "sk":
                 r = SKRecord(self._buf, c.data_offset(), c)
             else:
@@ -651,18 +749,29 @@ class Registry(object):
         for h in self._regf.hbins():
             print h
             for c in h.records():
-                if c.__class__.__name__ == "NKRecord":
+                if c.__class__.__name__ == "NKRecord" and c.values_number() > 0:
                     n = c
+                    print c.values_number()
                 print "\t%s" % (c)
 
         print "---"
 
-        print n        
-        while n.has_parent_key():
-            n = n.parent_key()
-            print n
+        m = n
+        print m        
+        while m.has_parent_key():
+            m = m.parent_key()
+            print m
 
+        print "---"
+        
+        print n
+        print n.path()
         print n.sk_record()
+        print n.values_list()
+
+        for v in n.values_list().values():
+            print v
+
 
 if __name__ == '__main__':
     Registry(sys.argv[1])
