@@ -658,6 +658,10 @@ class LFRecord(DirectSubkeyList):
         - `parent`: The parent block, which links to this block. The parent of a SubkeyList SHOULD be a NKRecord.
         """
         super(LFRecord, self).__init__(buf, offset, parent)
+        _id = self.unpack_string(0x0, 2)
+        if _id != "lf":
+            raise ParseException("Invalid LF Record ID")
+
 
     def __str__(self):
         return "LFRecord(Length: %d) at 0x%x" % (self._keys_len(), self.offset())
@@ -678,10 +682,13 @@ class LHRecord(DirectSubkeyList):
         - `parent`: The parent block, which links to this block. The parent of a SubkeyList SHOULD be a NKRecord.
         """
         super(LHRecord, self).__init__(buf, offset, parent)
+        _id = self.unpack_string(0x0, 2)
+        if _id != "lh":
+            raise ParseException("Invalid LH Record ID")
+
 
     def __str__(self):
         return "LHRecord(Length: %d) at 0x%x" % (self._keys_len(), self.offset())
-
 
 class NKRecord(Record):
     """
