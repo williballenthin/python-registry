@@ -558,8 +558,8 @@ class ValuesList(HBINCell):
         """
         Constructor.
         Arguments:
-        - `buf`:
-        - `offset`:
+        - `buf`: Byte string containing Windows Registry file.
+        - `offset`: The offset into the buffer at which the block starts.
         - `parent`: The parent block, which links to this block. The parent of a ValuesList SHOULD be a NKRecord.
         """
         super(ValuesList, self).__init__(buf, offset, parent)
@@ -570,7 +570,7 @@ class ValuesList(HBINCell):
 
     def values(self):
         """
-        A generator that yields the VKRecords referenced by this list
+        A generator that yields the VKRecords referenced by this list.
         """
         value_item = 0x0
 
@@ -582,6 +582,70 @@ class ValuesList(HBINCell):
             value_item += 4
             yield v
 
+class SubkeyList(Record):
+    """
+    A base class for use by structures recording the subkeys of Registry key.
+    The required overload is self.keys(), which is a generator for all the subkeys (NKRecords).
+    The SubkeyList is not meant to be used directly.
+    """
+    def __init__(self, buf, offset, parent):
+        """
+        Constructor.
+        Arguments:
+        - `buf`: Byte string containing Windows Registry file.
+        - `offset`: The offset into the buffer at which the block starts.
+        - `parent`: The parent block, which links to this block. The parent of a SubkeyList SHOULD be a NKRecord.
+        """
+        super(SubkeyList, self).__init__(buf, offset, parent)
+
+    def __str__(self):
+        return "SubkeyList(Length: %d) at 0x%x" % (0, self.offset())
+
+    def keys(self):
+        """
+        A generator that yields the NKRecords referenced by this list.
+        The base SubkeyList class returns no NKRecords, since it should not be used directly.
+        """
+        return
+
+
+class LFRecord(SubkeyList):
+    """
+    The LFRecord is a simple structure containing a list of offsets/pointers to subkey NKRecords.
+    The LFRecord also contains a hash for the name of the subkey pointed to by the offset, which enables
+    more efficient seaching of the Registry tree.
+    """
+    def __init__(self, buf, offset, parent):
+        """
+        Constructor.
+        Arguments:
+        - `buf`: Byte string containing Windows Registry file.
+        - `offset`: The offset into the buffer at which the block starts.
+        - `parent`: The parent block, which links to this block. The parent of a SubkeyList SHOULD be a NKRecord.
+        """
+        super(LFRecord, self).__init__(buf, offset, parent)
+
+    def __str__(self):
+        return "LFRecord(Length: %d) at 0x%x" % (self._keys_len(), self.offset())
+        
+    def _keys_len(self):
+        return self.unpack_word(0x2)
+
+    def keys(self):
+        """
+        A generator that yields the NKRecords referenced by this list.
+        The base SubkeyList class returns no NKRecords, since it should not be used directly.
+        """
+        key_index = 0x4
+
+        for _ in range(0, self._keys_len()):
+            key_offset = self.abs_offset_from_hbin_offset(self.unpack_dword(key_index))
+            #key_hash = self.unpack_dword(key_index + 0x4)
+            
+            d = HBINCell(self._buf, key_offset, self)
+            yield NKRecord(self._buf, d.data_offset(), self)
+            key_index += 8
+
 class NKRecord(Record):
     """
     The NKRecord defines the tree-like structure of the Windows Registry.
@@ -590,7 +654,7 @@ class NKRecord(Record):
     """
     def __init__(self, buf, offset, parent):
         """
-        
+        Constructor.
         Arguments:
         - `buf`: Byte string containing Windows Registry file.
         - `offset`: The offset into the buffer at which the block starts.
@@ -600,8 +664,6 @@ class NKRecord(Record):
         _id = self.unpack_string(0x0, 2)
         if _id != "nk":
             raise ParseException("Invalid NK Record ID")
-        
-        subkey_lf_offset = self.unpack_dword(0x1C)
         
     def __str__(self):
         classname = self.classname()
@@ -715,8 +777,22 @@ class NKRecord(Record):
 
         values_list_offset = self.abs_offset_from_hbin_offset(self.unpack_dword(0x28))
         
-        d = HBINCell(self._buf, values_list_offset, self.parent())
+        d = HBINCell(self._buf, values_list_offset, self)
         return ValuesList(self._buf, d.data_offset(), self, self.values_number())
+
+    def subkey_list(self):
+        subkey_list_offset = self.abs_offset_from_hbin_offset(self.unpack_dword(0x1C))
+
+        d = HBINCell(self._buf, subkey_list_offset, self)
+        id_ = d.data_id()
+        
+        if id_ == "lf":
+            l = LFRecord(self._buf, d.data_offset(), self)
+        else:
+            print id_ + " subkey list"
+            raise ParseException("Subkey list with type %s encountered, but not yet supported." % (id_))
+
+        return l
 
 class HBINBlock(RegistryBlock):
     """
@@ -785,14 +861,13 @@ class HBINBlock(RegistryBlock):
             if c.is_free():
                 r = c
             elif c.data_id() == "vk":
-                r = VKRecord(self._buf, c.data_offset(), c)
+                r = VKRecord(self._buf, c.data_offset(), self)
 
             elif c.data_id() == "nk":
-                r = NKRecord(self._buf, c.data_offset(), c)
+                r = NKRecord(self._buf, c.data_offset(), self)
 
             elif c.data_id() == "lf":
-                r = c
-                print "lf"
+                r = LFRecord(self._buf, c.data_offset(), self)
 
             elif c.data_id() == "lh":
                 r = c
@@ -807,9 +882,9 @@ class HBINBlock(RegistryBlock):
                 print "ri"
 
             elif c.data_id() == "sk":
-                r = SKRecord(self._buf, c.data_offset(), c)
+                r = SKRecord(self._buf, c.data_offset(), self)
             else:
-                r = DataRecord(self._buf, c.data_offset(), c)
+                r = DataRecord(self._buf, c.data_offset(), self)
 
             yield r
             c = c.next()
@@ -838,7 +913,6 @@ class Registry(object):
             for c in h.records():
                 if c.__class__.__name__ == "NKRecord" and c.values_number() > 0:
                     n = c
-                    print c.values_number()
                 print "\t%s" % (c)
 
         print "---"
@@ -857,6 +931,12 @@ class Registry(object):
         print n.values_list()
 
         for v in n.values_list().values():
+            print v
+
+        print "---"
+        print m
+        print m.subkey_list()
+        for v in m.subkey_list().keys():
             print v
 
 if __name__ == '__main__':
