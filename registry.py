@@ -131,6 +131,9 @@ class RegistryBlock(object):
     def parent(self):
         return self._parent
 
+    def offset(self):
+        return self._offset
+
 class REGFBlock(RegistryBlock):
     """
     The Windows Registry file header.
@@ -179,8 +182,7 @@ class REGFBlock(RegistryBlock):
 class HBINCell(RegistryBlock):
     """
     HBIN data cell.
-    """
-    
+    """    
     def __init__(self, buf, offset, parent):
         """
         Constructor.
@@ -209,7 +211,6 @@ class HBINCell(RegistryBlock):
         else:
             return self._size * -1           
         
-
     def next(self):
         """
         Returns the next HBINCell, which is located immediately after this.
@@ -238,6 +239,18 @@ class HBINCell(RegistryBlock):
         """
         return self.unpack_string(0x4, 2)
 
+    def abs_offset_from_hbin_offset(self, offset):
+        """
+        Offsets contained in HBIN cells are relative to the beginning of the first HBIN.
+        This converts the relative offset into an absolute offset.
+        """
+        h = self.parent()
+        while h.__class__.__name__ != "HBINBlock":
+            h = h.parent()
+            
+        return h.first_hbin().offset() + offset
+        
+
 class Record(RegistryBlock):
     """
     Abstract class for Records contained by cells in HBINs
@@ -252,6 +265,19 @@ class Record(RegistryBlock):
         - `cell`: The parent HBINCell of the record.
         """
         super(Record, self).__init__(buf, offset, parent)
+
+    def abs_offset_from_hbin_offset(self, offset):
+        # TODO This violates DRY as this is a redefinition, see HBINCell.abs_offset_from_hbin_offset()
+        """
+        Offsets contained in HBIN cells are relative to the beginning of the first HBIN.
+        This converts the relative offset into an absolute offset.
+        """
+        h = self.parent()
+        while h.__class__.__name__ != "HBINBlock":
+            h = h.parent()
+            
+        return h.first_hbin().offset() + offset
+
 
 class DataRecord(Record):
     """
@@ -268,9 +294,8 @@ class DataRecord(Record):
         super(DataRecord, self).__init__(buf, offset, parent)
 
     def __str__(self):
-        return "Data Record at 0x%x" % (self.absolute_offset(0x0))
+        return "Data Record at 0x%x" % (self.offset())
         
-
 class VKRecord(Record):
     """
     """
@@ -317,7 +342,7 @@ class VKRecord(Record):
             return "RegResourceRequirementsList"
 
         else:
-            raise UnknownTypeException("Unknown VK Record type 0x%x at 0x%x" % (data_type, self.absolute_offset(0x0)))
+            raise UnknownTypeException("Unknown VK Record type 0x%x at 0x%x" % (data_type, self.offset()))
 
     def __str__(self):
         if self.has_name():
@@ -326,7 +351,7 @@ class VKRecord(Record):
             name = "(default)"
         return "VKRecord(Name: %s, Type: %s) at 0x%x" % (name, 
                                                          self._data_type_str(), 
-                                                         self.absolute_offset(0x0))
+                                                         self.offset())
 
     def has_name(self):
         return self.unpack_word(0x2) == 0
@@ -356,11 +381,7 @@ class VKRecord(Record):
         if self.data_length() < 5 or self.data_length() >= 0x80000000:
             return self.absolute_offset(0x8)
         else:
-            h = self.parent()
-            while h.__class__.__name__ != "HBINBlock":
-                h = h.parent()
-
-            return h.first_hbin().absolute_offset(0x0) + self.unpack_dword(0x8)
+            return self.abs_offset_from_hbin_offset(self.unpack_dword(0x8))
         
     def data(self):
         data_type = self.data_type()
@@ -408,8 +429,7 @@ class VKRecord(Record):
         elif data_type == RegResourceRequirementsList:
             print "RegResourceRequirementsList"
         else:
-            raise UnknownTypeException("Unknown VK Record type 0x%x at 0x%x" % (data_type, self.absolute_offset(0x0)))
-
+            raise UnknownTypeException("Unknown VK Record type 0x%x at 0x%x" % (data_type, self.offset()))
 
 class NKRecord(Record):
     """
@@ -444,11 +464,11 @@ class NKRecord(Record):
         if self.is_root():
             return "Root NKRecord(Class: %s, Name: %s) at 0x%x" % (classname, 
                                                                    self.name(), 
-                                                                   self.absolute_offset(0x0))
+                                                                   self.offset())
         else:
             return "NKRecord(Class: %s, Name: %s) at 0x%x" % (classname, 
                                                               self.name(), 
-                                                              self.absolute_offset(0x0))
+                                                              self.offset())
 
     def has_classname(self):
         return self.unpack_dword(0x30) != 0xFFFFFFFF
@@ -460,14 +480,10 @@ class NKRecord(Record):
         classname_offset = self.unpack_dword(0x30)
         classname_length = self.unpack_word(0x4A)
 
-        h = self.parent()
-        while h.__class__.__name__ != "HBINBlock":
-            h = h.parent()
-
-        offset = h.first_hbin().absolute_offset(0x0) + classname_offset
-        d = HBINCell(self._buf, offset, self)
+        offset = self.abs_offset_from_hbin_offset(classname_offset)
+        # TODO find the correct HBIN
+        d = HBINCell(self._buf, offset, self.parent())
         return struct.unpack_from("<%ds" % (classname_length), self._buf, d.data_offset())[0]
-
 
     def name(self):
         name_length = self.unpack_word(0x48)
@@ -476,6 +492,21 @@ class NKRecord(Record):
     def is_root(self):
         return self.unpack_word(0x2) == 0x2C
 
+    def has_parent_key(self):
+        if self.is_root():
+            return False
+        try:
+            self.parent_key()
+            return True
+        except ParseException:
+            return False
+
+    def parent_key(self):
+        offset = self.abs_offset_from_hbin_offset(self.unpack_dword(0x10))
+
+        # TODO find the correct HBIN
+        d = HBINCell(self._buf, offset, self.parent())
+        return NKRecord(self._buf, d.data_offset(), d)
 
 class SKRecord(Record):
     """
@@ -506,7 +537,7 @@ class SKRecord(Record):
         #descriptor_size = self.unpack_dword(0x10)
         
     def __str__(self):
-        return "SK Record at 0x%x" % (self.absolute_offset(0x0))
+        return "SK Record at 0x%x" % (self.offset())
 
 
 class HBINBlock(RegistryBlock):
@@ -534,7 +565,7 @@ class HBINBlock(RegistryBlock):
 
     def first_hbin(self):
         reloffset_from_first_hbin = self.unpack_dword(0x4)
-        return HBINBlock(self._buf, (self.absolute_offset(0x0) - reloffset_from_first_hbin), self.parent())
+        return HBINBlock(self._buf, (self.offset() - reloffset_from_first_hbin), self.parent())
 
     def has_next(self):
         """
@@ -555,6 +586,16 @@ class HBINBlock(RegistryBlock):
     def cells(self):
         """
         Get a generator that yields each HBINCell contained in this HBIN.
+        """
+        c = HBINCell(self._buf, self._offset + 0x20, self)
+
+        while c.offset() < self._offset_next_hbin:
+            yield c
+            c = c.next()
+
+    def records(self):
+        """
+        Get a generator that yields each Record contained in this HBIN.
         """
         c = HBINCell(self._buf, self._offset + 0x20, self)
 
@@ -597,10 +638,21 @@ class Registry(object):
 
         self._regf = REGFBlock(self._buf, 0, False)
 
+
+        n = False
         for h in self._regf.hbins():
             print h
-            for c in h.cells():
+            for c in h.records():
+                if c.__class__.__name__ == "NKRecord":
+                    n = c
                 print "\t%s" % (c)
+
+        print "---"
+
+        print n        
+        while n.has_parent_key():
+            n = n.parent_key()
+            print n
 
 if __name__ == '__main__':
     Registry(sys.argv[1])
