@@ -493,8 +493,11 @@ class VKRecord(Record):
                 try:
                     s = s.decode("utf16")
                 except UnicodeDecodeError:
-                    print "Well at this point you are screwed."
-                    return s.encode("utf8", errors="replace")
+                    try:
+                        s = s.decode("utf8", errors="replace")
+                    except:
+                        print "Well at this point you are screwed."
+                        raise
             return s
 
         elif data_type == ExpandSZ:
@@ -609,7 +612,38 @@ class SubkeyList(Record):
         return
 
 
-class LFRecord(SubkeyList):
+class DirectSubkeyList(SubkeyList):
+    def __init__(self, buf, offset, parent):
+        """
+        Constructor.
+        Arguments:
+        - `buf`: Byte string containing Windows Registry file.
+        - `offset`: The offset into the buffer at which the block starts.
+        - `parent`: The parent block, which links to this block. The parent of a SubkeyList SHOULD be a NKRecord.
+        """
+        super(DirectSubkeyList, self).__init__(buf, offset, parent)
+
+    def __str__(self):
+        return "DirectSubkeyList(Length: %d) at 0x%x" % (self._keys_len(), self.offset())
+        
+    def _keys_len(self):
+        return self.unpack_word(0x2)
+
+    def keys(self):
+        """
+        A generator that yields the NKRecords referenced by this list.
+        """
+        key_index = 0x4
+
+        for _ in range(0, self._keys_len()):
+            key_offset = self.abs_offset_from_hbin_offset(self.unpack_dword(key_index))
+            #key_hash = self.unpack_dword(key_index + 0x4)
+            
+            d = HBINCell(self._buf, key_offset, self)
+            yield NKRecord(self._buf, d.data_offset(), self)
+            key_index += 8
+
+class LFRecord(DirectSubkeyList):
     """
     The LFRecord is a simple structure containing a list of offsets/pointers to subkey NKRecords.
     The LFRecord also contains a hash for the name of the subkey pointed to by the offset, which enables
@@ -627,24 +661,27 @@ class LFRecord(SubkeyList):
 
     def __str__(self):
         return "LFRecord(Length: %d) at 0x%x" % (self._keys_len(), self.offset())
-        
-    def _keys_len(self):
-        return self.unpack_word(0x2)
 
-    def keys(self):
+class LHRecord(DirectSubkeyList):
+    """
+    The LHRecord is a simple structure containing a list of offsets/pointers to subkey NKRecords.
+    The LHRecord also contains a hash for the name of the subkey pointed to by the offset, which enables
+    more efficient seaching of the Registry tree.
+    The LHRecord is analogous to the LFRecord, but it uses a different hashing function.
+    """
+    def __init__(self, buf, offset, parent):
         """
-        A generator that yields the NKRecords referenced by this list.
-        The base SubkeyList class returns no NKRecords, since it should not be used directly.
+        Constructor.
+        Arguments:
+        - `buf`: Byte string containing Windows Registry file.
+        - `offset`: The offset into the buffer at which the block starts.
+        - `parent`: The parent block, which links to this block. The parent of a SubkeyList SHOULD be a NKRecord.
         """
-        key_index = 0x4
+        super(LHRecord, self).__init__(buf, offset, parent)
 
-        for _ in range(0, self._keys_len()):
-            key_offset = self.abs_offset_from_hbin_offset(self.unpack_dword(key_index))
-            #key_hash = self.unpack_dword(key_index + 0x4)
-            
-            d = HBINCell(self._buf, key_offset, self)
-            yield NKRecord(self._buf, d.data_offset(), self)
-            key_index += 8
+    def __str__(self):
+        return "LHRecord(Length: %d) at 0x%x" % (self._keys_len(), self.offset())
+
 
 class NKRecord(Record):
     """
@@ -788,6 +825,8 @@ class NKRecord(Record):
         
         if id_ == "lf":
             l = LFRecord(self._buf, d.data_offset(), self)
+        elif id_ == "lh":
+            l = LHRecord(self._buf, d.data_offset(), self)
         else:
             print id_ + " subkey list"
             raise ParseException("Subkey list with type %s encountered, but not yet supported." % (id_))
@@ -870,8 +909,7 @@ class HBINBlock(RegistryBlock):
                 r = LFRecord(self._buf, c.data_offset(), self)
 
             elif c.data_id() == "lh":
-                r = c
-                print "lh"
+                r = LHRecord(self._buf, c.data_offset(), self)
 
             elif c.data_id() == "li":
                 r = c
