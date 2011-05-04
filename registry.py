@@ -1,6 +1,11 @@
 #!/bin/python
 import sys, struct
 
+# TODO:
+#
+# - Come up with a consistent meaning for `parent`
+#
+
 # Constants
 RegSZ = 0x0001
 ExpandSZ = 0x0002
@@ -34,19 +39,20 @@ class RegistryException(Exception):
 
 class RegistryStructureDoesNotExist(RegistryException):
     """
+    Exception to be raised when a structure or block is requested which does not exist. 
+    For example, asking for the ValuesList structure of an NKRecord that has no values
+    (and therefore no ValuesList) should result in this exception.
     """
-    
     def __init__(self, value):
         """
-        
+        Constructor.
         Arguments:
-        - `value`:
+        - `value`: A string description.
         """
         super(RegistryStructureDoesNotExist, self).__init__()
 
     def __str__(self):
         return "Registry Structure Does Not Exist Exception: %s" % (self._value)
-
 
 class ParseException(RegistryException):
     """
@@ -66,13 +72,26 @@ class ParseException(RegistryException):
 
 class UnknownTypeException(RegistryException):
     """
+    An exception to be raised when an unknown data type is encountered.
+    Supported data types current consist of 
+     - RegSZ 
+     - ExpandSZ
+     - RegBin 
+     - RegDWord
+     - RegMultiSZ
+     - RegQWord
+     - RegNone 
+     - RegBigEndian 
+     - RegLink 
+     - RegResourceList 
+     - RegFullResourceDescriptor 
+     - RegResourceRequirementsList 
     """
-    
     def __init__(self, value):
         """
-        
+        Constructor.
         Arguments:
-        - `value`:
+        - `value`: A string description.
         """
         super(UnknownTypeException, self).__init__(value)
 
@@ -83,6 +102,11 @@ class RegistryBlock(object):
     """ 
     Base class for structure blocks in the Windows Registry.
     A block is associated with a offset into a byte-string.
+
+    All blocks (besides the root) also have a parent member, which refers to 
+    a RegistryBlock that contains a reference to this block, an is found at a
+    hierarchically superior rank. Note, by following the parent links upwards, 
+    the root block should be accessible (aka. there should not be any loops)
     """
     def __init__(self, buf, offset, parent):
         """
@@ -90,6 +114,7 @@ class RegistryBlock(object):
         Arguments:
         - `buf`: Byte string containing Windows Registry file.
         - `offset`: The offset into the buffer at which the block starts.
+        - `parent`: The parent block, which links to this block.
         """
         self._buf = buf
         self._offset = offset
@@ -145,22 +170,29 @@ class RegistryBlock(object):
         return self._offset + offset
 
     def parent(self):
+        """
+        Get the parent block. See the class documentation for what the parent link is.
+        """
         return self._parent
 
     def offset(self):
+        """
+        Equivalent to self.absolute_offset(0x0), which is the starting offset of this block.
+        """
         return self._offset
 
 class REGFBlock(RegistryBlock):
     """
-    The Windows Registry file header.
+    The Windows Registry file header. This block has a length of 4k, although 
+    only the first 0x200 bytes are generally used.
     """
-    
     def __init__(self, buf, offset, parent):
         """
         Constructor.
         Arguments:
         - `buf`: Byte string containing Windows Registry file.
         - `offset`: The offset into the buffer at which the block starts.
+        - `parent`: The parent block, which links to this block.
         """
         super(REGFBlock, self).__init__(buf, offset, parent)
 
@@ -188,7 +220,10 @@ class REGFBlock(RegistryBlock):
         # TODO: compute checksum and check
 
     def hbins(self):
-        h = HBINBlock(self._buf, 0x1000, self)
+        """
+        A generator that enumerates all HBIN (HBINBlock) structures in this Windows Registry.
+        """
+        h = HBINBlock(self._buf, 0x1000, self) # sorry, but 0x1000 is a magic number
         yield h
 
         while h.has_next():
@@ -197,7 +232,8 @@ class REGFBlock(RegistryBlock):
 
 class HBINCell(RegistryBlock):
     """
-    HBIN data cell.
+    HBIN data cell. An HBINBlock is continuously filled with HBINCell structures.
+    The general structure is the length of the block, followed by a blob of data.
     """    
     def __init__(self, buf, offset, parent):
         """
@@ -205,6 +241,7 @@ class HBINCell(RegistryBlock):
         Arguments:
         - `buf`: Byte string containing Windows Registry file.
         - `offset`: The offset into the buffer at which the block starts.
+        - `parent`: The parent block, which links to this block.
         """
         super(HBINCell, self).__init__(buf, offset, parent)
         self._size = self.unpack_int(0x0)
@@ -222,6 +259,9 @@ class HBINCell(RegistryBlock):
         return self._size > 0
 
     def size(self):
+        """
+        Size of this cell, as an unsigned integer.
+        """
         if self.is_free():
             return self._size
         else:
@@ -271,14 +311,13 @@ class Record(RegistryBlock):
     """
     Abstract class for Records contained by cells in HBINs
     """
-    
     def __init__(self, buf, offset, parent):
         """
         Constructor.
         Arguments:
         - `buf`: Byte string containing Windows Registry file.
         - `offset`: The offset into the buffer at which the block starts.
-        - `cell`: The parent HBINCell of the record.
+        - `parent`: The parent block, which links to this block. This SHOULD be an HBINCell.
         """
         super(Record, self).__init__(buf, offset, parent)
 
@@ -298,14 +337,14 @@ class Record(RegistryBlock):
 class DataRecord(Record):
     """
     """
-    
     def __init__(self, buf, offset, parent):
         """
-        
+        Constructor.
+
         Arguments:
         - `buf`: Byte string containing Windows Registry file.
         - `offset`: The offset into the buffer at which the block starts.
-        - `parent`: The parent cell
+        - `parent`: The parent block, which links to this block. This should be an HBINCell.
         """
         super(DataRecord, self).__init__(buf, offset, parent)
 
@@ -322,7 +361,7 @@ class VKRecord(Record):
         Arguments:
         - `buf`: Byte string containing Windows Registry file.
         - `offset`: The offset into the buffer at which the block starts.
-        - `cell`: The parent HBINCell of the record.
+        - `parent`: The parent block, which links to this block. This should be an HBINCell.
         """
         super(VKRecord, self).__init__(buf, offset, parent)
 
@@ -331,6 +370,9 @@ class VKRecord(Record):
             raise ParseException("Invalid VK Record ID")
 
     def _data_type_str(self):
+        """
+        Get the value data's type as a string
+        """
         data_type = self.data_type()
         if data_type == RegSZ:
             return "RegSZ"
@@ -356,7 +398,6 @@ class VKRecord(Record):
             return "RegFullResourceDescriptor"
         elif data_type == RegResourceRequirementsList:
             return "RegResourceRequirementsList"
-
         else:
             raise UnknownTypeException("Unknown VK Record type 0x%x at 0x%x" % (data_type, self.offset()))
 
@@ -378,9 +419,16 @@ class VKRecord(Record):
                                                          self.offset())
 
     def has_name(self):
+        """
+        Has a name? or perhaps we should use '(default)'
+        """
         return self.unpack_word(0x2) != 0
 
     def has_ascii_name(self):
+        """
+        Is the name of this value in the ASCII charset?
+        Note, this doesnt work, yet...
+        """
         # TODO this is NOT correct
         if self.unpack_word(0x10) & 1 == 1:
             print "ascii name"
@@ -389,6 +437,9 @@ class VKRecord(Record):
         return self.unpack_word(0x10) & 1 == 1
 
     def name(self):
+        """
+        Get the name, if it exists. If not, the empty string is returned.
+        """
         if not self.has_name():
             return ""
         else:
@@ -396,18 +447,34 @@ class VKRecord(Record):
             return self.unpack_string(0x14, name_length)
 
     def data_type(self):
+        """
+        Get the data type of this value data as an unsigned integer.
+        """
         return self.unpack_dword(0xC)        
 
     def data_length(self):
+        """
+        Get the length of this value data.
+        """
         return self.unpack_dword(0x4)
 
     def data_offset(self):
+        """
+        Get the offset to the raw data associated with this value.
+        """
         if self.data_length() < 5 or self.data_length() >= 0x80000000:
             return self.absolute_offset(0x8)
         else:
             return self.abs_offset_from_hbin_offset(self.unpack_dword(0x8))
         
     def data(self):
+        """
+        Get the data.  This method will return various types based on the data type.
+        
+        RegSZ:
+          Return a string containing the data, doing the best we can to convert it
+          to ASCII or UNICODE.
+        """
         data_type = self.data_type()
         data_length = self.data_length()
         data_offset = self.data_offset()
@@ -458,7 +525,7 @@ class VKRecord(Record):
 class SKRecord(Record):
     """
     Security Record. Contains Windows security descriptor, 
-    which defines ownership and permissions for local values
+    Which defines ownership and permissions for local values
     and subkeys.
 
     May be referenced by multiple NK records.
@@ -469,7 +536,7 @@ class SKRecord(Record):
         Arguments:
         - `buf`: Byte string containing Windows Registry file.
         - `offset`: The offset into the buffer at which the block starts.
-        - `parent`: The parent HBINCell of the record.
+        - `parent`: The parent block, which links to this block. This should be an HBINCell.
         """
         super(SKRecord, self).__init__(buf, offset, parent)
 
@@ -480,24 +547,20 @@ class SKRecord(Record):
         self._offset_prev_sk = self.unpack_dword(0x4)
         self._offset_next_sk = self.unpack_dword(0x8)
 
-        #ref_count = self.unpack_dword(0xC)
-        #descriptor_size = self.unpack_dword(0x10)
-        
     def __str__(self):
         return "SK Record at 0x%x" % (self.offset())
 
 class ValuesList(HBINCell):
     """
-
+    A ValuesList is a simple structure of fixed length pointers/offsets to VKRecords.
     """
-    
     def __init__(self, buf, offset, parent, number):
         """
-        
+        Constructor.
         Arguments:
         - `buf`:
         - `offset`:
-        - `parent`: The parent of a ValuesList SHOULD be a NKRecord.
+        - `parent`: The parent block, which links to this block. The parent of a ValuesList SHOULD be a NKRecord.
         """
         super(ValuesList, self).__init__(buf, offset, parent)
         self._number = number
@@ -506,12 +569,14 @@ class ValuesList(HBINCell):
         return "ValueList(Length: %d) at 0x%x" % (self.parent().values_number(), self.offset())
 
     def values(self):
+        """
+        A generator that yields the VKRecords referenced by this list
+        """
         value_item = 0x0
 
         for _ in range(0, self._number):
             value_offset = self.abs_offset_from_hbin_offset(self.unpack_dword(value_item))
 
-            # TODO really fix the parent here
             d = HBINCell(self._buf, value_offset, self)
             v = VKRecord(self._buf, d.data_offset(), self)
             value_item += 4
@@ -519,28 +584,24 @@ class ValuesList(HBINCell):
 
 class NKRecord(Record):
     """
+    The NKRecord defines the tree-like structure of the Windows Registry.
+    It contains pointers/offsets to the ValueList (values associated with the given record), and 
+    to subkeys.
     """
-    
     def __init__(self, buf, offset, parent):
         """
         
         Arguments:
         - `buf`: Byte string containing Windows Registry file.
         - `offset`: The offset into the buffer at which the block starts.
-        - `parent`: The parent HBINCell of the record.
+        - `parent`: The parent block, which links to this block. This should be a HBINCell.
         """
         super(NKRecord, self).__init__(buf, offset, parent)
         _id = self.unpack_string(0x0, 2)
         if _id != "nk":
             raise ParseException("Invalid NK Record ID")
         
-        _ts = self.unpack_qword(0x4)
-        parent_offset = self.unpack_dword(0x10)
-        subkeys_number = self.unpack_dword(0x14)
         subkey_lf_offset = self.unpack_dword(0x1C)
-
-
-        sk_record_offset = self.unpack_dword(0x2C)
         
     def __str__(self):
         classname = self.classname()
@@ -557,9 +618,15 @@ class NKRecord(Record):
                                                               self.offset())
 
     def has_classname(self):
+        """
+        Does this have a classname?
+        """
         return self.unpack_dword(0x30) != 0xFFFFFFFF
 
     def classname(self):
+        """
+        If this has a classname, get it as a string. Otherwise, return the empty string.
+        """
         if not self.has_classname():
             return ""
 
@@ -567,8 +634,7 @@ class NKRecord(Record):
         classname_length = self.unpack_word(0x4A)
 
         offset = self.abs_offset_from_hbin_offset(classname_offset)
-        # TODO find the correct HBIN
-        d = HBINCell(self._buf, offset, self.parent())
+        d = HBINCell(self._buf, offset, self)
         return struct.unpack_from("<%ds" % (classname_length), self._buf, d.data_offset())[0]
 
     def name(self):
@@ -593,9 +659,16 @@ class NKRecord(Record):
         return name
 
     def is_root(self):
+        """
+        Is this a root key?
+        """
         return self.unpack_word(0x2) == 0x2C
 
     def has_parent_key(self):
+        """
+        Is there a parent key? There should always be a parent key, unless
+        this is a root key (see self.is_root())
+        """
         if self.is_root():
             return False
         try:
@@ -605,46 +678,58 @@ class NKRecord(Record):
             return False
 
     def parent_key(self):
+        """
+        Get the parent_key, which will be an NKRecord.
+        """
         offset = self.abs_offset_from_hbin_offset(self.unpack_dword(0x10))
 
-        # TODO find the correct HBIN
+        # TODO be careful here in setting the parent of the HBINCell
         d = HBINCell(self._buf, offset, self.parent())
         return NKRecord(self._buf, d.data_offset(), d)
 
     def sk_record(self):
+        """
+        Get the security descriptor associated with this NKRecord as an SKRecord.
+        """
         offset = self.abs_offset_from_hbin_offset(self.unpack_dword(0x2C))
 
-        # TODO find the correct HBIN
-        d = HBINCell(self._buf, offset, self.parent())
+        d = HBINCell(self._buf, offset, self)
         return SKRecord(self._buf, d.data_offset(), d)
 
     def values_number(self):
+        """
+        Get the number of values associated with this NKRecord/Key.
+        """
         num = self.unpack_dword(0x24)        
         if num == 0xFFFFFFFF:
             return 0
         return num
 
     def values_list(self):
+        """
+        Get the values as a ValuesList.
+        Will raise RegistryStructureDoesNotExist if this NKRecord has no values.
+        """
         if self.values_number() == 0:
             raise RegistryStructureDoesNotExist("NK Record has no associated values.")
 
         values_list_offset = self.abs_offset_from_hbin_offset(self.unpack_dword(0x28))
         
-        # TODO fix parent here
         d = HBINCell(self._buf, values_list_offset, self.parent())
-        # TODO I'm making a mess of the parent attribute here (parent should be `d`)
-        return ValuesList(self._buf, d.data_offset(), self)
+        return ValuesList(self._buf, d.data_offset(), self, self.values_number())
 
 class HBINBlock(RegistryBlock):
     """
+    An HBINBlock is the basic allocation block of the Windows Registry.
+    It has a length of 0x1000.
     """
-    
     def __init__(self, buf, offset, parent):
         """
         Constructor.
         Arguments:
         - `buf`: Byte string containing Windows Registry file.
         - `offset`: The offset into the buffer at which the block starts.
+        - `parent`: The parent block, which links to this block.
         """
         super(HBINBlock, self).__init__(buf, offset, parent)
 
@@ -666,6 +751,7 @@ class HBINBlock(RegistryBlock):
         """
         Does another HBIN exist after this one?
         """
+        # consider also using self.parent().last_hbin_offset() == self.offset()
         try:
             HBINBlock(self._buf, self._offset_next_hbin, self.parent())
             return True
@@ -675,6 +761,7 @@ class HBINBlock(RegistryBlock):
     def next(self):
         """
         Get the next HBIN after this one. 
+        Note: This will blindly attempts to create it regardless of if it exists.
         """
         return HBINBlock(self._buf, self._offset_next_hbin, self.parent())
 
@@ -690,7 +777,7 @@ class HBINBlock(RegistryBlock):
 
     def records(self):
         """
-        Get a generator that yields each Record contained in this HBIN.
+        Get a generator that yields each Record or Cell contained in this HBIN.
         """
         c = HBINCell(self._buf, self._offset + 0x20, self)
 
@@ -771,7 +858,6 @@ class Registry(object):
 
         for v in n.values_list().values():
             print v
-
 
 if __name__ == '__main__':
     Registry(sys.argv[1])
