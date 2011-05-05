@@ -54,6 +54,50 @@ class RegistryStructureDoesNotExist(RegistryException):
     def __str__(self):
         return "Registry Structure Does Not Exist Exception: %s" % (self._value)
 
+class RegistryKeyHasNoParentException(RegistryStructureDoesNotExist):
+    """
+    """
+    def __init__(self, value):
+        """
+        Constructor.
+        Arguments:
+        - `value`: A string description.
+        """
+        super(RegistryKeyHasNoParentException, self).__init__(value)
+
+    def __str__(self):
+        return "Registry key has no parent key: %s" % (self._value)
+
+
+class RegistryKeyNotFoundException(RegistryStructureDoesNotExist):
+    """
+    """
+    def __init__(self, value):
+        """
+        
+        Arguments:
+        - `value`:
+        """
+        super(RegistryKeyNotFoundException, self).__init__(value)
+        
+    def __str__(self):
+        return "Registry key not found: %s" % (self._value)
+
+class RegistryValueNotFoundException(RegistryStructureDoesNotExist):
+    """
+    """
+    def __init__(self, value):
+        """
+        
+        Arguments:
+        - `value`:
+        """
+        super(RegistryValueNotFoundException, self).__init__(value)
+        
+    def __str__(self):
+        return "Registry value not found: %s" % (self._value)
+
+
 class ParseException(RegistryException):
     """
     An exception to be thrown during Windows Registry parsing, such as 
@@ -209,7 +253,7 @@ class REGFBlock(RegistryBlock):
 
         #_ts = self.unpack_qword(0xC)
         
-        #_first_key = self.unpack_dword(0x24)
+
 
         # TODO: compute checksum and check
 
@@ -236,6 +280,15 @@ class REGFBlock(RegistryBlock):
         Get the buffer offset of the last HBINBlock as an unsigned integer.
         """
         return self.unpack_dword(0x28)
+
+    def first_key(self):
+        first_hbin = self.hbins().next()
+        
+        key_offset = first_hbin.absolute_offset(self.unpack_dword(0x24))
+        print hex(key_offset)
+
+        d = HBINCell(self._buf, key_offset, first_hbin)
+        return NKRecord(self._buf, d.data_offset(), first_hbin)
 
     def hbins(self):
         """
@@ -432,15 +485,16 @@ class VKRecord(Record):
             name = "(default)"
 
         data = ""
-        if self.data_type() == RegSZ or self.data_type() == ExpandSZ:
+        data_type = self.data_type()
+        if data_type == RegSZ or data_type == ExpandSZ:
             data = self.data()[0:16] + "..."
-        elif self.data_type() == RegMultiSZ:
+        elif data_type == RegMultiSZ:
             data = str(len(self.data())) + " strings"
-        elif self.data_type() == RegDWord or self.data_type() == RegQWord:
+        elif data_type == RegDWord or data_type == RegQWord:
             data = str(hex(self.data()))
-        elif self.data_type() == RegNone:
+        elif data_type == RegNone:
             data = "(none)"
-        elif self.data_type() == RegBin:
+        elif data_type == RegBin:
             data = "(binary)"
         else:
             data = "(unsupported)"
@@ -1008,11 +1062,82 @@ class HBINBlock(RegistryBlock):
             except RegistryStructureDoesNotExist:
                 break
 
+class RegistryValue(object):
+    def __init__(self, vkrecord):
+        self._vkrecord = vkrecord
+
+    def name(self):
+        if self._vkrecord.has_name():
+            return self._vkrecord.name()
+        else:
+            return  "(default)"
+
+    def value_type(self):
+        return self._vkrecord.data_type()
+
+    def value(self):
+        return self._vkrecord.data()
+
+class RegistryKey(object):
+    """
+    """
+    def __init__(self, nkrecord):
+        """
+        
+        Arguments:
+        - `NKRecord`:
+        """
+        self._nkrecord = nkrecord
+
+    def __str__(self):
+        return "Registry Key %s with %d values and %d subkeys" % (self.path(), len(self.values()), len(self.subkeys()))
+
+    def __getitem__(self, key):
+        return self.value(key)
+
+    def name(self):
+        if self._nkrecord.has_name():
+            return self._nkrecord.name()
+        else:
+            return "(default)"
+
+    def path(self):
+        return self._nkrecord.path()
+
+    def parent(self):
+        try:
+            return self._nkrecord.parent_key()
+        except ParseException:
+            raise RegistryKeyHasNoParentException(self.name())
+
+    def subkeys(self):
+        l = self._nkrecord.subkey_list()
+        return [RegistryKey(k) for k in l.keys()]
+
+    def subkey(self, name):
+        for k in self._nkrecord.subkey_list():
+            if k.name() == name:
+                return RegistryKey(k)
+        raise RegistryKeyNotFoundException(self.path() + "/" + name)
+
+    def values(self):
+        try:
+            return [RegistryValue(v) for v in self._nkrecord.values_list().values()]
+        except RegistryStructureDoesNotExist:
+            return []
+            
+    def value(self, name):
+        if len(name) == 0:
+            name = "(default)"
+        for v in self._nkrecord.value_list().values():
+            if v.name() == name:
+                return RegistryValue(v)
+        raise RegistryValueNotFoundException(self.path() + " : " + name) 
+
 class Registry(object):
     """
     A class for parsing and reading from a Windows Registry file.
-    """
-    
+    """    
     def __init__(self, filename):
         """
         Constructor.
@@ -1026,6 +1151,10 @@ class Registry(object):
 
         self._regf = REGFBlock(self._buf, 0, False)
 
+    def root(self):
+        return RegistryKey(self._regf.first_key())
+
+    def test(self):
         n = False
         for h in self._regf.hbins():
             print h
@@ -1070,4 +1199,6 @@ class Registry(object):
         print self._regf.hive_name()
 
 if __name__ == '__main__':
-    Registry(sys.argv[1])
+    r = Registry(sys.argv[1])
+    for k in  r.root().subkeys():
+        print k
