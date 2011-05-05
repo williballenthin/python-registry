@@ -432,10 +432,18 @@ class VKRecord(Record):
             name = "(default)"
 
         data = ""
-        if self.data_type() == RegSZ:
+        if self.data_type() == RegSZ or self.data_type() == ExpandSZ:
             data = self.data()[0:16] + "..."
+        elif self.data_type() == RegMultiSZ:
+            data = str(len(self.data())) + " strings"
+        elif self.data_type() == RegDWord or self.data_type() == RegQWord:
+            data = str(hex(self.data()))
+        elif self.data_type() == RegNone:
+            data = "(none)"
+        elif self.data_type() == RegBin:
+            data = "(binary)"
         else:
-            data = "()"
+            data = "(unsupported)"
 
         return "VKRecord(Name: %s, Type: %s, Data: %s) at 0x%x" % (name, 
                                                          self._data_type_str(), 
@@ -451,9 +459,8 @@ class VKRecord(Record):
     def has_ascii_name(self):
         """
         Is the name of this value in the ASCII charset?
-        Note, this doesnt work, yet...
+        Note, this doesnt work, yet... TODO
         """
-        # TODO this is NOT correct
         if self.unpack_word(0x10) & 1 == 1:
             print "ascii name"
         else:
@@ -545,22 +552,24 @@ class VKRecord(Record):
                         print "Well at this point you are screwed."
                         raise
             return s
-
         elif data_type == RegBin:
             # TODO test this
             return self._buf[data_offset:data_offset + data_length]
         elif data_type == RegDWord:
-            # TODO test this
-            return struct.unpack_from("<%ds" % (4), self._buf, data_offset)[0]
+            return self.unpack_dword(0x8)
         elif data_type == RegMultiSZ:
             # TODO test this
-             data = self._buf[data_offset:data_offset + data_length]
-             data = data.rstrip(0x0)
-             return data.split("\x00\x00")
+            if data_length >= 0x80000000:
+                # this means data_length < 5, so it must be 4, and
+                # be composed of completely \x00, so the strings are empty
+                return []
+            else:
+                data = self._buf[data_offset:data_offset + data_length]
+            data = data.rstrip("\x00")
+            return data.split("\x00\x00")
         elif data_type == RegQWord:
-            # TODO test this
             d = HBINCell(self._buf, data_offset, self)
-            return d.unpack_qword(0x4)
+            return struct.unpack_from("<Q", self._buf, d.data_offset())[0]
         elif data_type == RegNone:
             return False
         elif data_type == RegBigEndian:
@@ -982,11 +991,11 @@ class HBINBlock(RegistryBlock):
 
             elif c.data_id() == "li":
                 r = c
-                print "li"
+                print "li record encountered. This is not yet implemented, due to lack of testing samples."
 
             elif c.data_id() == "ri":
                 r = c
-                print "ri"
+                print "ri record encountered. This is not yet implemented, due to lack of testing samples."
 
             elif c.data_id() == "sk":
                 r = SKRecord(self._buf, c.data_offset(), self)
