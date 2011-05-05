@@ -214,15 +214,27 @@ class REGFBlock(RegistryBlock):
         # TODO: compute checksum and check
 
     def major_version(self):
+        """
+        Get the major version of the Windows Registry file format in use as an unsigned integer.
+        """
         return self.unpack_dword(0x14)
 
     def minor_version(self):
+        """
+        Get the minor version of the Windows Registry file format in use as an unsigned integer.
+        """
         return self.unpack_dword(0x18)
 
     def hive_name(self):
+        """
+        Get the hive name of the open Windows Registry file as a string.
+        """
         return self.unpack_string(0x30, 64)
 
     def last_hbin_offset(self):
+        """
+        Get the buffer offset of the last HBINBlock as an unsigned integer.
+        """
         return self.unpack_dword(0x28)
 
     def hbins(self):
@@ -345,6 +357,8 @@ class Record(RegistryBlock):
 
 class DataRecord(Record):
     """
+    A DataRecord is a HBINCell that does not contain any further structural data, but 
+    may contain, for example, the values pointed to by a VKRecord.
     """
     def __init__(self, buf, offset, parent):
         """
@@ -362,8 +376,9 @@ class DataRecord(Record):
         
 class VKRecord(Record):
     """
+    The VKRecord holds one name-value pair.  The data may be one many types, including
+    strings, integers, and binary data.
     """
-    
     def __init__(self, buf, offset, parent):
         """
         Constructor.
@@ -483,17 +498,39 @@ class VKRecord(Record):
         RegSZ:
           Return a string containing the data, doing the best we can to convert it
           to ASCII or UNICODE.
+        ExpandSZ:
+          Return a string containing the data, doing the best we can to convert it
+          to ASCII or UNICODE. The special variables are not expanded.
+        RegMultiSZ:
+          Return a list of strings.
+        RegNone:
+          Return False.
+        RegDword:
+          Return an unsigned integer containing the data.
+        RegQword:
+          Return an unsigned integer containing the data.
+        RegBin:
+          Return a sequence of bytes containing the binary data.
+        RegBigEndian:
+          Not currently supported. TODO.
+        RegLink:
+          Not currently supported. TODO.
+        RegResourceList:
+          Not currently supported. TODO.
+        RegFullResourceDescriptor:
+          Not currently supported. TODO.
+        RegResourceRequirementsList:
+          Not currently supported. TODO.
         """
         data_type = self.data_type()
         data_length = self.data_length()
         data_offset = self.data_offset()
 
-        if data_type == RegSZ:
+        if data_type == RegSZ or data_type == ExpandSZ:
             if data_length >= 0x80000000:
                 # data is contained in the data_offset field
                 s = struct.unpack_from("<%ds" % (4), self._buf, data_offset)[0]
             else:
-                # data is in some hbin-data-cell somewhere
                 d = HBINCell(self._buf, data_offset, self)
                 s = struct.unpack_from("<%ds" % (data_length), self._buf, d.data_offset())[0]
             try:
@@ -509,28 +546,38 @@ class VKRecord(Record):
                         raise
             return s
 
-        elif data_type == ExpandSZ:
-            print "ExpandSZ"
         elif data_type == RegBin:
-            print "RegBin"
+            # TODO test this
+            return self._buf[data_offset:data_offset + data_length]
         elif data_type == RegDWord:
-            print "RegDWorD"
+            # TODO test this
+            return struct.unpack_from("<%ds" % (4), self._buf, data_offset)[0]
         elif data_type == RegMultiSZ:
-            print "RegMultiSZ"
+            # TODO test this
+             data = self._buf[data_offset:data_offset + data_length]
+             data = data.rstrip(0x0)
+             return data.split("\x00\x00")
         elif data_type == RegQWord:
-            print "RegQWord"
+            # TODO test this
+            d = HBINCell(self._buf, data_offset, self)
+            return d.unpack_qword(0x4)
         elif data_type == RegNone:
-            print "RegNone"
+            return False
         elif data_type == RegBigEndian:
-            print "RegBigEndian"
+            print "Warning: Data type RegBigEndian not yet supported"
+            return False
         elif data_type == RegLink:
-            print "RegLink"
+            print "Warning: Data type RegLink not yet supported"
+            return False
         elif data_type == RegResourceList:
-            print "RegResourceList"
+            print "Warning: Data type RegResourceList not yet supported"
+            return False
         elif data_type == RegFullResourceDescriptor:
-            print "RegFullResourceDescriptor"
+            print "Warning: Data type RegFullResourceDescriptor not yet supported"
+            return False
         elif data_type == RegResourceRequirementsList:
-            print "RegResourceRequirementsList"
+            print "Warning: Data type RegResourceRequirementsList not yet supported"
+            return False
         else:
             raise UnknownTypeException("Unknown VK Record type 0x%x at 0x%x" % (data_type, self.offset()))
 
@@ -875,6 +922,9 @@ class HBINBlock(RegistryBlock):
         return "HBIN at 0x%x" % (self._offset)
 
     def first_hbin(self):
+        """
+        Get the first HBINBlock.
+        """
         reloffset_from_first_hbin = self.unpack_dword(0x4)
         return HBINBlock(self._buf, (self.offset() - reloffset_from_first_hbin), self.parent())
 
@@ -982,6 +1032,7 @@ class Registry(object):
         print "---"
 
         if not n:
+            print self._regf.hive_name()
             return
 
         m = n
@@ -1005,6 +1056,9 @@ class Registry(object):
         print m.subkey_list()
         for v in m.subkey_list().keys():
             print v
+
+        print "---"
+        print self._regf.hive_name()
 
 if __name__ == '__main__':
     Registry(sys.argv[1])
