@@ -3,8 +3,8 @@ import sys, struct
 
 # TODO:
 #
-# - Come up with a consistent meaning for `parent`
-#
+# - Implement LIRecord
+# - Implement RIRecord 
 
 # Constants
 RegSZ = 0x0001
@@ -49,7 +49,7 @@ class RegistryStructureDoesNotExist(RegistryException):
         Arguments:
         - `value`: A string description.
         """
-        super(RegistryStructureDoesNotExist, self).__init__()
+        super(RegistryStructureDoesNotExist, self).__init__(value)
 
     def __str__(self):
         return "Registry Structure Does Not Exist Exception: %s" % (self._value)
@@ -209,15 +209,21 @@ class REGFBlock(RegistryBlock):
 
         #_ts = self.unpack_qword(0xC)
         
-        #_major = self.unpack_dword(0x14)
-        #_minor = self.unpack_dword(0x18)
-
         #_first_key = self.unpack_dword(0x24)
-        #_last_hbin = self.unpack_dword(0x28)
-
-        #_hive_name = self.unpack_string(0x30, 64)
 
         # TODO: compute checksum and check
+
+    def major_version(self):
+        return self.unpack_dword(0x14)
+
+    def minor_version(self):
+        return self.unpack_dword(0x18)
+
+    def hive_name(self):
+        return self.unpack_string(0x30, 64)
+
+    def last_hbin_offset(self):
+        return self.unpack_dword(0x28)
 
     def hbins(self):
         """
@@ -275,7 +281,10 @@ class HBINCell(RegistryBlock):
         check the offset of the next HBINCell to ensure it does not overrun the
         HBIN buffer.
         """
-        return HBINCell(self._buf, self._offset + self.size(), self.parent())
+        try:
+            return HBINCell(self._buf, self._offset + self.size(), self.parent())
+        except:
+            raise RegistryStructureDoesNotExist("HBINCell does not exist at 0x%x" % (self._offset + self.size()))
 
     def offset(self):
         """
@@ -488,13 +497,13 @@ class VKRecord(Record):
                 d = HBINCell(self._buf, data_offset, self)
                 s = struct.unpack_from("<%ds" % (data_length), self._buf, d.data_offset())[0]
             try:
-                s = s.decode("utf8")
+                s = s.decode("utf8").encode("utf8")
             except UnicodeDecodeError:
                 try:
-                    s = s.decode("utf16")
+                    s = s.decode("utf16").encode("utf8")
                 except UnicodeDecodeError:
                     try:
-                        s = s.decode("utf8", errors="replace")
+                        s = s.decode("utf8", "replace").encode("utf8")
                     except:
                         print "Well at this point you are screwed."
                         raise
@@ -662,7 +671,6 @@ class LFRecord(DirectSubkeyList):
         if _id != "lf":
             raise ParseException("Invalid LF Record ID")
 
-
     def __str__(self):
         return "LFRecord(Length: %d) at 0x%x" % (self._keys_len(), self.offset())
 
@@ -685,7 +693,6 @@ class LHRecord(DirectSubkeyList):
         _id = self.unpack_string(0x0, 2)
         if _id != "lh":
             raise ParseException("Invalid LH Record ID")
-
 
     def __str__(self):
         return "LHRecord(Length: %d) at 0x%x" % (self._keys_len(), self.offset())
@@ -791,7 +798,7 @@ class NKRecord(Record):
 
         # TODO be careful here in setting the parent of the HBINCell
         d = HBINCell(self._buf, offset, self.parent())
-        return NKRecord(self._buf, d.data_offset(), d)
+        return NKRecord(self._buf, d.data_offset(), self.parent())
 
     def sk_record(self):
         """
@@ -851,7 +858,9 @@ class HBINBlock(RegistryBlock):
         Arguments:
         - `buf`: Byte string containing Windows Registry file.
         - `offset`: The offset into the buffer at which the block starts.
-        - `parent`: The parent block, which links to this block.
+        - `parent`: The parent block, which links to this block. The parent of the first HBINBlock
+        should be the REGFBlock, and the parents of other HBINBlocks should be the preceeding 
+        HBINBlocks.
         """
         super(HBINBlock, self).__init__(buf, offset, parent)
 
@@ -873,7 +882,10 @@ class HBINBlock(RegistryBlock):
         """
         Does another HBIN exist after this one?
         """
-        # consider also using self.parent().last_hbin_offset() == self.offset()
+        regf = self.first_hbin().parent()
+        if regf.last_hbin_offset() == self.offset():
+            return False
+        
         try:
             HBINBlock(self._buf, self._offset_next_hbin, self.parent())
             return True
@@ -932,7 +944,10 @@ class HBINBlock(RegistryBlock):
                 r = DataRecord(self._buf, c.data_offset(), self)
 
             yield r
-            c = c.next()
+            try:
+                c = c.next()
+            except RegistryStructureDoesNotExist:
+                break
 
 class Registry(object):
     """
@@ -958,9 +973,16 @@ class Registry(object):
             for c in h.records():
                 if c.__class__.__name__ == "NKRecord" and c.values_number() > 0:
                     n = c
-                print "\t%s" % (c)
+                try:
+                    print "\t%s" % (c)
+                except UnknownTypeException as e:
+                    print e
+                    continue
 
         print "---"
+
+        if not n:
+            return
 
         m = n
         print m        
