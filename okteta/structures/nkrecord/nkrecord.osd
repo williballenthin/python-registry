@@ -8,7 +8,7 @@
     <primitive name="parent_key_offset" type="UInt32" />     <!-- 0x10 -->
     <primitive name="subkey_number" type="UInt32" />         <!-- 0x14 -->
     <primitive name="trash" type="UInt32" />     
-    <primitive name="subkey_lf_offset" type="UInt32" />      <!-- 0x1C -->
+    <primitive name="subkey_offset" type="UInt32" />         <!-- 0x1C -->
     <primitive name="trash" type="UInt32" />     
     <primitive name="values_number" type="UInt32" />         <!-- 0x24 -->
     <primitive name="value_list_offset" type="UInt32" />     <!-- 0x28 -->
