@@ -378,7 +378,29 @@ class HBINCell(RegistryBlock):
             h = h.parent()
             
         return h.first_hbin().offset() + offset
-        
+
+    def child(self):
+        if self.is_free():
+            raise RegistryStructureDoesNotExist("HBINCell is free at 0x%x" % (self.offset()))
+
+        id_ = self.data_id()
+
+        if id_ == "vk":
+            return VKRecord(self._buf, self.data_offset(), self)
+        elif id_ == "nk":
+            return NKRecord(self._buf, self.data_offset(), self)
+        elif id_ == "lf":
+            return LFRecord(self._buf, self.data_offset(), self)
+        elif id_ == "lh":
+            return LHRecord(self._buf, self.data_offset(), self)
+        elif id_ == "li":
+            return LIRecord(self._buf, self.data_offset(), self)
+        elif id_ == "ri":
+            return RIRecord(self._buf, self.data_offset(), self)
+        elif id_ == "sk":
+            return SKRecord(self._buf, self.data_offset(), self)
+        else:
+            return DataRecord(self._buf, self.data_offset(), self)
 
 class Record(RegistryBlock):
     """
@@ -750,24 +772,11 @@ class RIRecord(SubkeyList):
 
     def keys(self):
         d = HBINCell(self._buf, self.abs_offset_from_hbin_offset(self.unpack_dword(0x8)), self)
-        id_ = d.data_id()
 
-        # TODO this violates DRY, with the same parsing code found in NKRecord.subkey_list()
-        # the fix may be multiple inheritance...
-        # alternatively, HBINCell could have a .parse() method that attempts to return the structure it contains
-        if id_ == "lf":
-            l = LFRecord(self._buf, d.data_offset(), self)
-        elif id_ == "lh":
-            l = LHRecord(self._buf, d.data_offset(), self)
-        elif id_ == "ri":
-            l = RIRecord(self._buf, d.data_offset(), self)
-        elif id_ == "li":
-            l = LIRecord(self._buf, d.data_offset(), self)
-        else:
-            print id_ + " subkey list"
-            raise ParseException("Subkey list with type %s encountered, but not yet supported." % (id_))
-
-        return l.keys()
+        try:
+            return d.child().keys()
+        except RegistryStructureDoesNotExist:
+            raise ParseException("Unsupported subkey list encountered.")
 
 class LIRecord(SubkeyList):
     """
@@ -782,7 +791,14 @@ class LIRecord(SubkeyList):
 
     def keys(self):
         d = HBINCell(self._buf, self.abs_offset_from_hbin_offset(self.unpack_dword(0x4)), self)
-        return [NKRecord(self._buf, d.data_offset(), self)]
+
+        if d.data_id() != "nk":
+            raise ParseException("Unexpected subkey structure encountered.")
+
+        try:
+            return [d.child()]
+        except RegistryStructureDoesNotExist:
+            raise ParseException("Unable to parse subkey.")
 
 class DirectSubkeyList(SubkeyList):
     def __init__(self, buf, offset, parent):
@@ -809,7 +825,6 @@ class DirectSubkeyList(SubkeyList):
 
         for _ in range(0, self._keys_len()):
             key_offset = self.abs_offset_from_hbin_offset(self.unpack_dword(key_index))
-            #key_hash = self.unpack_dword(key_index + 0x4)
             
             d = HBINCell(self._buf, key_offset, self)
             yield NKRecord(self._buf, d.data_offset(), self)
@@ -1095,34 +1110,7 @@ class HBINBlock(RegistryBlock):
         c = HBINCell(self._buf, self._offset + 0x20, self)
 
         while c.offset() < self._offset_next_hbin:
-            if c.is_free():
-                r = c
-            elif c.data_id() == "vk":
-                r = VKRecord(self._buf, c.data_offset(), self)
-
-            elif c.data_id() == "nk":
-                r = NKRecord(self._buf, c.data_offset(), self)
-
-            elif c.data_id() == "lf":
-                r = LFRecord(self._buf, c.data_offset(), self)
-
-            elif c.data_id() == "lh":
-                r = LHRecord(self._buf, c.data_offset(), self)
-
-            elif c.data_id() == "li":
-                r = c
-                print "li record encountered. This is not yet implemented, due to lack of testing samples."
-
-            elif c.data_id() == "ri":
-                # TODO consider making an RIRecord class
-                r = c
-
-            elif c.data_id() == "sk":
-                r = SKRecord(self._buf, c.data_offset(), self)
-            else:
-                r = DataRecord(self._buf, c.data_offset(), self)
-
-            yield r
+            yield c
             try:
                 c = c.next()
             except RegistryStructureDoesNotExist:
@@ -1171,6 +1159,9 @@ class RegistryKey(object):
         return self._nkrecord.path()
 
     def parent(self):
+        # there may be a memory inefficiency here, since we create
+        # a new RegistryKey from the NKRecord parent key, rather
+        # than using the parent of this instance, if it exists.
         try:
             return self._nkrecord.parent_key()
         except ParseException:
@@ -1300,5 +1291,6 @@ def recurse_key(key):
 
 if __name__ == '__main__':
     r = Registry(sys.argv[1])
+#    r.test()
     recurse_key(r.root())
 #    print r.open("Windows\\CurrentVersion")
