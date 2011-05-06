@@ -761,11 +761,28 @@ class RIRecord(SubkeyList):
             l = LHRecord(self._buf, d.data_offset(), self)
         elif id_ == "ri":
             l = RIRecord(self._buf, d.data_offset(), self)
+        elif id_ == "li":
+            l = LIRecord(self._buf, d.data_offset(), self)
         else:
             print id_ + " subkey list"
             raise ParseException("Subkey list with type %s encountered, but not yet supported." % (id_))
 
         return l.keys()
+
+class LIRecord(SubkeyList):
+    """
+    """
+    def __init__(self, buf, offset, parent):
+        """
+        """
+        super(LIRecord, self).__init__(buf, offset, parent)
+
+    def __str__(self):
+        return "LIRecord(Length: %d) at 0x%x" % (1, self.offset())
+
+    def keys(self):
+        d = HBINCell(self._buf, self.abs_offset_from_hbin_offset(self.unpack_dword(0x4)), self)
+        return [NKRecord(self._buf, d.data_offset(), self)]
 
 class DirectSubkeyList(SubkeyList):
     def __init__(self, buf, offset, parent):
@@ -998,6 +1015,8 @@ class NKRecord(Record):
             l = LHRecord(self._buf, d.data_offset(), self)
         elif id_ == "ri":
             l = RIRecord(self._buf, d.data_offset(), self)
+        elif id_ == "li":
+            l = LIRecord(self._buf, d.data_offset(), self)
         else:
             print id_ + " subkey list"
             raise ParseException("Subkey list with type %s encountered, but not yet supported." % (id_))
