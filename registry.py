@@ -1,5 +1,6 @@
 #!/bin/python
 import sys, struct
+from datetime import datetime
 
 # TODO:
 #
@@ -19,6 +20,10 @@ RegLink = 0x0006
 RegResourceList = 0x0008
 RegFullResourceDescriptor = 0x0009
 RegResourceRequirementsList = 0x000A
+
+def parse_windows_timestamp(qword):
+    # see http://integriography.wordpress.com/2010/01/16/using-phython-to-parse-and-present-windows-64-bit-timestamps/
+    return datetime.utcfromtimestamp(float(qword) * 1e-7 - 11644473600 )
 
 class RegistryException(Exception):
     """
@@ -253,8 +258,6 @@ class REGFBlock(RegistryBlock):
 
         #_ts = self.unpack_qword(0xC)
         
-
-
         # TODO: compute checksum and check
 
     def major_version(self):
@@ -928,6 +931,9 @@ class NKRecord(Record):
         d = HBINCell(self._buf, offset, self)
         return struct.unpack_from("<%ds" % (classname_length), self._buf, d.data_offset())[0]
 
+    def timestamp(self):
+        return parse_windows_timestamp(self.unpack_qword(0x4))
+
     def name(self):
         """
         Return the registry key name as a string.
@@ -1149,6 +1155,9 @@ class RegistryKey(object):
     def __getitem__(self, key):
         return self.value(key)
 
+    def timestamp(self):
+        return self._nkrecord.timestamp()
+
     def name(self):
         if self._nkrecord.has_name():
             return self._nkrecord.name()
@@ -1291,6 +1300,7 @@ def recurse_key(key):
 
 if __name__ == '__main__':
     r = Registry(sys.argv[1])
+    print r.root().timestamp()
 #    r.test()
-    recurse_key(r.root())
+#    recurse_key(r.root())
 #    print r.open("Windows\\CurrentVersion")
