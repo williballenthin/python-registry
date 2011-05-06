@@ -285,7 +285,6 @@ class REGFBlock(RegistryBlock):
         first_hbin = self.hbins().next()
         
         key_offset = first_hbin.absolute_offset(self.unpack_dword(0x24))
-        print hex(key_offset)
 
         d = HBINCell(self._buf, key_offset, first_hbin)
         return NKRecord(self._buf, d.data_offset(), first_hbin)
@@ -941,7 +940,16 @@ class NKRecord(Record):
         d = HBINCell(self._buf, values_list_offset, self)
         return ValuesList(self._buf, d.data_offset(), self, self.values_number())
 
+    def subkey_number(self):
+        number = self.unpack_dword(0x14)
+        if number == 0xFFFFFFFF:
+            return 0
+        return number
+
     def subkey_list(self):
+        if self.subkey_number() == 0:
+            raise RegistryStructureDoesNotExist("NKRecord has no subkey list at 0x%x" % (self.offset()))
+
         subkey_list_offset = self.abs_offset_from_hbin_offset(self.unpack_dword(0x1C))
 
         d = HBINCell(self._buf, subkey_list_offset, self)
@@ -1111,10 +1119,16 @@ class RegistryKey(object):
             raise RegistryKeyHasNoParentException(self.name())
 
     def subkeys(self):
+        if self._nkrecord.subkey_number() == 0:
+            return []
+
         l = self._nkrecord.subkey_list()
         return [RegistryKey(k) for k in l.keys()]
 
     def subkey(self, name):
+        if self._nkrecord.subkey_number() == 0:
+            raise RegistryKeyNotFoundException(self.path() + "/" + name)
+
         for k in self._nkrecord.subkey_list():
             if k.name() == name:
                 return RegistryKey(k)
@@ -1200,5 +1214,6 @@ class Registry(object):
 
 if __name__ == '__main__':
     r = Registry(sys.argv[1])
-    for k in  r.root().subkeys():
+    for k in r.root().subkeys():
         print k
+        break
