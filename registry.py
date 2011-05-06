@@ -873,11 +873,11 @@ class NKRecord(Record):
         name = ""
         p = self
 
-        name = "/" + name
+        name = "\\" + name
         name = p.name()
         while p.has_parent_key():
             p = p.parent_key()
-            name = p.name() + "/" + name
+            name = p.name() + "\\" + name
         return name
 
     def is_root(self):
@@ -959,6 +959,18 @@ class NKRecord(Record):
             l = LFRecord(self._buf, d.data_offset(), self)
         elif id_ == "lh":
             l = LHRecord(self._buf, d.data_offset(), self)
+        elif id_ == "ri":
+            # assume there is only one level of indirection with RIRecords
+            d2 = HBINCell(self._buf, 
+                          self.abs_offset_from_hbin_offset(d.unpack_dword(0x8)), self)
+            id2 = d2.data_id()
+            if id2 == "lf":
+                l = LFRecord(self._buf, d2.data_offset(), d2)
+            elif id2 == "lh":
+                l = LHRecord(self._buf, d2.data_offset(), d2)
+            else:
+                print id2 + " subkey list"
+                raise ParseException("Subkey list with type %s encountered, but not yet supported." % (id_))
         else:
             print id_ + " subkey list"
             raise ParseException("Subkey list with type %s encountered, but not yet supported." % (id_))
@@ -1127,12 +1139,12 @@ class RegistryKey(object):
 
     def subkey(self, name):
         if self._nkrecord.subkey_number() == 0:
-            raise RegistryKeyNotFoundException(self.path() + "/" + name)
+            raise RegistryKeyNotFoundException(self.path() + "\\" + name)
 
         for k in self._nkrecord.subkey_list():
             if k.name() == name:
                 return RegistryKey(k)
-        raise RegistryKeyNotFoundException(self.path() + "/" + name)
+        raise RegistryKeyNotFoundException(self.path() + "\\" + name)
 
     def values(self):
         try:
@@ -1216,4 +1228,4 @@ if __name__ == '__main__':
     r = Registry(sys.argv[1])
     for k in r.root().subkeys():
         print k
-        break
+
