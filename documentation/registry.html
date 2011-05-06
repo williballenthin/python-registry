@@ -1,0 +1,1759 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module registry</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>registry</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/willi/Desktop/registry/registry.py">/home/willi/Desktop/registry/registry.py</a></font></td></tr></table>
+    <p></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="struct.html">struct</a><br>
+</td><td width="25%" valign=top><a href="sys.html">sys</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="registry.html#Registry">Registry</a>
+</font></dt><dt><font face="helvetica, arial"><a href="registry.html#RegistryBlock">RegistryBlock</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="registry.html#HBINBlock">HBINBlock</a>
+</font></dt><dt><font face="helvetica, arial"><a href="registry.html#HBINCell">HBINCell</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="registry.html#ValuesList">ValuesList</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="registry.html#REGFBlock">REGFBlock</a>
+</font></dt><dt><font face="helvetica, arial"><a href="registry.html#Record">Record</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="registry.html#DataRecord">DataRecord</a>
+</font></dt><dt><font face="helvetica, arial"><a href="registry.html#NKRecord">NKRecord</a>
+</font></dt><dt><font face="helvetica, arial"><a href="registry.html#SKRecord">SKRecord</a>
+</font></dt><dt><font face="helvetica, arial"><a href="registry.html#SubkeyList">SubkeyList</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="registry.html#DirectSubkeyList">DirectSubkeyList</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="registry.html#LFRecord">LFRecord</a>
+</font></dt><dt><font face="helvetica, arial"><a href="registry.html#LHRecord">LHRecord</a>
+</font></dt></dl>
+</dd>
+</dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="registry.html#VKRecord">VKRecord</a>
+</font></dt></dl>
+</dd>
+</dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="registry.html#RegistryKey">RegistryKey</a>
+</font></dt><dt><font face="helvetica, arial"><a href="registry.html#RegistryValue">RegistryValue</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="exceptions.html#Exception">exceptions.Exception</a>(<a href="exceptions.html#BaseException">exceptions.BaseException</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="registry.html#RegistryException">RegistryException</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="registry.html#ParseException">ParseException</a>
+</font></dt><dt><font face="helvetica, arial"><a href="registry.html#RegistryStructureDoesNotExist">RegistryStructureDoesNotExist</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="registry.html#RegistryKeyHasNoParentException">RegistryKeyHasNoParentException</a>
+</font></dt><dt><font face="helvetica, arial"><a href="registry.html#RegistryKeyNotFoundException">RegistryKeyNotFoundException</a>
+</font></dt><dt><font face="helvetica, arial"><a href="registry.html#RegistryValueNotFoundException">RegistryValueNotFoundException</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="registry.html#UnknownTypeException">UnknownTypeException</a>
+</font></dt></dl>
+</dd>
+</dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="DataRecord">class <strong>DataRecord</strong></a>(<a href="registry.html#Record">Record</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>A&nbsp;<a href="#DataRecord">DataRecord</a>&nbsp;is&nbsp;a&nbsp;<a href="#HBINCell">HBINCell</a>&nbsp;that&nbsp;does&nbsp;not&nbsp;contain&nbsp;any&nbsp;further&nbsp;structural&nbsp;data,&nbsp;but&nbsp;<br>
+may&nbsp;contain,&nbsp;for&nbsp;example,&nbsp;the&nbsp;values&nbsp;pointed&nbsp;to&nbsp;by&nbsp;a&nbsp;<a href="#VKRecord">VKRecord</a>.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="registry.html#DataRecord">DataRecord</a></dd>
+<dd><a href="registry.html#Record">Record</a></dd>
+<dd><a href="registry.html#RegistryBlock">RegistryBlock</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="DataRecord-__init__"><strong>__init__</strong></a>(self, buf, offset, parent)</dt><dd><tt>Constructor.<br>
+&nbsp;<br>
+Arguments:<br>
+-&nbsp;`buf`:&nbsp;Byte&nbsp;string&nbsp;containing&nbsp;Windows&nbsp;<a href="#Registry">Registry</a>&nbsp;file.<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;offset&nbsp;into&nbsp;the&nbsp;buffer&nbsp;at&nbsp;which&nbsp;the&nbsp;block&nbsp;starts.<br>
+-&nbsp;`parent`:&nbsp;The&nbsp;parent&nbsp;block,&nbsp;which&nbsp;links&nbsp;to&nbsp;this&nbsp;block.&nbsp;This&nbsp;should&nbsp;be&nbsp;an&nbsp;<a href="#HBINCell">HBINCell</a>.</tt></dd></dl>
+
+<dl><dt><a name="DataRecord-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Methods inherited from <a href="registry.html#Record">Record</a>:<br>
+<dl><dt><a name="DataRecord-abs_offset_from_hbin_offset"><strong>abs_offset_from_hbin_offset</strong></a>(self, offset)</dt><dd><tt>Offsets&nbsp;contained&nbsp;in&nbsp;HBIN&nbsp;cells&nbsp;are&nbsp;relative&nbsp;to&nbsp;the&nbsp;beginning&nbsp;of&nbsp;the&nbsp;first&nbsp;HBIN.<br>
+This&nbsp;converts&nbsp;the&nbsp;relative&nbsp;offset&nbsp;into&nbsp;an&nbsp;absolute&nbsp;offset.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="registry.html#RegistryBlock">RegistryBlock</a>:<br>
+<dl><dt><a name="DataRecord-absolute_offset"><strong>absolute_offset</strong></a>(self, offset)</dt><dd><tt>Get&nbsp;the&nbsp;absolute&nbsp;offset&nbsp;from&nbsp;an&nbsp;offset&nbsp;relative&nbsp;to&nbsp;this&nbsp;block<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;into&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="DataRecord-offset"><strong>offset</strong></a>(self)</dt><dd><tt>Equivalent&nbsp;to&nbsp;<a href="#DataRecord-absolute_offset">absolute_offset</a>(0x0),&nbsp;which&nbsp;is&nbsp;the&nbsp;starting&nbsp;offset&nbsp;of&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="DataRecord-parent"><strong>parent</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;parent&nbsp;block.&nbsp;See&nbsp;the&nbsp;class&nbsp;documentation&nbsp;for&nbsp;what&nbsp;the&nbsp;parent&nbsp;link&nbsp;is.</tt></dd></dl>
+
+<dl><dt><a name="DataRecord-unpack_dword"><strong>unpack_dword</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;DWORD&nbsp;(4&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="DataRecord-unpack_int"><strong>unpack_int</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;signed&nbsp;integer&nbsp;(4&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="DataRecord-unpack_qword"><strong>unpack_qword</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;QWORD&nbsp;(8&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="DataRecord-unpack_string"><strong>unpack_string</strong></a>(self, offset, length)</dt><dd><tt>Returns&nbsp;a&nbsp;string&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset&nbsp;with&nbsp;the&nbsp;given&nbsp;length.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.<br>
+-&nbsp;`length`:&nbsp;The&nbsp;length&nbsp;of&nbsp;the&nbsp;string.</tt></dd></dl>
+
+<dl><dt><a name="DataRecord-unpack_word"><strong>unpack_word</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;WORD&nbsp;(2&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="registry.html#RegistryBlock">RegistryBlock</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="DirectSubkeyList">class <strong>DirectSubkeyList</strong></a>(<a href="registry.html#SubkeyList">SubkeyList</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="registry.html#DirectSubkeyList">DirectSubkeyList</a></dd>
+<dd><a href="registry.html#SubkeyList">SubkeyList</a></dd>
+<dd><a href="registry.html#Record">Record</a></dd>
+<dd><a href="registry.html#RegistryBlock">RegistryBlock</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="DirectSubkeyList-__init__"><strong>__init__</strong></a>(self, buf, offset, parent)</dt><dd><tt>Constructor.<br>
+Arguments:<br>
+-&nbsp;`buf`:&nbsp;Byte&nbsp;string&nbsp;containing&nbsp;Windows&nbsp;<a href="#Registry">Registry</a>&nbsp;file.<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;offset&nbsp;into&nbsp;the&nbsp;buffer&nbsp;at&nbsp;which&nbsp;the&nbsp;block&nbsp;starts.<br>
+-&nbsp;`parent`:&nbsp;The&nbsp;parent&nbsp;block,&nbsp;which&nbsp;links&nbsp;to&nbsp;this&nbsp;block.&nbsp;The&nbsp;parent&nbsp;of&nbsp;a&nbsp;<a href="#SubkeyList">SubkeyList</a>&nbsp;SHOULD&nbsp;be&nbsp;a&nbsp;<a href="#NKRecord">NKRecord</a>.</tt></dd></dl>
+
+<dl><dt><a name="DirectSubkeyList-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="DirectSubkeyList-keys"><strong>keys</strong></a>(self)</dt><dd><tt>A&nbsp;generator&nbsp;that&nbsp;yields&nbsp;the&nbsp;NKRecords&nbsp;referenced&nbsp;by&nbsp;this&nbsp;list.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="registry.html#Record">Record</a>:<br>
+<dl><dt><a name="DirectSubkeyList-abs_offset_from_hbin_offset"><strong>abs_offset_from_hbin_offset</strong></a>(self, offset)</dt><dd><tt>Offsets&nbsp;contained&nbsp;in&nbsp;HBIN&nbsp;cells&nbsp;are&nbsp;relative&nbsp;to&nbsp;the&nbsp;beginning&nbsp;of&nbsp;the&nbsp;first&nbsp;HBIN.<br>
+This&nbsp;converts&nbsp;the&nbsp;relative&nbsp;offset&nbsp;into&nbsp;an&nbsp;absolute&nbsp;offset.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="registry.html#RegistryBlock">RegistryBlock</a>:<br>
+<dl><dt><a name="DirectSubkeyList-absolute_offset"><strong>absolute_offset</strong></a>(self, offset)</dt><dd><tt>Get&nbsp;the&nbsp;absolute&nbsp;offset&nbsp;from&nbsp;an&nbsp;offset&nbsp;relative&nbsp;to&nbsp;this&nbsp;block<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;into&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="DirectSubkeyList-offset"><strong>offset</strong></a>(self)</dt><dd><tt>Equivalent&nbsp;to&nbsp;<a href="#DirectSubkeyList-absolute_offset">absolute_offset</a>(0x0),&nbsp;which&nbsp;is&nbsp;the&nbsp;starting&nbsp;offset&nbsp;of&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="DirectSubkeyList-parent"><strong>parent</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;parent&nbsp;block.&nbsp;See&nbsp;the&nbsp;class&nbsp;documentation&nbsp;for&nbsp;what&nbsp;the&nbsp;parent&nbsp;link&nbsp;is.</tt></dd></dl>
+
+<dl><dt><a name="DirectSubkeyList-unpack_dword"><strong>unpack_dword</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;DWORD&nbsp;(4&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="DirectSubkeyList-unpack_int"><strong>unpack_int</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;signed&nbsp;integer&nbsp;(4&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="DirectSubkeyList-unpack_qword"><strong>unpack_qword</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;QWORD&nbsp;(8&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="DirectSubkeyList-unpack_string"><strong>unpack_string</strong></a>(self, offset, length)</dt><dd><tt>Returns&nbsp;a&nbsp;string&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset&nbsp;with&nbsp;the&nbsp;given&nbsp;length.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.<br>
+-&nbsp;`length`:&nbsp;The&nbsp;length&nbsp;of&nbsp;the&nbsp;string.</tt></dd></dl>
+
+<dl><dt><a name="DirectSubkeyList-unpack_word"><strong>unpack_word</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;WORD&nbsp;(2&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="registry.html#RegistryBlock">RegistryBlock</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="HBINBlock">class <strong>HBINBlock</strong></a>(<a href="registry.html#RegistryBlock">RegistryBlock</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>An&nbsp;<a href="#HBINBlock">HBINBlock</a>&nbsp;is&nbsp;the&nbsp;basic&nbsp;allocation&nbsp;block&nbsp;of&nbsp;the&nbsp;Windows&nbsp;<a href="#Registry">Registry</a>.<br>
+It&nbsp;has&nbsp;a&nbsp;length&nbsp;of&nbsp;0x1000.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="registry.html#HBINBlock">HBINBlock</a></dd>
+<dd><a href="registry.html#RegistryBlock">RegistryBlock</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="HBINBlock-__init__"><strong>__init__</strong></a>(self, buf, offset, parent)</dt><dd><tt>Constructor.<br>
+Arguments:<br>
+-&nbsp;`buf`:&nbsp;Byte&nbsp;string&nbsp;containing&nbsp;Windows&nbsp;<a href="#Registry">Registry</a>&nbsp;file.<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;offset&nbsp;into&nbsp;the&nbsp;buffer&nbsp;at&nbsp;which&nbsp;the&nbsp;block&nbsp;starts.<br>
+-&nbsp;`parent`:&nbsp;The&nbsp;parent&nbsp;block,&nbsp;which&nbsp;links&nbsp;to&nbsp;this&nbsp;block.&nbsp;The&nbsp;parent&nbsp;of&nbsp;the&nbsp;first&nbsp;<a href="#HBINBlock">HBINBlock</a><br>
+should&nbsp;be&nbsp;the&nbsp;<a href="#REGFBlock">REGFBlock</a>,&nbsp;and&nbsp;the&nbsp;parents&nbsp;of&nbsp;other&nbsp;HBINBlocks&nbsp;should&nbsp;be&nbsp;the&nbsp;preceeding&nbsp;<br>
+HBINBlocks.</tt></dd></dl>
+
+<dl><dt><a name="HBINBlock-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="HBINBlock-cells"><strong>cells</strong></a>(self)</dt><dd><tt>Get&nbsp;a&nbsp;generator&nbsp;that&nbsp;yields&nbsp;each&nbsp;<a href="#HBINCell">HBINCell</a>&nbsp;contained&nbsp;in&nbsp;this&nbsp;HBIN.</tt></dd></dl>
+
+<dl><dt><a name="HBINBlock-first_hbin"><strong>first_hbin</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;first&nbsp;<a href="#HBINBlock">HBINBlock</a>.</tt></dd></dl>
+
+<dl><dt><a name="HBINBlock-has_next"><strong>has_next</strong></a>(self)</dt><dd><tt>Does&nbsp;another&nbsp;HBIN&nbsp;exist&nbsp;after&nbsp;this&nbsp;one?</tt></dd></dl>
+
+<dl><dt><a name="HBINBlock-next"><strong>next</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;next&nbsp;HBIN&nbsp;after&nbsp;this&nbsp;one.&nbsp;<br>
+Note:&nbsp;This&nbsp;will&nbsp;blindly&nbsp;attempts&nbsp;to&nbsp;create&nbsp;it&nbsp;regardless&nbsp;of&nbsp;if&nbsp;it&nbsp;exists.</tt></dd></dl>
+
+<dl><dt><a name="HBINBlock-records"><strong>records</strong></a>(self)</dt><dd><tt>Get&nbsp;a&nbsp;generator&nbsp;that&nbsp;yields&nbsp;each&nbsp;<a href="#Record">Record</a>&nbsp;or&nbsp;Cell&nbsp;contained&nbsp;in&nbsp;this&nbsp;HBIN.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="registry.html#RegistryBlock">RegistryBlock</a>:<br>
+<dl><dt><a name="HBINBlock-absolute_offset"><strong>absolute_offset</strong></a>(self, offset)</dt><dd><tt>Get&nbsp;the&nbsp;absolute&nbsp;offset&nbsp;from&nbsp;an&nbsp;offset&nbsp;relative&nbsp;to&nbsp;this&nbsp;block<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;into&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="HBINBlock-offset"><strong>offset</strong></a>(self)</dt><dd><tt>Equivalent&nbsp;to&nbsp;<a href="#HBINBlock-absolute_offset">absolute_offset</a>(0x0),&nbsp;which&nbsp;is&nbsp;the&nbsp;starting&nbsp;offset&nbsp;of&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="HBINBlock-parent"><strong>parent</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;parent&nbsp;block.&nbsp;See&nbsp;the&nbsp;class&nbsp;documentation&nbsp;for&nbsp;what&nbsp;the&nbsp;parent&nbsp;link&nbsp;is.</tt></dd></dl>
+
+<dl><dt><a name="HBINBlock-unpack_dword"><strong>unpack_dword</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;DWORD&nbsp;(4&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="HBINBlock-unpack_int"><strong>unpack_int</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;signed&nbsp;integer&nbsp;(4&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="HBINBlock-unpack_qword"><strong>unpack_qword</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;QWORD&nbsp;(8&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="HBINBlock-unpack_string"><strong>unpack_string</strong></a>(self, offset, length)</dt><dd><tt>Returns&nbsp;a&nbsp;string&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset&nbsp;with&nbsp;the&nbsp;given&nbsp;length.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.<br>
+-&nbsp;`length`:&nbsp;The&nbsp;length&nbsp;of&nbsp;the&nbsp;string.</tt></dd></dl>
+
+<dl><dt><a name="HBINBlock-unpack_word"><strong>unpack_word</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;WORD&nbsp;(2&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="registry.html#RegistryBlock">RegistryBlock</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="HBINCell">class <strong>HBINCell</strong></a>(<a href="registry.html#RegistryBlock">RegistryBlock</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>HBIN&nbsp;data&nbsp;cell.&nbsp;An&nbsp;<a href="#HBINBlock">HBINBlock</a>&nbsp;is&nbsp;continuously&nbsp;filled&nbsp;with&nbsp;<a href="#HBINCell">HBINCell</a>&nbsp;structures.<br>
+The&nbsp;general&nbsp;structure&nbsp;is&nbsp;the&nbsp;length&nbsp;of&nbsp;the&nbsp;block,&nbsp;followed&nbsp;by&nbsp;a&nbsp;blob&nbsp;of&nbsp;data.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="registry.html#HBINCell">HBINCell</a></dd>
+<dd><a href="registry.html#RegistryBlock">RegistryBlock</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="HBINCell-__init__"><strong>__init__</strong></a>(self, buf, offset, parent)</dt><dd><tt>Constructor.<br>
+Arguments:<br>
+-&nbsp;`buf`:&nbsp;Byte&nbsp;string&nbsp;containing&nbsp;Windows&nbsp;<a href="#Registry">Registry</a>&nbsp;file.<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;offset&nbsp;into&nbsp;the&nbsp;buffer&nbsp;at&nbsp;which&nbsp;the&nbsp;block&nbsp;starts.<br>
+-&nbsp;`parent`:&nbsp;The&nbsp;parent&nbsp;block,&nbsp;which&nbsp;links&nbsp;to&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="HBINCell-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="HBINCell-abs_offset_from_hbin_offset"><strong>abs_offset_from_hbin_offset</strong></a>(self, offset)</dt><dd><tt>Offsets&nbsp;contained&nbsp;in&nbsp;HBIN&nbsp;cells&nbsp;are&nbsp;relative&nbsp;to&nbsp;the&nbsp;beginning&nbsp;of&nbsp;the&nbsp;first&nbsp;HBIN.<br>
+This&nbsp;converts&nbsp;the&nbsp;relative&nbsp;offset&nbsp;into&nbsp;an&nbsp;absolute&nbsp;offset.</tt></dd></dl>
+
+<dl><dt><a name="HBINCell-data_id"><strong>data_id</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;ID&nbsp;string&nbsp;of&nbsp;the&nbsp;data&nbsp;block&nbsp;of&nbsp;this&nbsp;<a href="#HBINCell">HBINCell</a>.</tt></dd></dl>
+
+<dl><dt><a name="HBINCell-data_offset"><strong>data_offset</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;absolute&nbsp;offset&nbsp;of&nbsp;the&nbsp;data&nbsp;block&nbsp;of&nbsp;this&nbsp;<a href="#HBINCell">HBINCell</a>.</tt></dd></dl>
+
+<dl><dt><a name="HBINCell-is_free"><strong>is_free</strong></a>(self)</dt><dd><tt>Is&nbsp;the&nbsp;cell&nbsp;free?</tt></dd></dl>
+
+<dl><dt><a name="HBINCell-next"><strong>next</strong></a>(self)</dt><dd><tt>Returns&nbsp;the&nbsp;next&nbsp;<a href="#HBINCell">HBINCell</a>,&nbsp;which&nbsp;is&nbsp;located&nbsp;immediately&nbsp;after&nbsp;this.<br>
+Note:&nbsp;This&nbsp;will&nbsp;always&nbsp;return&nbsp;an&nbsp;<a href="#HBINCell">HBINCell</a>&nbsp;starting&nbsp;at&nbsp;the&nbsp;next&nbsp;location<br>
+whether&nbsp;or&nbsp;not&nbsp;the&nbsp;buffer&nbsp;is&nbsp;large&nbsp;enough.&nbsp;The&nbsp;calling&nbsp;function&nbsp;should&nbsp;<br>
+check&nbsp;the&nbsp;offset&nbsp;of&nbsp;the&nbsp;next&nbsp;<a href="#HBINCell">HBINCell</a>&nbsp;to&nbsp;ensure&nbsp;it&nbsp;does&nbsp;not&nbsp;overrun&nbsp;the<br>
+HBIN&nbsp;buffer.</tt></dd></dl>
+
+<dl><dt><a name="HBINCell-offset"><strong>offset</strong></a>(self)</dt><dd><tt>Accessor&nbsp;for&nbsp;absolute&nbsp;offset&nbsp;of&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="HBINCell-size"><strong>size</strong></a>(self)</dt><dd><tt>Size&nbsp;of&nbsp;this&nbsp;cell,&nbsp;as&nbsp;an&nbsp;unsigned&nbsp;integer.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="registry.html#RegistryBlock">RegistryBlock</a>:<br>
+<dl><dt><a name="HBINCell-absolute_offset"><strong>absolute_offset</strong></a>(self, offset)</dt><dd><tt>Get&nbsp;the&nbsp;absolute&nbsp;offset&nbsp;from&nbsp;an&nbsp;offset&nbsp;relative&nbsp;to&nbsp;this&nbsp;block<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;into&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="HBINCell-parent"><strong>parent</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;parent&nbsp;block.&nbsp;See&nbsp;the&nbsp;class&nbsp;documentation&nbsp;for&nbsp;what&nbsp;the&nbsp;parent&nbsp;link&nbsp;is.</tt></dd></dl>
+
+<dl><dt><a name="HBINCell-unpack_dword"><strong>unpack_dword</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;DWORD&nbsp;(4&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="HBINCell-unpack_int"><strong>unpack_int</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;signed&nbsp;integer&nbsp;(4&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="HBINCell-unpack_qword"><strong>unpack_qword</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;QWORD&nbsp;(8&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="HBINCell-unpack_string"><strong>unpack_string</strong></a>(self, offset, length)</dt><dd><tt>Returns&nbsp;a&nbsp;string&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset&nbsp;with&nbsp;the&nbsp;given&nbsp;length.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.<br>
+-&nbsp;`length`:&nbsp;The&nbsp;length&nbsp;of&nbsp;the&nbsp;string.</tt></dd></dl>
+
+<dl><dt><a name="HBINCell-unpack_word"><strong>unpack_word</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;WORD&nbsp;(2&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="registry.html#RegistryBlock">RegistryBlock</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="LFRecord">class <strong>LFRecord</strong></a>(<a href="registry.html#DirectSubkeyList">DirectSubkeyList</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>The&nbsp;<a href="#LFRecord">LFRecord</a>&nbsp;is&nbsp;a&nbsp;simple&nbsp;structure&nbsp;containing&nbsp;a&nbsp;list&nbsp;of&nbsp;offsets/pointers&nbsp;to&nbsp;subkey&nbsp;NKRecords.<br>
+The&nbsp;<a href="#LFRecord">LFRecord</a>&nbsp;also&nbsp;contains&nbsp;a&nbsp;hash&nbsp;for&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;subkey&nbsp;pointed&nbsp;to&nbsp;by&nbsp;the&nbsp;offset,&nbsp;which&nbsp;enables<br>
+more&nbsp;efficient&nbsp;seaching&nbsp;of&nbsp;the&nbsp;<a href="#Registry">Registry</a>&nbsp;tree.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="registry.html#LFRecord">LFRecord</a></dd>
+<dd><a href="registry.html#DirectSubkeyList">DirectSubkeyList</a></dd>
+<dd><a href="registry.html#SubkeyList">SubkeyList</a></dd>
+<dd><a href="registry.html#Record">Record</a></dd>
+<dd><a href="registry.html#RegistryBlock">RegistryBlock</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="LFRecord-__init__"><strong>__init__</strong></a>(self, buf, offset, parent)</dt><dd><tt>Constructor.<br>
+Arguments:<br>
+-&nbsp;`buf`:&nbsp;Byte&nbsp;string&nbsp;containing&nbsp;Windows&nbsp;<a href="#Registry">Registry</a>&nbsp;file.<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;offset&nbsp;into&nbsp;the&nbsp;buffer&nbsp;at&nbsp;which&nbsp;the&nbsp;block&nbsp;starts.<br>
+-&nbsp;`parent`:&nbsp;The&nbsp;parent&nbsp;block,&nbsp;which&nbsp;links&nbsp;to&nbsp;this&nbsp;block.&nbsp;The&nbsp;parent&nbsp;of&nbsp;a&nbsp;<a href="#SubkeyList">SubkeyList</a>&nbsp;SHOULD&nbsp;be&nbsp;a&nbsp;<a href="#NKRecord">NKRecord</a>.</tt></dd></dl>
+
+<dl><dt><a name="LFRecord-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Methods inherited from <a href="registry.html#DirectSubkeyList">DirectSubkeyList</a>:<br>
+<dl><dt><a name="LFRecord-keys"><strong>keys</strong></a>(self)</dt><dd><tt>A&nbsp;generator&nbsp;that&nbsp;yields&nbsp;the&nbsp;NKRecords&nbsp;referenced&nbsp;by&nbsp;this&nbsp;list.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="registry.html#Record">Record</a>:<br>
+<dl><dt><a name="LFRecord-abs_offset_from_hbin_offset"><strong>abs_offset_from_hbin_offset</strong></a>(self, offset)</dt><dd><tt>Offsets&nbsp;contained&nbsp;in&nbsp;HBIN&nbsp;cells&nbsp;are&nbsp;relative&nbsp;to&nbsp;the&nbsp;beginning&nbsp;of&nbsp;the&nbsp;first&nbsp;HBIN.<br>
+This&nbsp;converts&nbsp;the&nbsp;relative&nbsp;offset&nbsp;into&nbsp;an&nbsp;absolute&nbsp;offset.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="registry.html#RegistryBlock">RegistryBlock</a>:<br>
+<dl><dt><a name="LFRecord-absolute_offset"><strong>absolute_offset</strong></a>(self, offset)</dt><dd><tt>Get&nbsp;the&nbsp;absolute&nbsp;offset&nbsp;from&nbsp;an&nbsp;offset&nbsp;relative&nbsp;to&nbsp;this&nbsp;block<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;into&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="LFRecord-offset"><strong>offset</strong></a>(self)</dt><dd><tt>Equivalent&nbsp;to&nbsp;<a href="#LFRecord-absolute_offset">absolute_offset</a>(0x0),&nbsp;which&nbsp;is&nbsp;the&nbsp;starting&nbsp;offset&nbsp;of&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="LFRecord-parent"><strong>parent</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;parent&nbsp;block.&nbsp;See&nbsp;the&nbsp;class&nbsp;documentation&nbsp;for&nbsp;what&nbsp;the&nbsp;parent&nbsp;link&nbsp;is.</tt></dd></dl>
+
+<dl><dt><a name="LFRecord-unpack_dword"><strong>unpack_dword</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;DWORD&nbsp;(4&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="LFRecord-unpack_int"><strong>unpack_int</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;signed&nbsp;integer&nbsp;(4&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="LFRecord-unpack_qword"><strong>unpack_qword</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;QWORD&nbsp;(8&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="LFRecord-unpack_string"><strong>unpack_string</strong></a>(self, offset, length)</dt><dd><tt>Returns&nbsp;a&nbsp;string&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset&nbsp;with&nbsp;the&nbsp;given&nbsp;length.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.<br>
+-&nbsp;`length`:&nbsp;The&nbsp;length&nbsp;of&nbsp;the&nbsp;string.</tt></dd></dl>
+
+<dl><dt><a name="LFRecord-unpack_word"><strong>unpack_word</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;WORD&nbsp;(2&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="registry.html#RegistryBlock">RegistryBlock</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="LHRecord">class <strong>LHRecord</strong></a>(<a href="registry.html#DirectSubkeyList">DirectSubkeyList</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>The&nbsp;<a href="#LHRecord">LHRecord</a>&nbsp;is&nbsp;a&nbsp;simple&nbsp;structure&nbsp;containing&nbsp;a&nbsp;list&nbsp;of&nbsp;offsets/pointers&nbsp;to&nbsp;subkey&nbsp;NKRecords.<br>
+The&nbsp;<a href="#LHRecord">LHRecord</a>&nbsp;also&nbsp;contains&nbsp;a&nbsp;hash&nbsp;for&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;subkey&nbsp;pointed&nbsp;to&nbsp;by&nbsp;the&nbsp;offset,&nbsp;which&nbsp;enables<br>
+more&nbsp;efficient&nbsp;seaching&nbsp;of&nbsp;the&nbsp;<a href="#Registry">Registry</a>&nbsp;tree.<br>
+The&nbsp;<a href="#LHRecord">LHRecord</a>&nbsp;is&nbsp;analogous&nbsp;to&nbsp;the&nbsp;<a href="#LFRecord">LFRecord</a>,&nbsp;but&nbsp;it&nbsp;uses&nbsp;a&nbsp;different&nbsp;hashing&nbsp;function.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="registry.html#LHRecord">LHRecord</a></dd>
+<dd><a href="registry.html#DirectSubkeyList">DirectSubkeyList</a></dd>
+<dd><a href="registry.html#SubkeyList">SubkeyList</a></dd>
+<dd><a href="registry.html#Record">Record</a></dd>
+<dd><a href="registry.html#RegistryBlock">RegistryBlock</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="LHRecord-__init__"><strong>__init__</strong></a>(self, buf, offset, parent)</dt><dd><tt>Constructor.<br>
+Arguments:<br>
+-&nbsp;`buf`:&nbsp;Byte&nbsp;string&nbsp;containing&nbsp;Windows&nbsp;<a href="#Registry">Registry</a>&nbsp;file.<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;offset&nbsp;into&nbsp;the&nbsp;buffer&nbsp;at&nbsp;which&nbsp;the&nbsp;block&nbsp;starts.<br>
+-&nbsp;`parent`:&nbsp;The&nbsp;parent&nbsp;block,&nbsp;which&nbsp;links&nbsp;to&nbsp;this&nbsp;block.&nbsp;The&nbsp;parent&nbsp;of&nbsp;a&nbsp;<a href="#SubkeyList">SubkeyList</a>&nbsp;SHOULD&nbsp;be&nbsp;a&nbsp;<a href="#NKRecord">NKRecord</a>.</tt></dd></dl>
+
+<dl><dt><a name="LHRecord-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Methods inherited from <a href="registry.html#DirectSubkeyList">DirectSubkeyList</a>:<br>
+<dl><dt><a name="LHRecord-keys"><strong>keys</strong></a>(self)</dt><dd><tt>A&nbsp;generator&nbsp;that&nbsp;yields&nbsp;the&nbsp;NKRecords&nbsp;referenced&nbsp;by&nbsp;this&nbsp;list.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="registry.html#Record">Record</a>:<br>
+<dl><dt><a name="LHRecord-abs_offset_from_hbin_offset"><strong>abs_offset_from_hbin_offset</strong></a>(self, offset)</dt><dd><tt>Offsets&nbsp;contained&nbsp;in&nbsp;HBIN&nbsp;cells&nbsp;are&nbsp;relative&nbsp;to&nbsp;the&nbsp;beginning&nbsp;of&nbsp;the&nbsp;first&nbsp;HBIN.<br>
+This&nbsp;converts&nbsp;the&nbsp;relative&nbsp;offset&nbsp;into&nbsp;an&nbsp;absolute&nbsp;offset.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="registry.html#RegistryBlock">RegistryBlock</a>:<br>
+<dl><dt><a name="LHRecord-absolute_offset"><strong>absolute_offset</strong></a>(self, offset)</dt><dd><tt>Get&nbsp;the&nbsp;absolute&nbsp;offset&nbsp;from&nbsp;an&nbsp;offset&nbsp;relative&nbsp;to&nbsp;this&nbsp;block<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;into&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="LHRecord-offset"><strong>offset</strong></a>(self)</dt><dd><tt>Equivalent&nbsp;to&nbsp;<a href="#LHRecord-absolute_offset">absolute_offset</a>(0x0),&nbsp;which&nbsp;is&nbsp;the&nbsp;starting&nbsp;offset&nbsp;of&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="LHRecord-parent"><strong>parent</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;parent&nbsp;block.&nbsp;See&nbsp;the&nbsp;class&nbsp;documentation&nbsp;for&nbsp;what&nbsp;the&nbsp;parent&nbsp;link&nbsp;is.</tt></dd></dl>
+
+<dl><dt><a name="LHRecord-unpack_dword"><strong>unpack_dword</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;DWORD&nbsp;(4&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="LHRecord-unpack_int"><strong>unpack_int</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;signed&nbsp;integer&nbsp;(4&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="LHRecord-unpack_qword"><strong>unpack_qword</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;QWORD&nbsp;(8&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="LHRecord-unpack_string"><strong>unpack_string</strong></a>(self, offset, length)</dt><dd><tt>Returns&nbsp;a&nbsp;string&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset&nbsp;with&nbsp;the&nbsp;given&nbsp;length.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.<br>
+-&nbsp;`length`:&nbsp;The&nbsp;length&nbsp;of&nbsp;the&nbsp;string.</tt></dd></dl>
+
+<dl><dt><a name="LHRecord-unpack_word"><strong>unpack_word</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;WORD&nbsp;(2&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="registry.html#RegistryBlock">RegistryBlock</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="NKRecord">class <strong>NKRecord</strong></a>(<a href="registry.html#Record">Record</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>The&nbsp;<a href="#NKRecord">NKRecord</a>&nbsp;defines&nbsp;the&nbsp;tree-like&nbsp;structure&nbsp;of&nbsp;the&nbsp;Windows&nbsp;<a href="#Registry">Registry</a>.<br>
+It&nbsp;contains&nbsp;pointers/offsets&nbsp;to&nbsp;the&nbsp;ValueList&nbsp;(values&nbsp;associated&nbsp;with&nbsp;the&nbsp;given&nbsp;record),&nbsp;and&nbsp;<br>
+to&nbsp;subkeys.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="registry.html#NKRecord">NKRecord</a></dd>
+<dd><a href="registry.html#Record">Record</a></dd>
+<dd><a href="registry.html#RegistryBlock">RegistryBlock</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="NKRecord-__init__"><strong>__init__</strong></a>(self, buf, offset, parent)</dt><dd><tt>Constructor.<br>
+Arguments:<br>
+-&nbsp;`buf`:&nbsp;Byte&nbsp;string&nbsp;containing&nbsp;Windows&nbsp;<a href="#Registry">Registry</a>&nbsp;file.<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;offset&nbsp;into&nbsp;the&nbsp;buffer&nbsp;at&nbsp;which&nbsp;the&nbsp;block&nbsp;starts.<br>
+-&nbsp;`parent`:&nbsp;The&nbsp;parent&nbsp;block,&nbsp;which&nbsp;links&nbsp;to&nbsp;this&nbsp;block.&nbsp;This&nbsp;should&nbsp;be&nbsp;a&nbsp;<a href="#HBINCell">HBINCell</a>.</tt></dd></dl>
+
+<dl><dt><a name="NKRecord-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="NKRecord-classname"><strong>classname</strong></a>(self)</dt><dd><tt>If&nbsp;this&nbsp;has&nbsp;a&nbsp;classname,&nbsp;get&nbsp;it&nbsp;as&nbsp;a&nbsp;string.&nbsp;Otherwise,&nbsp;return&nbsp;the&nbsp;empty&nbsp;string.</tt></dd></dl>
+
+<dl><dt><a name="NKRecord-has_classname"><strong>has_classname</strong></a>(self)</dt><dd><tt>Does&nbsp;this&nbsp;have&nbsp;a&nbsp;classname?</tt></dd></dl>
+
+<dl><dt><a name="NKRecord-has_parent_key"><strong>has_parent_key</strong></a>(self)</dt><dd><tt>Is&nbsp;there&nbsp;a&nbsp;parent&nbsp;key?&nbsp;There&nbsp;should&nbsp;always&nbsp;be&nbsp;a&nbsp;parent&nbsp;key,&nbsp;unless<br>
+this&nbsp;is&nbsp;a&nbsp;root&nbsp;key&nbsp;(see&nbsp;<a href="#NKRecord-is_root">is_root</a>())</tt></dd></dl>
+
+<dl><dt><a name="NKRecord-is_root"><strong>is_root</strong></a>(self)</dt><dd><tt>Is&nbsp;this&nbsp;a&nbsp;root&nbsp;key?</tt></dd></dl>
+
+<dl><dt><a name="NKRecord-name"><strong>name</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;registry&nbsp;key&nbsp;name&nbsp;as&nbsp;a&nbsp;string.</tt></dd></dl>
+
+<dl><dt><a name="NKRecord-parent_key"><strong>parent_key</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;parent_key,&nbsp;which&nbsp;will&nbsp;be&nbsp;an&nbsp;<a href="#NKRecord">NKRecord</a>.</tt></dd></dl>
+
+<dl><dt><a name="NKRecord-path"><strong>path</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;full&nbsp;path&nbsp;of&nbsp;the&nbsp;registry&nbsp;key&nbsp;as&nbsp;a&nbsp;string.</tt></dd></dl>
+
+<dl><dt><a name="NKRecord-sk_record"><strong>sk_record</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;security&nbsp;descriptor&nbsp;associated&nbsp;with&nbsp;this&nbsp;<a href="#NKRecord">NKRecord</a>&nbsp;as&nbsp;an&nbsp;<a href="#SKRecord">SKRecord</a>.</tt></dd></dl>
+
+<dl><dt><a name="NKRecord-subkey_list"><strong>subkey_list</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="NKRecord-subkey_number"><strong>subkey_number</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="NKRecord-values_list"><strong>values_list</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;values&nbsp;as&nbsp;a&nbsp;<a href="#ValuesList">ValuesList</a>.<br>
+Will&nbsp;raise&nbsp;<a href="#RegistryStructureDoesNotExist">RegistryStructureDoesNotExist</a>&nbsp;if&nbsp;this&nbsp;<a href="#NKRecord">NKRecord</a>&nbsp;has&nbsp;no&nbsp;values.</tt></dd></dl>
+
+<dl><dt><a name="NKRecord-values_number"><strong>values_number</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;number&nbsp;of&nbsp;values&nbsp;associated&nbsp;with&nbsp;this&nbsp;<a href="#NKRecord">NKRecord</a>/Key.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="registry.html#Record">Record</a>:<br>
+<dl><dt><a name="NKRecord-abs_offset_from_hbin_offset"><strong>abs_offset_from_hbin_offset</strong></a>(self, offset)</dt><dd><tt>Offsets&nbsp;contained&nbsp;in&nbsp;HBIN&nbsp;cells&nbsp;are&nbsp;relative&nbsp;to&nbsp;the&nbsp;beginning&nbsp;of&nbsp;the&nbsp;first&nbsp;HBIN.<br>
+This&nbsp;converts&nbsp;the&nbsp;relative&nbsp;offset&nbsp;into&nbsp;an&nbsp;absolute&nbsp;offset.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="registry.html#RegistryBlock">RegistryBlock</a>:<br>
+<dl><dt><a name="NKRecord-absolute_offset"><strong>absolute_offset</strong></a>(self, offset)</dt><dd><tt>Get&nbsp;the&nbsp;absolute&nbsp;offset&nbsp;from&nbsp;an&nbsp;offset&nbsp;relative&nbsp;to&nbsp;this&nbsp;block<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;into&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="NKRecord-offset"><strong>offset</strong></a>(self)</dt><dd><tt>Equivalent&nbsp;to&nbsp;<a href="#NKRecord-absolute_offset">absolute_offset</a>(0x0),&nbsp;which&nbsp;is&nbsp;the&nbsp;starting&nbsp;offset&nbsp;of&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="NKRecord-parent"><strong>parent</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;parent&nbsp;block.&nbsp;See&nbsp;the&nbsp;class&nbsp;documentation&nbsp;for&nbsp;what&nbsp;the&nbsp;parent&nbsp;link&nbsp;is.</tt></dd></dl>
+
+<dl><dt><a name="NKRecord-unpack_dword"><strong>unpack_dword</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;DWORD&nbsp;(4&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="NKRecord-unpack_int"><strong>unpack_int</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;signed&nbsp;integer&nbsp;(4&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="NKRecord-unpack_qword"><strong>unpack_qword</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;QWORD&nbsp;(8&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="NKRecord-unpack_string"><strong>unpack_string</strong></a>(self, offset, length)</dt><dd><tt>Returns&nbsp;a&nbsp;string&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset&nbsp;with&nbsp;the&nbsp;given&nbsp;length.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.<br>
+-&nbsp;`length`:&nbsp;The&nbsp;length&nbsp;of&nbsp;the&nbsp;string.</tt></dd></dl>
+
+<dl><dt><a name="NKRecord-unpack_word"><strong>unpack_word</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;WORD&nbsp;(2&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="registry.html#RegistryBlock">RegistryBlock</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="ParseException">class <strong>ParseException</strong></a>(<a href="registry.html#RegistryException">RegistryException</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>An&nbsp;exception&nbsp;to&nbsp;be&nbsp;thrown&nbsp;during&nbsp;Windows&nbsp;<a href="#Registry">Registry</a>&nbsp;parsing,&nbsp;such&nbsp;as&nbsp;<br>
+when&nbsp;an&nbsp;invalid&nbsp;header&nbsp;is&nbsp;encountered.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="registry.html#ParseException">ParseException</a></dd>
+<dd><a href="registry.html#RegistryException">RegistryException</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="ParseException-__init__"><strong>__init__</strong></a>(self, value)</dt><dd><tt>Constructor.<br>
+Arguments:<br>
+-&nbsp;`value`:&nbsp;A&nbsp;string&nbsp;description.</tt></dd></dl>
+
+<dl><dt><a name="ParseException-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="registry.html#RegistryException">RegistryException</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#ParseException-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="ParseException-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#ParseException-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="ParseException-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#ParseException-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="ParseException-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#ParseException-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="ParseException-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#ParseException-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="ParseException-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="ParseException-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#ParseException-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="ParseException-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#ParseException-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="ParseException-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="ParseException-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="REGFBlock">class <strong>REGFBlock</strong></a>(<a href="registry.html#RegistryBlock">RegistryBlock</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>The&nbsp;Windows&nbsp;<a href="#Registry">Registry</a>&nbsp;file&nbsp;header.&nbsp;This&nbsp;block&nbsp;has&nbsp;a&nbsp;length&nbsp;of&nbsp;4k,&nbsp;although&nbsp;<br>
+only&nbsp;the&nbsp;first&nbsp;0x200&nbsp;bytes&nbsp;are&nbsp;generally&nbsp;used.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="registry.html#REGFBlock">REGFBlock</a></dd>
+<dd><a href="registry.html#RegistryBlock">RegistryBlock</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="REGFBlock-__init__"><strong>__init__</strong></a>(self, buf, offset, parent)</dt><dd><tt>Constructor.<br>
+Arguments:<br>
+-&nbsp;`buf`:&nbsp;Byte&nbsp;string&nbsp;containing&nbsp;Windows&nbsp;<a href="#Registry">Registry</a>&nbsp;file.<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;offset&nbsp;into&nbsp;the&nbsp;buffer&nbsp;at&nbsp;which&nbsp;the&nbsp;block&nbsp;starts.<br>
+-&nbsp;`parent`:&nbsp;The&nbsp;parent&nbsp;block,&nbsp;which&nbsp;links&nbsp;to&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="REGFBlock-first_key"><strong>first_key</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="REGFBlock-hbins"><strong>hbins</strong></a>(self)</dt><dd><tt>A&nbsp;generator&nbsp;that&nbsp;enumerates&nbsp;all&nbsp;HBIN&nbsp;(<a href="#HBINBlock">HBINBlock</a>)&nbsp;structures&nbsp;in&nbsp;this&nbsp;Windows&nbsp;<a href="#Registry">Registry</a>.</tt></dd></dl>
+
+<dl><dt><a name="REGFBlock-hive_name"><strong>hive_name</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;hive&nbsp;name&nbsp;of&nbsp;the&nbsp;open&nbsp;Windows&nbsp;<a href="#Registry">Registry</a>&nbsp;file&nbsp;as&nbsp;a&nbsp;string.</tt></dd></dl>
+
+<dl><dt><a name="REGFBlock-last_hbin_offset"><strong>last_hbin_offset</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;buffer&nbsp;offset&nbsp;of&nbsp;the&nbsp;last&nbsp;<a href="#HBINBlock">HBINBlock</a>&nbsp;as&nbsp;an&nbsp;unsigned&nbsp;integer.</tt></dd></dl>
+
+<dl><dt><a name="REGFBlock-major_version"><strong>major_version</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;major&nbsp;version&nbsp;of&nbsp;the&nbsp;Windows&nbsp;<a href="#Registry">Registry</a>&nbsp;file&nbsp;format&nbsp;in&nbsp;use&nbsp;as&nbsp;an&nbsp;unsigned&nbsp;integer.</tt></dd></dl>
+
+<dl><dt><a name="REGFBlock-minor_version"><strong>minor_version</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;minor&nbsp;version&nbsp;of&nbsp;the&nbsp;Windows&nbsp;<a href="#Registry">Registry</a>&nbsp;file&nbsp;format&nbsp;in&nbsp;use&nbsp;as&nbsp;an&nbsp;unsigned&nbsp;integer.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="registry.html#RegistryBlock">RegistryBlock</a>:<br>
+<dl><dt><a name="REGFBlock-absolute_offset"><strong>absolute_offset</strong></a>(self, offset)</dt><dd><tt>Get&nbsp;the&nbsp;absolute&nbsp;offset&nbsp;from&nbsp;an&nbsp;offset&nbsp;relative&nbsp;to&nbsp;this&nbsp;block<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;into&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="REGFBlock-offset"><strong>offset</strong></a>(self)</dt><dd><tt>Equivalent&nbsp;to&nbsp;<a href="#REGFBlock-absolute_offset">absolute_offset</a>(0x0),&nbsp;which&nbsp;is&nbsp;the&nbsp;starting&nbsp;offset&nbsp;of&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="REGFBlock-parent"><strong>parent</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;parent&nbsp;block.&nbsp;See&nbsp;the&nbsp;class&nbsp;documentation&nbsp;for&nbsp;what&nbsp;the&nbsp;parent&nbsp;link&nbsp;is.</tt></dd></dl>
+
+<dl><dt><a name="REGFBlock-unpack_dword"><strong>unpack_dword</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;DWORD&nbsp;(4&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="REGFBlock-unpack_int"><strong>unpack_int</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;signed&nbsp;integer&nbsp;(4&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="REGFBlock-unpack_qword"><strong>unpack_qword</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;QWORD&nbsp;(8&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="REGFBlock-unpack_string"><strong>unpack_string</strong></a>(self, offset, length)</dt><dd><tt>Returns&nbsp;a&nbsp;string&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset&nbsp;with&nbsp;the&nbsp;given&nbsp;length.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.<br>
+-&nbsp;`length`:&nbsp;The&nbsp;length&nbsp;of&nbsp;the&nbsp;string.</tt></dd></dl>
+
+<dl><dt><a name="REGFBlock-unpack_word"><strong>unpack_word</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;WORD&nbsp;(2&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="registry.html#RegistryBlock">RegistryBlock</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Record">class <strong>Record</strong></a>(<a href="registry.html#RegistryBlock">RegistryBlock</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Abstract&nbsp;class&nbsp;for&nbsp;Records&nbsp;contained&nbsp;by&nbsp;cells&nbsp;in&nbsp;HBINs<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="registry.html#Record">Record</a></dd>
+<dd><a href="registry.html#RegistryBlock">RegistryBlock</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="Record-__init__"><strong>__init__</strong></a>(self, buf, offset, parent)</dt><dd><tt>Constructor.<br>
+Arguments:<br>
+-&nbsp;`buf`:&nbsp;Byte&nbsp;string&nbsp;containing&nbsp;Windows&nbsp;<a href="#Registry">Registry</a>&nbsp;file.<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;offset&nbsp;into&nbsp;the&nbsp;buffer&nbsp;at&nbsp;which&nbsp;the&nbsp;block&nbsp;starts.<br>
+-&nbsp;`parent`:&nbsp;The&nbsp;parent&nbsp;block,&nbsp;which&nbsp;links&nbsp;to&nbsp;this&nbsp;block.&nbsp;This&nbsp;SHOULD&nbsp;be&nbsp;an&nbsp;<a href="#HBINCell">HBINCell</a>.</tt></dd></dl>
+
+<dl><dt><a name="Record-abs_offset_from_hbin_offset"><strong>abs_offset_from_hbin_offset</strong></a>(self, offset)</dt><dd><tt>Offsets&nbsp;contained&nbsp;in&nbsp;HBIN&nbsp;cells&nbsp;are&nbsp;relative&nbsp;to&nbsp;the&nbsp;beginning&nbsp;of&nbsp;the&nbsp;first&nbsp;HBIN.<br>
+This&nbsp;converts&nbsp;the&nbsp;relative&nbsp;offset&nbsp;into&nbsp;an&nbsp;absolute&nbsp;offset.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="registry.html#RegistryBlock">RegistryBlock</a>:<br>
+<dl><dt><a name="Record-absolute_offset"><strong>absolute_offset</strong></a>(self, offset)</dt><dd><tt>Get&nbsp;the&nbsp;absolute&nbsp;offset&nbsp;from&nbsp;an&nbsp;offset&nbsp;relative&nbsp;to&nbsp;this&nbsp;block<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;into&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="Record-offset"><strong>offset</strong></a>(self)</dt><dd><tt>Equivalent&nbsp;to&nbsp;<a href="#Record-absolute_offset">absolute_offset</a>(0x0),&nbsp;which&nbsp;is&nbsp;the&nbsp;starting&nbsp;offset&nbsp;of&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="Record-parent"><strong>parent</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;parent&nbsp;block.&nbsp;See&nbsp;the&nbsp;class&nbsp;documentation&nbsp;for&nbsp;what&nbsp;the&nbsp;parent&nbsp;link&nbsp;is.</tt></dd></dl>
+
+<dl><dt><a name="Record-unpack_dword"><strong>unpack_dword</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;DWORD&nbsp;(4&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="Record-unpack_int"><strong>unpack_int</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;signed&nbsp;integer&nbsp;(4&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="Record-unpack_qword"><strong>unpack_qword</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;QWORD&nbsp;(8&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="Record-unpack_string"><strong>unpack_string</strong></a>(self, offset, length)</dt><dd><tt>Returns&nbsp;a&nbsp;string&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset&nbsp;with&nbsp;the&nbsp;given&nbsp;length.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.<br>
+-&nbsp;`length`:&nbsp;The&nbsp;length&nbsp;of&nbsp;the&nbsp;string.</tt></dd></dl>
+
+<dl><dt><a name="Record-unpack_word"><strong>unpack_word</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;WORD&nbsp;(2&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="registry.html#RegistryBlock">RegistryBlock</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Registry">class <strong>Registry</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>A&nbsp;class&nbsp;for&nbsp;parsing&nbsp;and&nbsp;reading&nbsp;from&nbsp;a&nbsp;Windows&nbsp;<a href="#Registry">Registry</a>&nbsp;file.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Registry-__init__"><strong>__init__</strong></a>(self, filename)</dt><dd><tt>Constructor.<br>
+Arguments:<br>
+-&nbsp;`filename`:&nbsp;A&nbsp;string&nbsp;containing&nbsp;the&nbsp;filename&nbsp;of&nbsp;the&nbsp;Windows&nbsp;<a href="#Registry">Registry</a>&nbsp;file,&nbsp;such&nbsp;as<br>
+NTUSER.DAT.</tt></dd></dl>
+
+<dl><dt><a name="Registry-open"><strong>open</strong></a>(self, path)</dt><dd><tt>Return&nbsp;a&nbsp;<a href="#RegistryKey">RegistryKey</a>&nbsp;by&nbsp;full&nbsp;path.<br>
+Subkeys&nbsp;are&nbsp;separated&nbsp;by&nbsp;the&nbsp;backslash&nbsp;character&nbsp;('').&nbsp;A&nbsp;trailing&nbsp;backslash&nbsp;may&nbsp;or&nbsp;may<br>
+not&nbsp;be&nbsp;present.<br>
+The&nbsp;hive&nbsp;name&nbsp;should&nbsp;not&nbsp;be&nbsp;included.</tt></dd></dl>
+
+<dl><dt><a name="Registry-root"><strong>root</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;first&nbsp;<a href="#RegistryKey">RegistryKey</a>&nbsp;in&nbsp;the&nbsp;hive.</tt></dd></dl>
+
+<dl><dt><a name="Registry-test"><strong>test</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="RegistryBlock">class <strong>RegistryBlock</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Base&nbsp;class&nbsp;for&nbsp;structure&nbsp;blocks&nbsp;in&nbsp;the&nbsp;Windows&nbsp;<a href="#Registry">Registry</a>.<br>
+A&nbsp;block&nbsp;is&nbsp;associated&nbsp;with&nbsp;a&nbsp;offset&nbsp;into&nbsp;a&nbsp;byte-string.<br>
+&nbsp;<br>
+All&nbsp;blocks&nbsp;(besides&nbsp;the&nbsp;root)&nbsp;also&nbsp;have&nbsp;a&nbsp;parent&nbsp;member,&nbsp;which&nbsp;refers&nbsp;to&nbsp;<br>
+a&nbsp;<a href="#RegistryBlock">RegistryBlock</a>&nbsp;that&nbsp;contains&nbsp;a&nbsp;reference&nbsp;to&nbsp;this&nbsp;block,&nbsp;an&nbsp;is&nbsp;found&nbsp;at&nbsp;a<br>
+hierarchically&nbsp;superior&nbsp;rank.&nbsp;Note,&nbsp;by&nbsp;following&nbsp;the&nbsp;parent&nbsp;links&nbsp;upwards,&nbsp;<br>
+the&nbsp;root&nbsp;block&nbsp;should&nbsp;be&nbsp;accessible&nbsp;(aka.&nbsp;there&nbsp;should&nbsp;not&nbsp;be&nbsp;any&nbsp;loops)<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="RegistryBlock-__init__"><strong>__init__</strong></a>(self, buf, offset, parent)</dt><dd><tt>Constructor.<br>
+Arguments:<br>
+-&nbsp;`buf`:&nbsp;Byte&nbsp;string&nbsp;containing&nbsp;Windows&nbsp;<a href="#Registry">Registry</a>&nbsp;file.<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;offset&nbsp;into&nbsp;the&nbsp;buffer&nbsp;at&nbsp;which&nbsp;the&nbsp;block&nbsp;starts.<br>
+-&nbsp;`parent`:&nbsp;The&nbsp;parent&nbsp;block,&nbsp;which&nbsp;links&nbsp;to&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="RegistryBlock-absolute_offset"><strong>absolute_offset</strong></a>(self, offset)</dt><dd><tt>Get&nbsp;the&nbsp;absolute&nbsp;offset&nbsp;from&nbsp;an&nbsp;offset&nbsp;relative&nbsp;to&nbsp;this&nbsp;block<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;into&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="RegistryBlock-offset"><strong>offset</strong></a>(self)</dt><dd><tt>Equivalent&nbsp;to&nbsp;<a href="#RegistryBlock-absolute_offset">absolute_offset</a>(0x0),&nbsp;which&nbsp;is&nbsp;the&nbsp;starting&nbsp;offset&nbsp;of&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="RegistryBlock-parent"><strong>parent</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;parent&nbsp;block.&nbsp;See&nbsp;the&nbsp;class&nbsp;documentation&nbsp;for&nbsp;what&nbsp;the&nbsp;parent&nbsp;link&nbsp;is.</tt></dd></dl>
+
+<dl><dt><a name="RegistryBlock-unpack_dword"><strong>unpack_dword</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;DWORD&nbsp;(4&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="RegistryBlock-unpack_int"><strong>unpack_int</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;signed&nbsp;integer&nbsp;(4&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="RegistryBlock-unpack_qword"><strong>unpack_qword</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;QWORD&nbsp;(8&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="RegistryBlock-unpack_string"><strong>unpack_string</strong></a>(self, offset, length)</dt><dd><tt>Returns&nbsp;a&nbsp;string&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset&nbsp;with&nbsp;the&nbsp;given&nbsp;length.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.<br>
+-&nbsp;`length`:&nbsp;The&nbsp;length&nbsp;of&nbsp;the&nbsp;string.</tt></dd></dl>
+
+<dl><dt><a name="RegistryBlock-unpack_word"><strong>unpack_word</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;WORD&nbsp;(2&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="RegistryException">class <strong>RegistryException</strong></a>(<a href="exceptions.html#Exception">exceptions.Exception</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Base&nbsp;<a href="exceptions.html#Exception">Exception</a>&nbsp;class&nbsp;for&nbsp;Windows&nbsp;<a href="#Registry">Registry</a>&nbsp;access.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="registry.html#RegistryException">RegistryException</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="RegistryException-__init__"><strong>__init__</strong></a>(self, value)</dt><dd><tt>Constructor.<br>
+Arguments:<br>
+-&nbsp;`value`:&nbsp;A&nbsp;string&nbsp;description.</tt></dd></dl>
+
+<dl><dt><a name="RegistryException-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#RegistryException-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="RegistryException-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryException-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="RegistryException-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryException-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="RegistryException-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryException-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="RegistryException-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryException-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="RegistryException-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="RegistryException-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryException-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="RegistryException-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryException-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="RegistryException-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="RegistryException-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="RegistryKey">class <strong>RegistryKey</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="RegistryKey-__getitem__"><strong>__getitem__</strong></a>(self, key)</dt></dl>
+
+<dl><dt><a name="RegistryKey-__init__"><strong>__init__</strong></a>(self, nkrecord)</dt><dd><tt>Arguments:<br>
+-&nbsp;`<a href="#NKRecord">NKRecord</a>`:</tt></dd></dl>
+
+<dl><dt><a name="RegistryKey-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="RegistryKey-find_key"><strong>find_key</strong></a>(self, path)</dt></dl>
+
+<dl><dt><a name="RegistryKey-name"><strong>name</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="RegistryKey-parent"><strong>parent</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="RegistryKey-path"><strong>path</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="RegistryKey-subkey"><strong>subkey</strong></a>(self, name)</dt></dl>
+
+<dl><dt><a name="RegistryKey-subkeys"><strong>subkeys</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="RegistryKey-value"><strong>value</strong></a>(self, name)</dt></dl>
+
+<dl><dt><a name="RegistryKey-values"><strong>values</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="RegistryKeyHasNoParentException">class <strong>RegistryKeyHasNoParentException</strong></a>(<a href="registry.html#RegistryStructureDoesNotExist">RegistryStructureDoesNotExist</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="registry.html#RegistryKeyHasNoParentException">RegistryKeyHasNoParentException</a></dd>
+<dd><a href="registry.html#RegistryStructureDoesNotExist">RegistryStructureDoesNotExist</a></dd>
+<dd><a href="registry.html#RegistryException">RegistryException</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="RegistryKeyHasNoParentException-__init__"><strong>__init__</strong></a>(self, value)</dt><dd><tt>Constructor.<br>
+Arguments:<br>
+-&nbsp;`value`:&nbsp;A&nbsp;string&nbsp;description.</tt></dd></dl>
+
+<dl><dt><a name="RegistryKeyHasNoParentException-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="registry.html#RegistryException">RegistryException</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#RegistryKeyHasNoParentException-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="RegistryKeyHasNoParentException-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryKeyHasNoParentException-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="RegistryKeyHasNoParentException-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryKeyHasNoParentException-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="RegistryKeyHasNoParentException-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryKeyHasNoParentException-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="RegistryKeyHasNoParentException-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryKeyHasNoParentException-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="RegistryKeyHasNoParentException-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="RegistryKeyHasNoParentException-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryKeyHasNoParentException-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="RegistryKeyHasNoParentException-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryKeyHasNoParentException-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="RegistryKeyHasNoParentException-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="RegistryKeyHasNoParentException-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="RegistryKeyNotFoundException">class <strong>RegistryKeyNotFoundException</strong></a>(<a href="registry.html#RegistryStructureDoesNotExist">RegistryStructureDoesNotExist</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="registry.html#RegistryKeyNotFoundException">RegistryKeyNotFoundException</a></dd>
+<dd><a href="registry.html#RegistryStructureDoesNotExist">RegistryStructureDoesNotExist</a></dd>
+<dd><a href="registry.html#RegistryException">RegistryException</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="RegistryKeyNotFoundException-__init__"><strong>__init__</strong></a>(self, value)</dt><dd><tt>Arguments:<br>
+-&nbsp;`value`:</tt></dd></dl>
+
+<dl><dt><a name="RegistryKeyNotFoundException-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="registry.html#RegistryException">RegistryException</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#RegistryKeyNotFoundException-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="RegistryKeyNotFoundException-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryKeyNotFoundException-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="RegistryKeyNotFoundException-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryKeyNotFoundException-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="RegistryKeyNotFoundException-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryKeyNotFoundException-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="RegistryKeyNotFoundException-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryKeyNotFoundException-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="RegistryKeyNotFoundException-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="RegistryKeyNotFoundException-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryKeyNotFoundException-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="RegistryKeyNotFoundException-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryKeyNotFoundException-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="RegistryKeyNotFoundException-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="RegistryKeyNotFoundException-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="RegistryStructureDoesNotExist">class <strong>RegistryStructureDoesNotExist</strong></a>(<a href="registry.html#RegistryException">RegistryException</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="exceptions.html#Exception">Exception</a>&nbsp;to&nbsp;be&nbsp;raised&nbsp;when&nbsp;a&nbsp;structure&nbsp;or&nbsp;block&nbsp;is&nbsp;requested&nbsp;which&nbsp;does&nbsp;not&nbsp;exist.&nbsp;<br>
+For&nbsp;example,&nbsp;asking&nbsp;for&nbsp;the&nbsp;<a href="#ValuesList">ValuesList</a>&nbsp;structure&nbsp;of&nbsp;an&nbsp;<a href="#NKRecord">NKRecord</a>&nbsp;that&nbsp;has&nbsp;no&nbsp;values<br>
+(and&nbsp;therefore&nbsp;no&nbsp;<a href="#ValuesList">ValuesList</a>)&nbsp;should&nbsp;result&nbsp;in&nbsp;this&nbsp;exception.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="registry.html#RegistryStructureDoesNotExist">RegistryStructureDoesNotExist</a></dd>
+<dd><a href="registry.html#RegistryException">RegistryException</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="RegistryStructureDoesNotExist-__init__"><strong>__init__</strong></a>(self, value)</dt><dd><tt>Constructor.<br>
+Arguments:<br>
+-&nbsp;`value`:&nbsp;A&nbsp;string&nbsp;description.</tt></dd></dl>
+
+<dl><dt><a name="RegistryStructureDoesNotExist-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="registry.html#RegistryException">RegistryException</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#RegistryStructureDoesNotExist-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="RegistryStructureDoesNotExist-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryStructureDoesNotExist-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="RegistryStructureDoesNotExist-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryStructureDoesNotExist-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="RegistryStructureDoesNotExist-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryStructureDoesNotExist-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="RegistryStructureDoesNotExist-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryStructureDoesNotExist-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="RegistryStructureDoesNotExist-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="RegistryStructureDoesNotExist-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryStructureDoesNotExist-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="RegistryStructureDoesNotExist-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryStructureDoesNotExist-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="RegistryStructureDoesNotExist-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="RegistryStructureDoesNotExist-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="RegistryValue">class <strong>RegistryValue</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="RegistryValue-__init__"><strong>__init__</strong></a>(self, vkrecord)</dt></dl>
+
+<dl><dt><a name="RegistryValue-name"><strong>name</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="RegistryValue-value"><strong>value</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="RegistryValue-value_type"><strong>value_type</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="RegistryValueNotFoundException">class <strong>RegistryValueNotFoundException</strong></a>(<a href="registry.html#RegistryStructureDoesNotExist">RegistryStructureDoesNotExist</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="registry.html#RegistryValueNotFoundException">RegistryValueNotFoundException</a></dd>
+<dd><a href="registry.html#RegistryStructureDoesNotExist">RegistryStructureDoesNotExist</a></dd>
+<dd><a href="registry.html#RegistryException">RegistryException</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="RegistryValueNotFoundException-__init__"><strong>__init__</strong></a>(self, value)</dt><dd><tt>Arguments:<br>
+-&nbsp;`value`:</tt></dd></dl>
+
+<dl><dt><a name="RegistryValueNotFoundException-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="registry.html#RegistryException">RegistryException</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#RegistryValueNotFoundException-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="RegistryValueNotFoundException-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryValueNotFoundException-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="RegistryValueNotFoundException-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryValueNotFoundException-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="RegistryValueNotFoundException-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryValueNotFoundException-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="RegistryValueNotFoundException-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryValueNotFoundException-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="RegistryValueNotFoundException-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="RegistryValueNotFoundException-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryValueNotFoundException-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="RegistryValueNotFoundException-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#RegistryValueNotFoundException-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="RegistryValueNotFoundException-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="RegistryValueNotFoundException-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="SKRecord">class <strong>SKRecord</strong></a>(<a href="registry.html#Record">Record</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Security&nbsp;<a href="#Record">Record</a>.&nbsp;Contains&nbsp;Windows&nbsp;security&nbsp;descriptor,&nbsp;<br>
+Which&nbsp;defines&nbsp;ownership&nbsp;and&nbsp;permissions&nbsp;for&nbsp;local&nbsp;values<br>
+and&nbsp;subkeys.<br>
+&nbsp;<br>
+May&nbsp;be&nbsp;referenced&nbsp;by&nbsp;multiple&nbsp;NK&nbsp;records.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="registry.html#SKRecord">SKRecord</a></dd>
+<dd><a href="registry.html#Record">Record</a></dd>
+<dd><a href="registry.html#RegistryBlock">RegistryBlock</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="SKRecord-__init__"><strong>__init__</strong></a>(self, buf, offset, parent)</dt><dd><tt>Constructor.<br>
+Arguments:<br>
+-&nbsp;`buf`:&nbsp;Byte&nbsp;string&nbsp;containing&nbsp;Windows&nbsp;<a href="#Registry">Registry</a>&nbsp;file.<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;offset&nbsp;into&nbsp;the&nbsp;buffer&nbsp;at&nbsp;which&nbsp;the&nbsp;block&nbsp;starts.<br>
+-&nbsp;`parent`:&nbsp;The&nbsp;parent&nbsp;block,&nbsp;which&nbsp;links&nbsp;to&nbsp;this&nbsp;block.&nbsp;This&nbsp;should&nbsp;be&nbsp;an&nbsp;<a href="#HBINCell">HBINCell</a>.</tt></dd></dl>
+
+<dl><dt><a name="SKRecord-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Methods inherited from <a href="registry.html#Record">Record</a>:<br>
+<dl><dt><a name="SKRecord-abs_offset_from_hbin_offset"><strong>abs_offset_from_hbin_offset</strong></a>(self, offset)</dt><dd><tt>Offsets&nbsp;contained&nbsp;in&nbsp;HBIN&nbsp;cells&nbsp;are&nbsp;relative&nbsp;to&nbsp;the&nbsp;beginning&nbsp;of&nbsp;the&nbsp;first&nbsp;HBIN.<br>
+This&nbsp;converts&nbsp;the&nbsp;relative&nbsp;offset&nbsp;into&nbsp;an&nbsp;absolute&nbsp;offset.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="registry.html#RegistryBlock">RegistryBlock</a>:<br>
+<dl><dt><a name="SKRecord-absolute_offset"><strong>absolute_offset</strong></a>(self, offset)</dt><dd><tt>Get&nbsp;the&nbsp;absolute&nbsp;offset&nbsp;from&nbsp;an&nbsp;offset&nbsp;relative&nbsp;to&nbsp;this&nbsp;block<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;into&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="SKRecord-offset"><strong>offset</strong></a>(self)</dt><dd><tt>Equivalent&nbsp;to&nbsp;<a href="#SKRecord-absolute_offset">absolute_offset</a>(0x0),&nbsp;which&nbsp;is&nbsp;the&nbsp;starting&nbsp;offset&nbsp;of&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="SKRecord-parent"><strong>parent</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;parent&nbsp;block.&nbsp;See&nbsp;the&nbsp;class&nbsp;documentation&nbsp;for&nbsp;what&nbsp;the&nbsp;parent&nbsp;link&nbsp;is.</tt></dd></dl>
+
+<dl><dt><a name="SKRecord-unpack_dword"><strong>unpack_dword</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;DWORD&nbsp;(4&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="SKRecord-unpack_int"><strong>unpack_int</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;signed&nbsp;integer&nbsp;(4&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="SKRecord-unpack_qword"><strong>unpack_qword</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;QWORD&nbsp;(8&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="SKRecord-unpack_string"><strong>unpack_string</strong></a>(self, offset, length)</dt><dd><tt>Returns&nbsp;a&nbsp;string&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset&nbsp;with&nbsp;the&nbsp;given&nbsp;length.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.<br>
+-&nbsp;`length`:&nbsp;The&nbsp;length&nbsp;of&nbsp;the&nbsp;string.</tt></dd></dl>
+
+<dl><dt><a name="SKRecord-unpack_word"><strong>unpack_word</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;WORD&nbsp;(2&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="registry.html#RegistryBlock">RegistryBlock</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="SubkeyList">class <strong>SubkeyList</strong></a>(<a href="registry.html#Record">Record</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>A&nbsp;base&nbsp;class&nbsp;for&nbsp;use&nbsp;by&nbsp;structures&nbsp;recording&nbsp;the&nbsp;subkeys&nbsp;of&nbsp;<a href="#Registry">Registry</a>&nbsp;key.<br>
+The&nbsp;required&nbsp;overload&nbsp;is&nbsp;<a href="#SubkeyList-keys">keys</a>(),&nbsp;which&nbsp;is&nbsp;a&nbsp;generator&nbsp;for&nbsp;all&nbsp;the&nbsp;subkeys&nbsp;(NKRecords).<br>
+The&nbsp;<a href="#SubkeyList">SubkeyList</a>&nbsp;is&nbsp;not&nbsp;meant&nbsp;to&nbsp;be&nbsp;used&nbsp;directly.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="registry.html#SubkeyList">SubkeyList</a></dd>
+<dd><a href="registry.html#Record">Record</a></dd>
+<dd><a href="registry.html#RegistryBlock">RegistryBlock</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="SubkeyList-__init__"><strong>__init__</strong></a>(self, buf, offset, parent)</dt><dd><tt>Constructor.<br>
+Arguments:<br>
+-&nbsp;`buf`:&nbsp;Byte&nbsp;string&nbsp;containing&nbsp;Windows&nbsp;<a href="#Registry">Registry</a>&nbsp;file.<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;offset&nbsp;into&nbsp;the&nbsp;buffer&nbsp;at&nbsp;which&nbsp;the&nbsp;block&nbsp;starts.<br>
+-&nbsp;`parent`:&nbsp;The&nbsp;parent&nbsp;block,&nbsp;which&nbsp;links&nbsp;to&nbsp;this&nbsp;block.&nbsp;The&nbsp;parent&nbsp;of&nbsp;a&nbsp;<a href="#SubkeyList">SubkeyList</a>&nbsp;SHOULD&nbsp;be&nbsp;a&nbsp;<a href="#NKRecord">NKRecord</a>.</tt></dd></dl>
+
+<dl><dt><a name="SubkeyList-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="SubkeyList-keys"><strong>keys</strong></a>(self)</dt><dd><tt>A&nbsp;generator&nbsp;that&nbsp;yields&nbsp;the&nbsp;NKRecords&nbsp;referenced&nbsp;by&nbsp;this&nbsp;list.<br>
+The&nbsp;base&nbsp;<a href="#SubkeyList">SubkeyList</a>&nbsp;class&nbsp;returns&nbsp;no&nbsp;NKRecords,&nbsp;since&nbsp;it&nbsp;should&nbsp;not&nbsp;be&nbsp;used&nbsp;directly.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="registry.html#Record">Record</a>:<br>
+<dl><dt><a name="SubkeyList-abs_offset_from_hbin_offset"><strong>abs_offset_from_hbin_offset</strong></a>(self, offset)</dt><dd><tt>Offsets&nbsp;contained&nbsp;in&nbsp;HBIN&nbsp;cells&nbsp;are&nbsp;relative&nbsp;to&nbsp;the&nbsp;beginning&nbsp;of&nbsp;the&nbsp;first&nbsp;HBIN.<br>
+This&nbsp;converts&nbsp;the&nbsp;relative&nbsp;offset&nbsp;into&nbsp;an&nbsp;absolute&nbsp;offset.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="registry.html#RegistryBlock">RegistryBlock</a>:<br>
+<dl><dt><a name="SubkeyList-absolute_offset"><strong>absolute_offset</strong></a>(self, offset)</dt><dd><tt>Get&nbsp;the&nbsp;absolute&nbsp;offset&nbsp;from&nbsp;an&nbsp;offset&nbsp;relative&nbsp;to&nbsp;this&nbsp;block<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;into&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="SubkeyList-offset"><strong>offset</strong></a>(self)</dt><dd><tt>Equivalent&nbsp;to&nbsp;<a href="#SubkeyList-absolute_offset">absolute_offset</a>(0x0),&nbsp;which&nbsp;is&nbsp;the&nbsp;starting&nbsp;offset&nbsp;of&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="SubkeyList-parent"><strong>parent</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;parent&nbsp;block.&nbsp;See&nbsp;the&nbsp;class&nbsp;documentation&nbsp;for&nbsp;what&nbsp;the&nbsp;parent&nbsp;link&nbsp;is.</tt></dd></dl>
+
+<dl><dt><a name="SubkeyList-unpack_dword"><strong>unpack_dword</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;DWORD&nbsp;(4&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="SubkeyList-unpack_int"><strong>unpack_int</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;signed&nbsp;integer&nbsp;(4&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="SubkeyList-unpack_qword"><strong>unpack_qword</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;QWORD&nbsp;(8&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="SubkeyList-unpack_string"><strong>unpack_string</strong></a>(self, offset, length)</dt><dd><tt>Returns&nbsp;a&nbsp;string&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset&nbsp;with&nbsp;the&nbsp;given&nbsp;length.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.<br>
+-&nbsp;`length`:&nbsp;The&nbsp;length&nbsp;of&nbsp;the&nbsp;string.</tt></dd></dl>
+
+<dl><dt><a name="SubkeyList-unpack_word"><strong>unpack_word</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;WORD&nbsp;(2&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="registry.html#RegistryBlock">RegistryBlock</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="UnknownTypeException">class <strong>UnknownTypeException</strong></a>(<a href="registry.html#RegistryException">RegistryException</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>An&nbsp;exception&nbsp;to&nbsp;be&nbsp;raised&nbsp;when&nbsp;an&nbsp;unknown&nbsp;data&nbsp;type&nbsp;is&nbsp;encountered.<br>
+Supported&nbsp;data&nbsp;types&nbsp;current&nbsp;consist&nbsp;of&nbsp;<br>
+&nbsp;-&nbsp;RegSZ&nbsp;<br>
+&nbsp;-&nbsp;ExpandSZ<br>
+&nbsp;-&nbsp;RegBin&nbsp;<br>
+&nbsp;-&nbsp;RegDWord<br>
+&nbsp;-&nbsp;RegMultiSZ<br>
+&nbsp;-&nbsp;RegQWord<br>
+&nbsp;-&nbsp;RegNone&nbsp;<br>
+&nbsp;-&nbsp;RegBigEndian&nbsp;<br>
+&nbsp;-&nbsp;RegLink&nbsp;<br>
+&nbsp;-&nbsp;RegResourceList&nbsp;<br>
+&nbsp;-&nbsp;RegFullResourceDescriptor&nbsp;<br>
+&nbsp;-&nbsp;RegResourceRequirementsList<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="registry.html#UnknownTypeException">UnknownTypeException</a></dd>
+<dd><a href="registry.html#RegistryException">RegistryException</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="UnknownTypeException-__init__"><strong>__init__</strong></a>(self, value)</dt><dd><tt>Constructor.<br>
+Arguments:<br>
+-&nbsp;`value`:&nbsp;A&nbsp;string&nbsp;description.</tt></dd></dl>
+
+<dl><dt><a name="UnknownTypeException-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="registry.html#RegistryException">RegistryException</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#UnknownTypeException-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="UnknownTypeException-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#UnknownTypeException-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="UnknownTypeException-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#UnknownTypeException-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="UnknownTypeException-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#UnknownTypeException-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="UnknownTypeException-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#UnknownTypeException-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="UnknownTypeException-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="UnknownTypeException-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#UnknownTypeException-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="UnknownTypeException-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#UnknownTypeException-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="UnknownTypeException-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="UnknownTypeException-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="VKRecord">class <strong>VKRecord</strong></a>(<a href="registry.html#Record">Record</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>The&nbsp;<a href="#VKRecord">VKRecord</a>&nbsp;holds&nbsp;one&nbsp;name-value&nbsp;pair.&nbsp;&nbsp;The&nbsp;data&nbsp;may&nbsp;be&nbsp;one&nbsp;many&nbsp;types,&nbsp;including<br>
+strings,&nbsp;integers,&nbsp;and&nbsp;binary&nbsp;data.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="registry.html#VKRecord">VKRecord</a></dd>
+<dd><a href="registry.html#Record">Record</a></dd>
+<dd><a href="registry.html#RegistryBlock">RegistryBlock</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="VKRecord-__init__"><strong>__init__</strong></a>(self, buf, offset, parent)</dt><dd><tt>Constructor.<br>
+Arguments:<br>
+-&nbsp;`buf`:&nbsp;Byte&nbsp;string&nbsp;containing&nbsp;Windows&nbsp;<a href="#Registry">Registry</a>&nbsp;file.<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;offset&nbsp;into&nbsp;the&nbsp;buffer&nbsp;at&nbsp;which&nbsp;the&nbsp;block&nbsp;starts.<br>
+-&nbsp;`parent`:&nbsp;The&nbsp;parent&nbsp;block,&nbsp;which&nbsp;links&nbsp;to&nbsp;this&nbsp;block.&nbsp;This&nbsp;should&nbsp;be&nbsp;an&nbsp;<a href="#HBINCell">HBINCell</a>.</tt></dd></dl>
+
+<dl><dt><a name="VKRecord-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="VKRecord-data"><strong>data</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;data.&nbsp;&nbsp;This&nbsp;method&nbsp;will&nbsp;return&nbsp;various&nbsp;types&nbsp;based&nbsp;on&nbsp;the&nbsp;data&nbsp;type.<br>
+&nbsp;<br>
+RegSZ:<br>
+&nbsp;&nbsp;Return&nbsp;a&nbsp;string&nbsp;containing&nbsp;the&nbsp;data,&nbsp;doing&nbsp;the&nbsp;best&nbsp;we&nbsp;can&nbsp;to&nbsp;convert&nbsp;it<br>
+&nbsp;&nbsp;to&nbsp;ASCII&nbsp;or&nbsp;UNICODE.<br>
+ExpandSZ:<br>
+&nbsp;&nbsp;Return&nbsp;a&nbsp;string&nbsp;containing&nbsp;the&nbsp;data,&nbsp;doing&nbsp;the&nbsp;best&nbsp;we&nbsp;can&nbsp;to&nbsp;convert&nbsp;it<br>
+&nbsp;&nbsp;to&nbsp;ASCII&nbsp;or&nbsp;UNICODE.&nbsp;The&nbsp;special&nbsp;variables&nbsp;are&nbsp;not&nbsp;expanded.<br>
+RegMultiSZ:<br>
+&nbsp;&nbsp;Return&nbsp;a&nbsp;list&nbsp;of&nbsp;strings.<br>
+RegNone:<br>
+&nbsp;&nbsp;Return&nbsp;False.<br>
+&nbsp;&nbsp;TODO&nbsp;check&nbsp;that&nbsp;RegNone&nbsp;really&nbsp;means&nbsp;no&nbsp;value,&nbsp;and&nbsp;not,&nbsp;"no&nbsp;defined&nbsp;format"<br>
+RegDword:<br>
+&nbsp;&nbsp;Return&nbsp;an&nbsp;unsigned&nbsp;integer&nbsp;containing&nbsp;the&nbsp;data.<br>
+RegQword:<br>
+&nbsp;&nbsp;Return&nbsp;an&nbsp;unsigned&nbsp;integer&nbsp;containing&nbsp;the&nbsp;data.<br>
+RegBin:<br>
+&nbsp;&nbsp;Return&nbsp;a&nbsp;sequence&nbsp;of&nbsp;bytes&nbsp;containing&nbsp;the&nbsp;binary&nbsp;data.<br>
+RegBigEndian:<br>
+&nbsp;&nbsp;Not&nbsp;currently&nbsp;supported.&nbsp;TODO.<br>
+RegLink:<br>
+&nbsp;&nbsp;Not&nbsp;currently&nbsp;supported.&nbsp;TODO.<br>
+RegResourceList:<br>
+&nbsp;&nbsp;Not&nbsp;currently&nbsp;supported.&nbsp;TODO.<br>
+RegFullResourceDescriptor:<br>
+&nbsp;&nbsp;Not&nbsp;currently&nbsp;supported.&nbsp;TODO.<br>
+RegResourceRequirementsList:<br>
+&nbsp;&nbsp;Not&nbsp;currently&nbsp;supported.&nbsp;TODO.</tt></dd></dl>
+
+<dl><dt><a name="VKRecord-data_length"><strong>data_length</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;length&nbsp;of&nbsp;this&nbsp;value&nbsp;data.</tt></dd></dl>
+
+<dl><dt><a name="VKRecord-data_offset"><strong>data_offset</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;offset&nbsp;to&nbsp;the&nbsp;raw&nbsp;data&nbsp;associated&nbsp;with&nbsp;this&nbsp;value.</tt></dd></dl>
+
+<dl><dt><a name="VKRecord-data_type"><strong>data_type</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;data&nbsp;type&nbsp;of&nbsp;this&nbsp;value&nbsp;data&nbsp;as&nbsp;an&nbsp;unsigned&nbsp;integer.</tt></dd></dl>
+
+<dl><dt><a name="VKRecord-has_ascii_name"><strong>has_ascii_name</strong></a>(self)</dt><dd><tt>Is&nbsp;the&nbsp;name&nbsp;of&nbsp;this&nbsp;value&nbsp;in&nbsp;the&nbsp;ASCII&nbsp;charset?<br>
+Note,&nbsp;this&nbsp;doesnt&nbsp;work,&nbsp;yet...&nbsp;TODO</tt></dd></dl>
+
+<dl><dt><a name="VKRecord-has_name"><strong>has_name</strong></a>(self)</dt><dd><tt>Has&nbsp;a&nbsp;name?&nbsp;or&nbsp;perhaps&nbsp;we&nbsp;should&nbsp;use&nbsp;'(default)'</tt></dd></dl>
+
+<dl><dt><a name="VKRecord-name"><strong>name</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;name,&nbsp;if&nbsp;it&nbsp;exists.&nbsp;If&nbsp;not,&nbsp;the&nbsp;empty&nbsp;string&nbsp;is&nbsp;returned.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="registry.html#Record">Record</a>:<br>
+<dl><dt><a name="VKRecord-abs_offset_from_hbin_offset"><strong>abs_offset_from_hbin_offset</strong></a>(self, offset)</dt><dd><tt>Offsets&nbsp;contained&nbsp;in&nbsp;HBIN&nbsp;cells&nbsp;are&nbsp;relative&nbsp;to&nbsp;the&nbsp;beginning&nbsp;of&nbsp;the&nbsp;first&nbsp;HBIN.<br>
+This&nbsp;converts&nbsp;the&nbsp;relative&nbsp;offset&nbsp;into&nbsp;an&nbsp;absolute&nbsp;offset.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="registry.html#RegistryBlock">RegistryBlock</a>:<br>
+<dl><dt><a name="VKRecord-absolute_offset"><strong>absolute_offset</strong></a>(self, offset)</dt><dd><tt>Get&nbsp;the&nbsp;absolute&nbsp;offset&nbsp;from&nbsp;an&nbsp;offset&nbsp;relative&nbsp;to&nbsp;this&nbsp;block<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;into&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="VKRecord-offset"><strong>offset</strong></a>(self)</dt><dd><tt>Equivalent&nbsp;to&nbsp;<a href="#VKRecord-absolute_offset">absolute_offset</a>(0x0),&nbsp;which&nbsp;is&nbsp;the&nbsp;starting&nbsp;offset&nbsp;of&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="VKRecord-parent"><strong>parent</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;parent&nbsp;block.&nbsp;See&nbsp;the&nbsp;class&nbsp;documentation&nbsp;for&nbsp;what&nbsp;the&nbsp;parent&nbsp;link&nbsp;is.</tt></dd></dl>
+
+<dl><dt><a name="VKRecord-unpack_dword"><strong>unpack_dword</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;DWORD&nbsp;(4&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="VKRecord-unpack_int"><strong>unpack_int</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;signed&nbsp;integer&nbsp;(4&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="VKRecord-unpack_qword"><strong>unpack_qword</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;QWORD&nbsp;(8&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="VKRecord-unpack_string"><strong>unpack_string</strong></a>(self, offset, length)</dt><dd><tt>Returns&nbsp;a&nbsp;string&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset&nbsp;with&nbsp;the&nbsp;given&nbsp;length.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.<br>
+-&nbsp;`length`:&nbsp;The&nbsp;length&nbsp;of&nbsp;the&nbsp;string.</tt></dd></dl>
+
+<dl><dt><a name="VKRecord-unpack_word"><strong>unpack_word</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;WORD&nbsp;(2&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="registry.html#RegistryBlock">RegistryBlock</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="ValuesList">class <strong>ValuesList</strong></a>(<a href="registry.html#HBINCell">HBINCell</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>A&nbsp;<a href="#ValuesList">ValuesList</a>&nbsp;is&nbsp;a&nbsp;simple&nbsp;structure&nbsp;of&nbsp;fixed&nbsp;length&nbsp;pointers/offsets&nbsp;to&nbsp;VKRecords.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="registry.html#ValuesList">ValuesList</a></dd>
+<dd><a href="registry.html#HBINCell">HBINCell</a></dd>
+<dd><a href="registry.html#RegistryBlock">RegistryBlock</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="ValuesList-__init__"><strong>__init__</strong></a>(self, buf, offset, parent, number)</dt><dd><tt>Constructor.<br>
+Arguments:<br>
+-&nbsp;`buf`:&nbsp;Byte&nbsp;string&nbsp;containing&nbsp;Windows&nbsp;<a href="#Registry">Registry</a>&nbsp;file.<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;offset&nbsp;into&nbsp;the&nbsp;buffer&nbsp;at&nbsp;which&nbsp;the&nbsp;block&nbsp;starts.<br>
+-&nbsp;`parent`:&nbsp;The&nbsp;parent&nbsp;block,&nbsp;which&nbsp;links&nbsp;to&nbsp;this&nbsp;block.&nbsp;The&nbsp;parent&nbsp;of&nbsp;a&nbsp;<a href="#ValuesList">ValuesList</a>&nbsp;SHOULD&nbsp;be&nbsp;a&nbsp;<a href="#NKRecord">NKRecord</a>.</tt></dd></dl>
+
+<dl><dt><a name="ValuesList-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="ValuesList-values"><strong>values</strong></a>(self)</dt><dd><tt>A&nbsp;generator&nbsp;that&nbsp;yields&nbsp;the&nbsp;VKRecords&nbsp;referenced&nbsp;by&nbsp;this&nbsp;list.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="registry.html#HBINCell">HBINCell</a>:<br>
+<dl><dt><a name="ValuesList-abs_offset_from_hbin_offset"><strong>abs_offset_from_hbin_offset</strong></a>(self, offset)</dt><dd><tt>Offsets&nbsp;contained&nbsp;in&nbsp;HBIN&nbsp;cells&nbsp;are&nbsp;relative&nbsp;to&nbsp;the&nbsp;beginning&nbsp;of&nbsp;the&nbsp;first&nbsp;HBIN.<br>
+This&nbsp;converts&nbsp;the&nbsp;relative&nbsp;offset&nbsp;into&nbsp;an&nbsp;absolute&nbsp;offset.</tt></dd></dl>
+
+<dl><dt><a name="ValuesList-data_id"><strong>data_id</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;ID&nbsp;string&nbsp;of&nbsp;the&nbsp;data&nbsp;block&nbsp;of&nbsp;this&nbsp;<a href="#HBINCell">HBINCell</a>.</tt></dd></dl>
+
+<dl><dt><a name="ValuesList-data_offset"><strong>data_offset</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;absolute&nbsp;offset&nbsp;of&nbsp;the&nbsp;data&nbsp;block&nbsp;of&nbsp;this&nbsp;<a href="#HBINCell">HBINCell</a>.</tt></dd></dl>
+
+<dl><dt><a name="ValuesList-is_free"><strong>is_free</strong></a>(self)</dt><dd><tt>Is&nbsp;the&nbsp;cell&nbsp;free?</tt></dd></dl>
+
+<dl><dt><a name="ValuesList-next"><strong>next</strong></a>(self)</dt><dd><tt>Returns&nbsp;the&nbsp;next&nbsp;<a href="#HBINCell">HBINCell</a>,&nbsp;which&nbsp;is&nbsp;located&nbsp;immediately&nbsp;after&nbsp;this.<br>
+Note:&nbsp;This&nbsp;will&nbsp;always&nbsp;return&nbsp;an&nbsp;<a href="#HBINCell">HBINCell</a>&nbsp;starting&nbsp;at&nbsp;the&nbsp;next&nbsp;location<br>
+whether&nbsp;or&nbsp;not&nbsp;the&nbsp;buffer&nbsp;is&nbsp;large&nbsp;enough.&nbsp;The&nbsp;calling&nbsp;function&nbsp;should&nbsp;<br>
+check&nbsp;the&nbsp;offset&nbsp;of&nbsp;the&nbsp;next&nbsp;<a href="#HBINCell">HBINCell</a>&nbsp;to&nbsp;ensure&nbsp;it&nbsp;does&nbsp;not&nbsp;overrun&nbsp;the<br>
+HBIN&nbsp;buffer.</tt></dd></dl>
+
+<dl><dt><a name="ValuesList-offset"><strong>offset</strong></a>(self)</dt><dd><tt>Accessor&nbsp;for&nbsp;absolute&nbsp;offset&nbsp;of&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="ValuesList-size"><strong>size</strong></a>(self)</dt><dd><tt>Size&nbsp;of&nbsp;this&nbsp;cell,&nbsp;as&nbsp;an&nbsp;unsigned&nbsp;integer.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="registry.html#RegistryBlock">RegistryBlock</a>:<br>
+<dl><dt><a name="ValuesList-absolute_offset"><strong>absolute_offset</strong></a>(self, offset)</dt><dd><tt>Get&nbsp;the&nbsp;absolute&nbsp;offset&nbsp;from&nbsp;an&nbsp;offset&nbsp;relative&nbsp;to&nbsp;this&nbsp;block<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;into&nbsp;this&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="ValuesList-parent"><strong>parent</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;parent&nbsp;block.&nbsp;See&nbsp;the&nbsp;class&nbsp;documentation&nbsp;for&nbsp;what&nbsp;the&nbsp;parent&nbsp;link&nbsp;is.</tt></dd></dl>
+
+<dl><dt><a name="ValuesList-unpack_dword"><strong>unpack_dword</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;DWORD&nbsp;(4&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="ValuesList-unpack_int"><strong>unpack_int</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;signed&nbsp;integer&nbsp;(4&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="ValuesList-unpack_qword"><strong>unpack_qword</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;QWORD&nbsp;(8&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<dl><dt><a name="ValuesList-unpack_string"><strong>unpack_string</strong></a>(self, offset, length)</dt><dd><tt>Returns&nbsp;a&nbsp;string&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset&nbsp;with&nbsp;the&nbsp;given&nbsp;length.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.<br>
+-&nbsp;`length`:&nbsp;The&nbsp;length&nbsp;of&nbsp;the&nbsp;string.</tt></dd></dl>
+
+<dl><dt><a name="ValuesList-unpack_word"><strong>unpack_word</strong></a>(self, offset)</dt><dd><tt>Returns&nbsp;a&nbsp;little-endian&nbsp;WORD&nbsp;(2&nbsp;bytes)&nbsp;from&nbsp;the&nbsp;relative&nbsp;offset.<br>
+Arguments:<br>
+-&nbsp;`offset`:&nbsp;The&nbsp;relative&nbsp;offset&nbsp;from&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;block.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="registry.html#RegistryBlock">RegistryBlock</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-recurse_key"><strong>recurse_key</strong></a>(key)</dt><dd><tt>For&nbsp;testing.&nbsp;Recurse&nbsp;and&nbsp;parse&nbsp;everything.</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>ExpandSZ</strong> = 2<br>
+<strong>RegBigEndian</strong> = 5<br>
+<strong>RegBin</strong> = 3<br>
+<strong>RegDWord</strong> = 4<br>
+<strong>RegFullResourceDescriptor</strong> = 9<br>
+<strong>RegLink</strong> = 6<br>
+<strong>RegMultiSZ</strong> = 7<br>
+<strong>RegNone</strong> = 0<br>
+<strong>RegQWord</strong> = 11<br>
+<strong>RegResourceList</strong> = 8<br>
+<strong>RegResourceRequirementsList</strong> = 10<br>
+<strong>RegSZ</strong> = 1</td></tr></table>
+</body></html>
