@@ -1068,8 +1068,8 @@ class HBINBlock(RegistryBlock):
                 print "li record encountered. This is not yet implemented, due to lack of testing samples."
 
             elif c.data_id() == "ri":
+                # TODO consider making an RIRecord class
                 r = c
-                print "ri record encountered. This is not yet implemented, due to lack of testing samples."
 
             elif c.data_id() == "sk":
                 r = SKRecord(self._buf, c.data_offset(), self)
@@ -1141,7 +1141,7 @@ class RegistryKey(object):
         if self._nkrecord.subkey_number() == 0:
             raise RegistryKeyNotFoundException(self.path() + "\\" + name)
 
-        for k in self._nkrecord.subkey_list():
+        for k in self._nkrecord.subkey_list().keys():
             if k.name() == name:
                 return RegistryKey(k)
         raise RegistryKeyNotFoundException(self.path() + "\\" + name)
@@ -1159,6 +1159,13 @@ class RegistryKey(object):
             if v.name() == name:
                 return RegistryValue(v)
         raise RegistryValueNotFoundException(self.path() + " : " + name) 
+
+    def find_key(self, path):
+        if len(path) == 0:
+            return self
+
+        (immediate, _, future) = path.partition("\\")
+        return self.subkey(immediate).find_key(future)
 
 class Registry(object):
     """
@@ -1178,7 +1185,19 @@ class Registry(object):
         self._regf = REGFBlock(self._buf, 0, False)
 
     def root(self):
+        """
+        Return the first RegistryKey in the hive.
+        """
         return RegistryKey(self._regf.first_key())
+
+    def open(self, path):
+        """
+        Return a RegistryKey by full path.
+        Subkeys are separated by the backslash character ('\'). A trailing backslash may or may
+        not be present.
+        The hive name should not be included.
+        """
+        return RegistryKey(self._regf.first_key()).find_key(path)
 
     def test(self):
         n = False
@@ -1224,8 +1243,15 @@ class Registry(object):
         print "---"
         print self._regf.hive_name()
 
+def recurse_key(key):
+    """
+    For testing. Recurse and parse everything.
+    """
+    for k in key.subkeys():
+        print k
+        recurse_key(k)
+
 if __name__ == '__main__':
     r = Registry(sys.argv[1])
-    for k in r.root().subkeys():
-        print k
-
+#    recurse_key(r.root())
+    print r.open("Windows\\CurrentVersion")
