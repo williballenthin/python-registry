@@ -932,6 +932,9 @@ class NKRecord(Record):
         return struct.unpack_from("<%ds" % (classname_length), self._buf, d.data_offset())[0]
 
     def timestamp(self):
+        """
+        Get the modified timestamp as a Python datetime.
+        """
         return parse_windows_timestamp(self.unpack_qword(0x4))
 
     def name(self):
@@ -1005,7 +1008,7 @@ class NKRecord(Record):
     def values_list(self):
         """
         Get the values as a ValuesList.
-        Will raise RegistryStructureDoesNotExist if this NKRecord has no values.
+        Raises RegistryStructureDoesNotExist if this NKRecord has no values.
         """
         if self.values_number() == 0:
             raise RegistryStructureDoesNotExist("NK Record has no associated values.")
@@ -1016,12 +1019,20 @@ class NKRecord(Record):
         return ValuesList(self._buf, d.data_offset(), self, self.values_number())
 
     def subkey_number(self):
+        """
+        Get the number of subkeys of this key.
+        """
         number = self.unpack_dword(0x14)
         if number == 0xFFFFFFFF:
             return 0
         return number
 
     def subkey_list(self):
+        """
+        Get the subkeys of this key as a descendant of SubkeyList.
+        Raises RegistryStructureDoesNotExists if this NKRecord does not have any subkeys.
+        See NKRecord.subkey_number() to check for the existance of subkeys.
+        """
         if self.subkey_number() == 0:
             raise RegistryStructureDoesNotExist("NKRecord has no subkey list at 0x%x" % (self.offset()))
 
@@ -1080,7 +1091,7 @@ class HBINBlock(RegistryBlock):
 
     def has_next(self):
         """
-        Does another HBIN exist after this one?
+        Does another HBINBlock exist after this one?
         """
         regf = self.first_hbin().parent()
         if regf.last_hbin_offset() == self.offset():
@@ -1111,7 +1122,8 @@ class HBINBlock(RegistryBlock):
 
     def records(self):
         """
-        Get a generator that yields each Record or Cell contained in this HBIN.
+        A generator that yields each HBINCell contained in this HBIN.
+        These are not necessarily in use, or linked to, from the root key.
         """
         c = HBINCell(self._buf, self._offset + 0x20, self)
 
@@ -1123,16 +1135,41 @@ class HBINBlock(RegistryBlock):
                 break
 
 class RegistryValue(object):
+    """
+    This is a high level structure for working with the Windows Registry.
+    It represents the 3-tuple of (name, type, value) associated with a registry value.
+    """
     def __init__(self, vkrecord):
         self._vkrecord = vkrecord
 
     def name(self):
+        """
+        Get the name of the value as a string.
+        The name of the default value is returned as "(default)".
+        """
         if self._vkrecord.has_name():
             return self._vkrecord.name()
         else:
             return  "(default)"
 
     def value_type(self):
+        """
+        Get the type of the value as an integer constant.
+
+        One of: 
+         - RegSZ = 0x0001
+         - ExpandSZ = 0x0002
+         - RegBin = 0x0003
+         - RegDWord = 0x0004
+         - RegMultiSZ = 0x0007
+         - RegQWord = 0x000B
+         - RegNone = 0x0000
+         - RegBigEndian = 0x0005
+         - RegLink = 0x0006
+         - RegResourceList = 0x0008
+         - RegFullResourceDescriptor = 0x0009
+         - RegResourceRequirementsList = 0x000A
+        """
         return self._vkrecord.data_type()
 
     def value(self):
@@ -1140,6 +1177,9 @@ class RegistryValue(object):
 
 class RegistryKey(object):
     """
+    A high level structure for use in traversing the Windows Registry.
+    A RegistryKey is a node in a tree-like structure.
+    A RegistryKey may have a set of values associated with it, as well as a last modified timestamp.
     """
     def __init__(self, nkrecord):
         """
@@ -1156,18 +1196,37 @@ class RegistryKey(object):
         return self.value(key)
 
     def timestamp(self):
+        """
+        Get the last modified timestamp as a Python datetime.
+        """
         return self._nkrecord.timestamp()
 
     def name(self):
+        """
+        Get the name of the key as a string.
+        If the key has no explicit name, then the string "(default)" is returned.
+
+        For example, "Windows" if the key path were /{hive name}/SOFTWARE/Microsoft/Windows
+        See RegistryKey.path() to get the complete key name.
+        """
         if self._nkrecord.has_name():
             return self._nkrecord.name()
         else:
             return "(default)"
 
     def path(self):
+        """
+        Get the full path of the RegistryKey as a string.
+        For example, "/{hive name}/SOFTWARE/Microsoft/Windows"
+        """
         return self._nkrecord.path()
 
     def parent(self):
+        """
+        Get the parent RegistryKey of this key, or raise
+        RegistryKeyHasNoParentException if it does not exist (for example,
+        the root key has no parent).
+        """
         # there may be a memory inefficiency here, since we create
         # a new RegistryKey from the NKRecord parent key, rather
         # than using the parent of this instance, if it exists.
@@ -1177,6 +1236,10 @@ class RegistryKey(object):
             raise RegistryKeyHasNoParentException(self.name())
 
     def subkeys(self):
+        """
+        Return a list of all subkeys. Each element in the list is a RegistryKey.
+        If the key has no subkeys, the empty list is returned.
+        """
         if self._nkrecord.subkey_number() == 0:
             return []
 
@@ -1184,6 +1247,10 @@ class RegistryKey(object):
         return [RegistryKey(k) for k in l.keys()]
 
     def subkey(self, name):
+        """
+        Return the subkey with a given name as a RegistryKey.
+        Raises RegistryKeyNotFoundException if the subkey with the given name does not exist.
+        """
         if self._nkrecord.subkey_number() == 0:
             raise RegistryKeyNotFoundException(self.path() + "\\" + name)
 
@@ -1193,12 +1260,22 @@ class RegistryKey(object):
         raise RegistryKeyNotFoundException(self.path() + "\\" + name)
 
     def values(self):
+        """
+        Return a list containing the values associated with this RegistryKey.
+        Each element of the list will be a RegistryValue.
+        If there are no values associated with this RegistryKey, then the
+        empty list is returned.
+        """
         try:
             return [RegistryValue(v) for v in self._nkrecord.values_list().values()]
         except RegistryStructureDoesNotExist:
             return []
             
     def value(self, name):
+        """
+        Return the value with the given name as a RegistryValue.
+        Raises RegistryValueNotFoundExceptiono if the value with the given name does not exist.
+        """
         if len(name) == 0:
             name = "(default)"
         for v in self._nkrecord.value_list().values():
@@ -1207,6 +1284,9 @@ class RegistryKey(object):
         raise RegistryValueNotFoundException(self.path() + " : " + name) 
 
     def find_key(self, path):
+        """
+        Perform a search for a RegistryKey with a specific path.
+        """
         if len(path) == 0:
             return self
 
@@ -1300,7 +1380,8 @@ def recurse_key(key):
 
 if __name__ == '__main__':
     r = Registry(sys.argv[1])
-    print r.root().timestamp()
+    print r.root()
+#    print r.root().timestamp()
 #    r.test()
 #    recurse_key(r.root())
 #    print r.open("Windows\\CurrentVersion")
