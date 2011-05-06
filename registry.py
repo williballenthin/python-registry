@@ -565,6 +565,7 @@ class VKRecord(Record):
           Return a list of strings.
         RegNone:
           Return False.
+          TODO check that RegNone really means no value, and not, "no defined format"
         RegDword:
           Return an unsigned integer containing the data.
         RegQword:
@@ -624,6 +625,7 @@ class VKRecord(Record):
             d = HBINCell(self._buf, data_offset, self)
             return struct.unpack_from("<Q", self._buf, d.data_offset())[0]
         elif data_type == RegNone:
+            # TODO check that this actually means there is no data in the value
             return False
         elif data_type == RegBigEndian:
             print "Warning: Data type RegBigEndian not yet supported"
@@ -729,6 +731,41 @@ class SubkeyList(Record):
         """
         return
 
+class RIRecord(SubkeyList):
+    """
+    """
+    
+    def __init__(self, buf, offset, parent):
+        """
+        
+        Arguments:
+        - `buf`:
+        - `offset`:
+        - `parent`:
+        """
+        super(RIRecord, self).__init__(buf, offset, parent)
+
+    def __str__(self):
+        return "RIRecord(Length: %d) at 0x%x" % (len(self.keys()), self.offset())
+
+    def keys(self):
+        d = HBINCell(self._buf, self.abs_offset_from_hbin_offset(self.unpack_dword(0x8)), self)
+        id_ = d.data_id()
+
+        # TODO this violates DRY, with the same parsing code found in NKRecord.subkey_list()
+        # the fix may be multiple inheritance...
+        # alternatively, HBINCell could have a .parse() method that attempts to return the structure it contains
+        if id_ == "lf":
+            l = LFRecord(self._buf, d.data_offset(), self)
+        elif id_ == "lh":
+            l = LHRecord(self._buf, d.data_offset(), self)
+        elif id_ == "ri":
+            l = RIRecord(self._buf, d.data_offset(), self)
+        else:
+            print id_ + " subkey list"
+            raise ParseException("Subkey list with type %s encountered, but not yet supported." % (id_))
+
+        return l.keys()
 
 class DirectSubkeyList(SubkeyList):
     def __init__(self, buf, offset, parent):
@@ -960,17 +997,7 @@ class NKRecord(Record):
         elif id_ == "lh":
             l = LHRecord(self._buf, d.data_offset(), self)
         elif id_ == "ri":
-            # assume there is only one level of indirection with RIRecords
-            d2 = HBINCell(self._buf, 
-                          self.abs_offset_from_hbin_offset(d.unpack_dword(0x8)), self)
-            id2 = d2.data_id()
-            if id2 == "lf":
-                l = LFRecord(self._buf, d2.data_offset(), d2)
-            elif id2 == "lh":
-                l = LHRecord(self._buf, d2.data_offset(), d2)
-            else:
-                print id2 + " subkey list"
-                raise ParseException("Subkey list with type %s encountered, but not yet supported." % (id_))
+            l = RIRecord(self._buf, d.data_offset(), self)
         else:
             print id_ + " subkey list"
             raise ParseException("Subkey list with type %s encountered, but not yet supported." % (id_))
@@ -1178,7 +1205,6 @@ class Registry(object):
         - `filename`: A string containing the filename of the Windows Registry file, such as
         NTUSER.DAT.
         """
-        self._filename = filename
         with open(filename) as f:
             self._buf = f.read()
 
@@ -1197,6 +1223,8 @@ class Registry(object):
         not be present.
         The hive name should not be included.
         """
+        # is the first registry key always the root? are there any other keys at this
+        # level? is this the name of the hive?
         return RegistryKey(self._regf.first_key()).find_key(path)
 
     def test(self):
@@ -1253,5 +1281,5 @@ def recurse_key(key):
 
 if __name__ == '__main__':
     r = Registry(sys.argv[1])
-#    recurse_key(r.root())
-    print r.open("Windows\\CurrentVersion")
+    recurse_key(r.root())
+#    print r.open("Windows\\CurrentVersion")
