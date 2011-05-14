@@ -589,8 +589,7 @@ class VKRecord(Record):
         RegMultiSZ:
           Return a list of strings.
         RegNone:
-          Return False.
-          TODO check that RegNone really means no value, and not, "no defined format"
+          See RegBin
         RegDword:
           Return an unsigned integer containing the data.
         RegQword:
@@ -619,39 +618,44 @@ class VKRecord(Record):
             else:
                 d = HBINCell(self._buf, data_offset, self)
                 s = struct.unpack_from("<%ds" % (data_length), self._buf, d.data_offset())[0]
+
             try:
-                s = s.decode("utf8").encode("utf8")
+                s = s.decode("utf16").encode("utf8")
             except UnicodeDecodeError:
                 try:
-                    s = s.decode("utf16").encode("utf8")
+                    s = s.decode("utf8").encode("utf8")
                 except UnicodeDecodeError:
                     try:
                         s = s.decode("utf8", "replace").encode("utf8")
                     except:
                         print "Well at this point you are screwed."
                         raise
+            s = s.partition('\x00')[0]
             return s
         elif data_type == RegBin:
-            # TODO test this
-            return self._buf[data_offset:data_offset + data_length]
+            if data_length >= 0x80000000:
+                data_length -= 0x80000000
+                return self._buf[data_offset:data_offset + data_length]
+            return self._buf[data_offset + 4:data_offset + 4 + data_length]
         elif data_type == RegDWord:
             return self.unpack_dword(0x8)
         elif data_type == RegMultiSZ:
-            # TODO test this
             if data_length >= 0x80000000:
                 # this means data_length < 5, so it must be 4, and
                 # be composed of completely \x00, so the strings are empty
                 return []
             else:
-                data = self._buf[data_offset:data_offset + data_length]
-            data = data.rstrip("\x00")
-            return data.split("\x00\x00")
+                data = self._buf[data_offset + 4:data_offset + 4 + data_length].decode("utf16")
+            return data.split("\x00")
         elif data_type == RegQWord:
             d = HBINCell(self._buf, data_offset, self)
             return struct.unpack_from("<Q", self._buf, d.data_offset())[0]
         elif data_type == RegNone:
-            # TODO check that this actually means there is no data in the value
-            return False
+            # TODO test this
+            if data_length >= 0x80000000:
+                data_length -= 0x80000000
+                return self._buf[data_offset:data_offset + data_length]
+            return self._buf[data_offset + 4:data_offset + 4 + data_length]
         elif data_type == RegBigEndian:
             print "Warning: Data type RegBigEndian not yet supported"
             return False
@@ -1204,15 +1208,12 @@ class RegistryKey(object):
     def name(self):
         """
         Get the name of the key as a string.
-        If the key has no explicit name, then the string "(default)" is returned.
 
         For example, "Windows" if the key path were /{hive name}/SOFTWARE/Microsoft/Windows
         See RegistryKey.path() to get the complete key name.
         """
-        if self._nkrecord.has_name():
-            return self._nkrecord.name()
-        else:
-            return "(default)"
+        return self._nkrecord.name()
+
 
     def path(self):
         """
@@ -1276,9 +1277,9 @@ class RegistryKey(object):
         Return the value with the given name as a RegistryValue.
         Raises RegistryValueNotFoundExceptiono if the value with the given name does not exist.
         """
-        if len(name) == 0:
-            name = "(default)"
-        for v in self._nkrecord.value_list().values():
+        if name == "(default)":
+            name = ""
+        for v in self._nkrecord.values_list().values():
             if v.name() == name:
                 return RegistryValue(v)
         raise RegistryValueNotFoundException(self.path() + " : " + name) 
@@ -1378,9 +1379,16 @@ def recurse_key(key):
         print k
         recurse_key(k)
 
+def print_all(key):
+    if len(key.subkeys()) == 0:
+        print key.path()
+    else:
+        for k in key.subkeys():
+            print_all(k)
+
 if __name__ == '__main__':
     r = Registry(sys.argv[1])
-    print r.root()
+    print_all(r.root())
 #    print r.root().timestamp()
 #    r.test()
 #    recurse_key(r.root())
