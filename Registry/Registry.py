@@ -168,7 +168,7 @@ class RegistryKey(object):
             return []
 
         l = self._nkrecord.subkey_list()
-        return [RegistryParse.RegistryKey(k) for k in l.keys()]
+        return [RegistryKey(k) for k in l.keys()]
 
     def subkey(self, name):
         """
