@@ -18,6 +18,20 @@
 import sys
 import RegistryParse
 
+RegSZ = 0x0001
+RegExpandSZ = 0x0002
+RegBin = 0x0003
+RegDWord = 0x0004
+RegMultiSZ = 0x0007
+RegQWord = 0x000B
+RegNone = 0x0000
+RegBigEndian = 0x0005
+RegLink = 0x0006
+RegResourceList = 0x0008
+RegFullResourceDescriptor = 0x0009
+RegResourceRequirementsList = 0x000A
+
+
 class RegistryKeyHasNoParentException(RegistryParse.RegistryStructureDoesNotExist):
     """
     """
@@ -85,7 +99,7 @@ class RegistryValue(object):
 
         One of: 
          - RegSZ = 0x0001
-         - ExpandSZ = 0x0002
+         - RegExpandSZ = 0x0002
          - RegBin = 0x0003
          - RegDWord = 0x0004
          - RegMultiSZ = 0x0007
@@ -105,7 +119,7 @@ class RegistryValue(object):
 
         One of: 
          - RegSZ
-         - ExpandSZ
+         - RegExpandSZ
          - RegBin
          - RegDWord
          - RegMultiSZ

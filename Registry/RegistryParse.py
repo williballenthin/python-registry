@@ -20,7 +20,7 @@ from datetime import datetime
 
 # Constants
 RegSZ = 0x0001
-ExpandSZ = 0x0002
+RegExpandSZ = 0x0002
 RegBin = 0x0003
 RegDWord = 0x0004
 RegMultiSZ = 0x0007
@@ -91,7 +91,7 @@ class UnknownTypeException(RegistryException):
     An exception to be raised when an unknown data type is encountered.
     Supported data types current consist of 
      - RegSZ 
-     - ExpandSZ
+     - RegExpandSZ
      - RegBin 
      - RegDWord
      - RegMultiSZ
@@ -441,8 +441,8 @@ class VKRecord(Record):
         data_type = self.data_type()
         if data_type == RegSZ:
             return "RegSZ"
-        elif data_type == ExpandSZ:
-            return "ExpandSZ"
+        elif data_type == RegExpandSZ:
+            return "RegExpandSZ"
         elif data_type == RegBin:
             return "RegBin"
         elif data_type == RegDWord:
@@ -474,7 +474,7 @@ class VKRecord(Record):
 
         data = ""
         data_type = self.data_type()
-        if data_type == RegSZ or data_type == ExpandSZ:
+        if data_type == RegSZ or data_type == RegExpandSZ:
             data = self.data()[0:16] + "..."
         elif data_type == RegMultiSZ:
             data = str(len(self.data())) + " strings"
@@ -547,7 +547,7 @@ class VKRecord(Record):
         RegSZ:
           Return a string containing the data, doing the best we can to convert it
           to ASCII or UNICODE.
-        ExpandSZ:
+        RegExpandSZ:
           Return a string containing the data, doing the best we can to convert it
           to ASCII or UNICODE. The special variables are not expanded.
         RegMultiSZ:
@@ -575,7 +575,7 @@ class VKRecord(Record):
         data_length = self.data_length()
         data_offset = self.data_offset()
 
-        if data_type == RegSZ or data_type == ExpandSZ:
+        if data_type == RegSZ or data_type == RegExpandSZ:
             if data_length >= 0x80000000:
                 # data is contained in the data_offset field
                 s = struct.unpack_from("<%ds" % (4), self._buf, data_offset)[0]
