@@ -20,10 +20,15 @@ import sys
 import wx
 from Registry import *
 
+def nop(*args, **kwargs):
+    pass
+
 class RegistryTreeCtrl(wx.TreeCtrl):
     def __init__(self, *args, **kwargs):
         super(RegistryTreeCtrl, self).__init__(*args, **kwargs)
         self.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.OnExpandItem)
+        self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnSelected)
+        self._value_list_view = False
 
     def add_registry(self, registry):
         root_key = registry.root()
@@ -55,16 +60,59 @@ class RegistryTreeCtrl(wx.TreeCtrl):
         if not self.GetPyData(item)["has_expanded"]:
             self._extend(item)
 
+    def OnSelected(self, event):
+        if not self._value_list_view:
+            return
+
+        item = event.GetItem()
+        if not item.IsOk():
+            item = self.GetSelection()
+
+        key = self.GetPyData(item)["key"]
+
+        self._value_list_view.DeleteAllItems()
+        for value in key.values():
+            n = self._value_list_view.GetItemCount()
+            self._value_list_view.InsertStringItem(n, value.name())
+            self._value_list_view.SetStringItem(n, 1, value.value_type_str())
+
+    def set_value_list(self, list_view):
+        self._value_list_view = list_view
+
+def _expand_into(dest, src):
+    vbox = wx.BoxSizer(wx.VERTICAL)
+    vbox.Add(src, 1, wx.EXPAND | wx.ALL)
+    dest.SetSizer(vbox)
+
 class RegView(wx.Frame):
     def __init__(self, parent, registry):
-        super(RegView, self).__init__(parent, -1, "Registry Viewer", size = (400, 600))
+        super(RegView, self).__init__(parent, -1, "Registry Viewer")
 
-        self._tree = RegistryTreeCtrl(self)
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self._tree, 1, wx.EXPAND, 0)
-        self.SetAutoLayout(True)
-        self.SetSizer(sizer)
-        self.Layout()
+        vsplitter = wx.SplitterWindow(self, -1)
+        panel_left = wx.Panel(vsplitter, -1)
+        self._tree = RegistryTreeCtrl(panel_left, -1)
+        _expand_into(panel_left, self._tree)
+
+        hsplitter = wx.SplitterWindow(vsplitter, -1)
+        panel_top = wx.Panel(hsplitter, -1)
+        panel_bottom = wx.Panel(hsplitter, -1)
+
+        self._value_list_view = wx.ListCtrl(panel_top, -1, style=wx.LC_REPORT)
+        self._value_list_view.InsertColumn(0, "Value name")
+        self._value_list_view.InsertColumn(1, "Value type")
+        self._value_list_view.SetColumnWidth(1, 100)
+        self._value_list_view.SetColumnWidth(0, 300)
+        self._tree.set_value_list(self._value_list_view)
+
+        _expand_into(panel_top,    self._value_list_view)
+        _expand_into(panel_bottom, wx.StaticText(panel_bottom, -1, "hello world2"))
+
+        hsplitter.SplitHorizontally(panel_top, panel_bottom)
+        vsplitter.SplitVertically(panel_left, hsplitter)
+        _expand_into(self, vsplitter)
+
+        self.SetSize((800, 600))
+        self.Centre()
 
         self._tree.add_registry(registry)
 
@@ -82,17 +130,4 @@ if __name__ == '__main__':
     frame = RegView(None, registry=registry)
     frame.Show()
     app.MainLoop()
-
-        
-        
-
-
-        
-
-
-
-
-
-
-
 
