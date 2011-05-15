@@ -434,7 +434,7 @@ class VKRecord(Record):
         if _id != "vk":
             raise ParseException("Invalid VK Record ID")
 
-    def _data_type_str(self):
+    def data_type_str(self):
         """
         Get the value data's type as a string
         """
@@ -488,7 +488,7 @@ class VKRecord(Record):
             data = "(unsupported)"
 
         return "VKRecord(Name: %s, Type: %s, Data: %s) at 0x%x" % (name, 
-                                                         self._data_type_str(), 
+                                                         self.data_type_str(), 
                                                          data,
                                                          self.offset())
 

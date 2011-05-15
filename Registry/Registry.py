@@ -99,6 +99,26 @@ class RegistryValue(object):
         """
         return self._vkrecord.data_type()
 
+    def value_type_str(self):
+        """
+        Get the type of the value as a string.
+
+        One of: 
+         - RegSZ
+         - ExpandSZ
+         - RegBin
+         - RegDWord
+         - RegMultiSZ
+         - RegQWord
+         - RegNone
+         - RegBigEndian
+         - RegLink
+         - RegResourceList
+         - RegFullResourceDescriptor
+         - RegResourceRequirementsList
+        """
+        return self._vkrecord.data_type_str()
+
     def value(self):
         return self._vkrecord.data()
 
