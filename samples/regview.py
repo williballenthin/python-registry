@@ -23,16 +23,34 @@ from Registry import *
 def nop(*args, **kwargs):
     pass
 
+class ValuesListCtrl(wx.ListCtrl):
+    def __init__(self, *args, **kwargs):
+        super(ValuesListCtrl, self).__init__(*args, **kwargs)
+        self.InsertColumn(0, "Value name")
+        self.InsertColumn(1, "Value type")
+        self.SetColumnWidth(1, 100)
+        self.SetColumnWidth(0, 300) 
+        self.values = {}
+
+    def clear_values(self):
+        self.DeleteAllItems()
+        self.values = {}
+
+    def add_value(self, value):
+        n = self.GetItemCount()
+        self.InsertStringItem(n, value.name())
+        self.SetStringItem(n, 1, value.value_type_str())        
+        self.values[value.name()] = value
+
 class RegistryTreeCtrl(wx.TreeCtrl):
     def __init__(self, *args, **kwargs):
         super(RegistryTreeCtrl, self).__init__(*args, **kwargs)
-        self.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.OnExpandItem)
-        self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnSelected)
-        self._value_list_view = False
+        self.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.OnExpandKey)
+
 
     def add_registry(self, registry):
         root_key = registry.root()
-        root_item = self.AddRoot(root_key.name())
+        root_item = self.AddRoot(root_key.name() + "(%s)" % (sys.argv[1]))
         self.SetPyData(root_item, {"key": root_key,
                                     "has_expanded": False})
 
@@ -52,32 +70,13 @@ class RegistryTreeCtrl(wx.TreeCtrl):
 
         self.GetPyData(item)["has_expanded"] = True                
 
-    def OnExpandItem(self, event):
+    def OnExpandKey(self, event):
         item = event.GetItem()
         if not item.IsOk():
             item = self.GetSelection()
 
         if not self.GetPyData(item)["has_expanded"]:
             self._extend(item)
-
-    def OnSelected(self, event):
-        if not self._value_list_view:
-            return
-
-        item = event.GetItem()
-        if not item.IsOk():
-            item = self.GetSelection()
-
-        key = self.GetPyData(item)["key"]
-
-        self._value_list_view.DeleteAllItems()
-        for value in key.values():
-            n = self._value_list_view.GetItemCount()
-            self._value_list_view.InsertStringItem(n, value.name())
-            self._value_list_view.SetStringItem(n, 1, value.value_type_str())
-
-    def set_value_list(self, list_view):
-        self._value_list_view = list_view
 
 def _expand_into(dest, src):
     vbox = wx.BoxSizer(wx.VERTICAL)
@@ -97,12 +96,7 @@ class RegView(wx.Frame):
         panel_top = wx.Panel(hsplitter, -1)
         panel_bottom = wx.Panel(hsplitter, -1)
 
-        self._value_list_view = wx.ListCtrl(panel_top, -1, style=wx.LC_REPORT)
-        self._value_list_view.InsertColumn(0, "Value name")
-        self._value_list_view.InsertColumn(1, "Value type")
-        self._value_list_view.SetColumnWidth(1, 100)
-        self._value_list_view.SetColumnWidth(0, 300)
-        self._tree.set_value_list(self._value_list_view)
+        self._value_list_view = ValuesListCtrl(panel_top, -1, style=wx.LC_REPORT)
 
         _expand_into(panel_top,    self._value_list_view)
         _expand_into(panel_bottom, wx.StaticText(panel_bottom, -1, "hello world2"))
@@ -111,10 +105,24 @@ class RegView(wx.Frame):
         vsplitter.SplitVertically(panel_left, hsplitter)
         _expand_into(self, vsplitter)
 
+#        self._value_list_view.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnValueSelected)
+        self._tree.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnKeySelected)
+
         self.SetSize((800, 600))
         self.Centre()
 
         self._tree.add_registry(registry)
+
+    def OnKeySelected(self, event):
+        item = event.GetItem()
+        if not item.IsOk():
+            item = self._tree.GetSelection()
+
+        key = self._tree.GetPyData(item)["key"]
+
+        self._value_list_view.clear_values()
+        for value in key.values():
+            self._value_list_view.add_value(value)
 
 def usage():
     return "  USAGE:\n\t%s <Windows Registry file>" % (sys.argv[0])
