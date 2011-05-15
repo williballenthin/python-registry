@@ -23,6 +23,60 @@ from Registry import *
 def nop(*args, **kwargs):
     pass
 
+class DataPanel(wx.Panel):
+    def __init__(self, *args, **kwargs):
+        super(DataPanel, self).__init__(*args, **kwargs)
+        self._sizer = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(self._sizer)
+
+    def _format_hex(self, data):
+        """
+        see http://code.activestate.com/recipes/142812/
+        """
+        FILTER=''.join([(len(repr(chr(x)))==3) and chr(x) or '.' for x in range(256)])
+
+        def dump(src, length=16):
+            N=0; result=''
+            while src:
+                s,src = src[:length],src[length:]
+                hexa = ' '.join(["%02X"%ord(x) for x in s])
+                s = s.translate(FILTER)
+                result += "%04X   %-*s   %s\n" % (N, length*3, hexa, s)
+                N+=length
+            return result
+        return dump(data)
+
+    def display_value(self, value):
+        self._sizer.Clear()
+        data_type = value.value_type()
+
+        if data_type == Registry.RegSZ or \
+                data_type == Registry.ExpandSZ or \
+                data_type == Registry.RegDWord or \
+                data_type == Registry.RegQWord:
+            view = wx.TextCtrl(self, style=wx.TE_MULTILINE)
+            view.SetValue(unicode(value.value()))
+
+        elif data_type == Registry.RegMultiSZ:
+            view = wx.ListCtrl(self, style=wx.LC_LIST)
+            for string in value.value():
+                view.InsertStringItem(view.GetItemCount(), string)
+
+        elif data_type == Registry.RegBin or \
+                data_type == Registry.RegNone:
+            view = wx.TextCtrl(self, style=wx.TE_MULTILINE)
+            font = wx.Font(8, wx.SWISS, wx.NORMAL, wx.NORMAL, False, u'Courier')
+            view.SetFont(font)
+            view.SetValue(self._format_hex(value.value()))            
+
+        self._sizer.Add(view, 1, wx.EXPAND)
+        self._sizer.Layout()
+
+    def clear_value(self):
+        self._sizer.Clear()
+        self._sizer.Add(wx.Panel(self, -1), 1, wx.EXPAND)
+        self._sizer.Layout()
+
 class ValuesListCtrl(wx.ListCtrl):
     def __init__(self, *args, **kwargs):
         super(ValuesListCtrl, self).__init__(*args, **kwargs)
@@ -39,8 +93,11 @@ class ValuesListCtrl(wx.ListCtrl):
     def add_value(self, value):
         n = self.GetItemCount()
         self.InsertStringItem(n, value.name())
-        self.SetStringItem(n, 1, value.value_type_str())        
+        self.SetStringItem(n, 1, value.value_type_str())     
         self.values[value.name()] = value
+
+    def get_value(self, valuename):
+        return self.values[valuename]
 
 class RegistryTreeCtrl(wx.TreeCtrl):
     def __init__(self, *args, **kwargs):
@@ -97,15 +154,19 @@ class RegView(wx.Frame):
         panel_bottom = wx.Panel(hsplitter, -1)
 
         self._value_list_view = ValuesListCtrl(panel_top, -1, style=wx.LC_REPORT)
+        self._data_view = DataPanel(panel_bottom, -1)
 
         _expand_into(panel_top,    self._value_list_view)
-        _expand_into(panel_bottom, wx.StaticText(panel_bottom, -1, "hello world2"))
+        _expand_into(panel_bottom, self._data_view)
 
         hsplitter.SplitHorizontally(panel_top, panel_bottom)
         vsplitter.SplitVertically(panel_left, hsplitter)
+
+        # give enough space in the data display for the hex output
+        vsplitter.SetSashPosition(325, True)
         _expand_into(self, vsplitter)
 
-#        self._value_list_view.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnValueSelected)
+        self._value_list_view.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnValueSelected)
         self._tree.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnKeySelected)
 
         self.SetSize((800, 600))
@@ -120,9 +181,17 @@ class RegView(wx.Frame):
 
         key = self._tree.GetPyData(item)["key"]
 
+        self._data_view.clear_value()
         self._value_list_view.clear_values()
         for value in key.values():
             self._value_list_view.add_value(value)
+
+    def OnValueSelected(self, event):
+        item = event.GetItem()
+
+        value = self._value_list_view.get_value(item.GetText())
+        self._data_view.display_value(value)
+
 
 def usage():
     return "  USAGE:\n\t%s <Windows Registry file>" % (sys.argv[0])
