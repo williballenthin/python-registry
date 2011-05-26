@@ -51,7 +51,7 @@ class DataPanel(wx.Panel):
         data_type = value.value_type()
 
         if data_type == Registry.RegSZ or \
-                data_type == Registry.ExpandSZ or \
+                data_type == Registry.RegExpandSZ or \
                 data_type == Registry.RegDWord or \
                 data_type == Registry.RegQWord:
             view = wx.TextCtrl(self, style=wx.TE_MULTILINE)
@@ -143,6 +143,7 @@ def _expand_into(dest, src):
 class RegView(wx.Frame):
     def __init__(self, parent, registry):
         super(RegView, self).__init__(parent, -1, "Registry Viewer")
+        self.CreateStatusBar()
 
         vsplitter = wx.SplitterWindow(self, -1)
         panel_left = wx.Panel(vsplitter, -1)
@@ -180,6 +181,8 @@ class RegView(wx.Frame):
             item = self._tree.GetSelection()
 
         key = self._tree.GetPyData(item)["key"]
+        self.SetStatusText(key.path())
+
 
         self._data_view.clear_value()
         self._value_list_view.clear_values()
