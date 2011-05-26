@@ -18,7 +18,7 @@
 
 import sys
 import wx
-from Registry import *
+from Registry import Registry
 
 def nop(*args, **kwargs):
     pass
