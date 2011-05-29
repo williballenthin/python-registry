@@ -104,12 +104,11 @@ class RegistryTreeCtrl(wx.TreeCtrl):
         super(RegistryTreeCtrl, self).__init__(*args, **kwargs)
         self.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.OnExpandKey)
 
-
     def add_registry(self, registry):
         root_key = registry.root()
         root_item = self.AddRoot(root_key.name() + "(%s)" % (sys.argv[1]))
         self.SetPyData(root_item, {"key": root_key,
-                                    "has_expanded": False})
+                                   "has_expanded": False})
 
         if len(root_key.subkeys()) > 0:
             self.SetItemHasChildren(root_item)
@@ -183,7 +182,6 @@ class RegView(wx.Frame):
         key = self._tree.GetPyData(item)["key"]
         self.SetStatusText(key.path())
 
-
         self._data_view.clear_value()
         self._value_list_view.clear_values()
         for value in key.values():
@@ -194,7 +192,6 @@ class RegView(wx.Frame):
 
         value = self._value_list_view.get_value(item.GetText())
         self._data_view.display_value(value)
-
 
 def usage():
     return "  USAGE:\n\t%s <Windows Registry file>" % (sys.argv[0])
@@ -210,4 +207,3 @@ if __name__ == '__main__':
     frame = RegView(None, registry=registry)
     frame.Show()
     app.MainLoop()
-
