@@ -16,7 +16,7 @@
 #    along with python-registry.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import sys
+import sys, os
 import wx
 from Registry import Registry
 
@@ -106,7 +106,7 @@ class RegistryTreeCtrl(wx.TreeCtrl):
 
     def add_registry(self, registry):
         root_key = registry.root()
-        root_item = self.AddRoot(root_key.name() + "(%s)" % (sys.argv[1]))
+        root_item = self.AddRoot(root_key.name())
         self.SetPyData(root_item, {"key": root_key,
                                    "has_expanded": False})
 
@@ -193,17 +193,22 @@ class RegView(wx.Frame):
         value = self._value_list_view.get_value(item.GetText())
         self._data_view.display_value(value)
 
-def usage():
-    return "  USAGE:\n\t%s <Windows Registry file>" % (sys.argv[0])
-
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print usage()
-        sys.exit(-1)
-
-    registry = Registry.Registry(sys.argv[1])
-
     app = wx.App(False)
+
+    if len(sys.argv) == 2:
+        filename = sys.argv[1]
+    else:
+        while True:
+            dialog = wx.FileDialog(None, "Choose Registry File", "", "", "*.*", wx.OPEN)
+            if dialog.ShowModal() == wx.ID_OK:
+                filename = os.path.join(dialog.GetDirectory(), dialog.GetFilename())
+                break;
+
+
+    registry = Registry.Registry(filename)
+
+
     frame = RegView(None, registry=registry)
     frame.Show()
     app.MainLoop()
