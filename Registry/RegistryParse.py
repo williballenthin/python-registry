@@ -584,13 +584,13 @@ class VKRecord(Record):
                 s = struct.unpack_from("<%ds" % (data_length), self._buf, d.data_offset())[0]
 
             try:
-                s = s.decode("utf16").encode("utf8")
-            except UnicodeDecodeError:
+                s = s.decode("utf16").encode("utf8").decode("utf8") # iron out the kinks by 
+            except UnicodeDecodeError:                              # converting to and back to a Python str
                 try:
-                    s = s.decode("utf8").encode("utf8")
+                    s = s.decode("utf8").encode("utf8").decode("utf8")
                 except UnicodeDecodeError:
                     try:
-                        s = s.decode("utf8", "replace").encode("utf8")
+                        s = s.decode("utf8", "replace").encode("utf8").decode("utf8")
                     except:
                         print "Well at this point you are screwed."
                         raise
