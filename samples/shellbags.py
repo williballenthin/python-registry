@@ -18,8 +18,8 @@ def dosdate(dosdate, dostime):
         year  = (t & 0b1111111000000000) >> 9
         year += 1980
         
-        t = ord(dostime[0]) << 8
-        t |= ord(dostime[1])
+        t = ord(dostime[1]) << 8
+        t |= ord(dostime[0])
         sec     = t & 0b0000000000011111
         sec *= 2
         minute  = (t & 0b0000011111100000) >> 5
@@ -34,7 +34,7 @@ def get_shellbags(registry):
     shellbags = []
     windows = registry.open("Software\\Microsoft\\Windows\\ShellNoRoam")
     bagmru = windows.subkey("BagMRU")
-    bags = windows.subkey("Bags")
+#    bags = windows.subkey("Bags")
 
     def shellbag_rec(key, bag_prefix, path_prefix):
         for value in key.values():
@@ -94,8 +94,6 @@ def get_shellbags(registry):
                         "ctime": ctime
                         })
 
-                print hex(mru_type) + " " + bag_prefix + "\\" + value.name() + "  " + path
-
                 if mru_type == SB_MRU_TYPE_ARCHIVE:
                     # dont recurse, because children are messed up
                     continue
@@ -105,9 +103,10 @@ def get_shellbags(registry):
                 continue
 
     shellbag_rec(bagmru, "", "")
-    print "MTIME, ATIME, CTIME, PATH"
+#    print "MTIME, ATIME, CTIME, PATH"
     for shellbag in shellbags:
-        print "%s, %s, %s, %s" % (shellbag["mtime"], shellbag["atime"], shellbag["ctime"], shellbag["path"])
+#        print "%s, %s, %s, %s" % (shellbag["mtime"], shellbag["atime"], shellbag["ctime"], shellbag["path"])
+       print "%s" % (shellbag["path"])
 
 
 
