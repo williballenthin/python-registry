@@ -255,16 +255,19 @@ class Registry(object):
     """
     A class for parsing and reading from a Windows Registry file.
     """    
-    def __init__(self, filename):
+    def __init__(self, filelikeobject):
         """
         Constructor.
         Arguments:
-        - `filename`: A string containing the filename of the Windows Registry file, such as
-        NTUSER.DAT.
+        - `filelikeobject`: A file-like object with a .read() method.  
+              If a Python string is passed, it is interpreted as a filename, 
+              and the corresponding file is opened.
         """
-        with open(filename) as f:
-            self._buf = f.read()
-
+        try:
+            self._buf = filelikeobject.read()
+        except AttributeError:
+            with open(filelikeobject, "rb") as f:
+                self._buf = f.read()
         self._regf = RegistryParse.REGFBlock(self._buf, 0, False)
 
     def root(self):
