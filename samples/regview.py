@@ -17,11 +17,28 @@
 
 
 import sys, os
-import wx
+import wx, wx.lib.agw.flatnotebook as fnb
 from Registry import Registry
+
+ID_FILE_OPEN = wx.NewId()
+ID_TAB_CLOSE = wx.NewId()
+ID_FILE_EXIT = wx.NewId()
+ID_HELP_ABOUT = wx.NewId()
 
 def nop(*args, **kwargs):
     pass
+
+def basename(path):
+    if "/" in path:
+        path = path.split("/")[-1]
+    if "\\" in path:
+        path = path.split("\\")[-1]
+    return path
+
+def _expand_into(dest, src):
+    vbox = wx.BoxSizer(wx.VERTICAL)
+    vbox.Add(src, 1, wx.EXPAND | wx.ALL)
+    dest.SetSizer(vbox)
 
 class DataPanel(wx.Panel):
     def __init__(self, *args, **kwargs):
@@ -134,15 +151,10 @@ class RegistryTreeCtrl(wx.TreeCtrl):
         if not self.GetPyData(item)["has_expanded"]:
             self._extend(item)
 
-def _expand_into(dest, src):
-    vbox = wx.BoxSizer(wx.VERTICAL)
-    vbox.Add(src, 1, wx.EXPAND | wx.ALL)
-    dest.SetSizer(vbox)
-
-class RegView(wx.Frame):
+class RegistryFileView(wx.Panel):
+    """Hack alert: the parent must have a SetStatusText(str) method"""
     def __init__(self, parent, registry):
-        super(RegView, self).__init__(parent, -1, "Registry Viewer")
-        self.CreateStatusBar()
+        super(RegistryFileView, self).__init__(parent, -1, size=(800, 600))
 
         vsplitter = wx.SplitterWindow(self, -1)
         panel_left = wx.Panel(vsplitter, -1)
@@ -165,12 +177,10 @@ class RegView(wx.Frame):
         # give enough space in the data display for the hex output
         vsplitter.SetSashPosition(325, True)
         _expand_into(self, vsplitter)
+        self.Centre()
 
         self._value_list_view.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnValueSelected)
         self._tree.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnKeySelected)
-
-        self.SetSize((800, 600))
-        self.Centre()
 
         self._tree.add_registry(registry)
 
@@ -180,7 +190,15 @@ class RegView(wx.Frame):
             item = self._tree.GetSelection()
 
         key = self._tree.GetPyData(item)["key"]
-        self.SetStatusText(key.path())
+
+
+        parent = self.GetParent()
+        while parent:
+            try:
+                parent.SetStatusText(key.path())
+            except AttributeError:
+                pass
+            parent = parent.GetParent()
 
         self._data_view.clear_value()
         self._value_list_view.clear_values()
@@ -193,22 +211,78 @@ class RegView(wx.Frame):
         value = self._value_list_view.get_value(item.GetText())
         self._data_view.display_value(value)
 
+
+class RegistryFileViewer(wx.Frame):
+    def __init__(self, parent, files):
+        super(RegistryFileViewer, self).__init__(parent, -1, "Registry File Viewer", size=(800, 600))
+        self.CreateStatusBar()
+
+        menu_bar = wx.MenuBar()
+        file_menu = wx.Menu()
+        _open = file_menu.Append(ID_FILE_OPEN, '&Open File')
+        self.Bind(wx.EVT_MENU, self.menu_file_open, _open)
+        file_menu.AppendSeparator()
+        _exit = file_menu.Append(ID_FILE_EXIT, 'E&xit Program')
+        self.Bind(wx.EVT_MENU, self.menu_file_exit, _exit)
+        menu_bar.Append(file_menu, "&File")
+
+        tab_menu = wx.Menu()
+        _close = tab_menu.Append(ID_TAB_CLOSE, '&Close')
+        self.Bind(wx.EVT_MENU, self.menu_tab_close, _close)
+        menu_bar.Append(tab_menu, "&Tab")
+
+        help_menu = wx.Menu()
+        _about = help_menu.Append(ID_HELP_ABOUT, '&About')
+        self.Bind(wx.EVT_MENU, self.menu_help_about, _about)
+        menu_bar.Append(help_menu, "&Help")
+        self.SetMenuBar(menu_bar)
+
+        p = wx.Panel(self)
+        self._nb = wx.Notebook(p)
+
+        for filename in files:
+            registry = Registry.Registry(filename)
+            view = RegistryFileView(self._nb, registry=registry)
+            self._nb.AddPage(view, basename(filename))
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self._nb, 1, wx.EXPAND)
+        p.SetSizer(sizer)
+        self.Layout()
+
+    def menu_file_open(self, evt):
+        dialog = wx.FileDialog(None, "Choose Registry File", "", "", "*.*", wx.OPEN)
+        if dialog.ShowModal() != wx.ID_OK:
+            return
+        filename = os.path.join(dialog.GetDirectory(), dialog.GetFilename())
+        registry = Registry.Registry(filename)
+        view = RegistryFileView(self._nb, registry=registry)
+        self._nb.AddPage(view, basename(filename))
+
+    def menu_file_exit(self, evt):
+        sys.exit(0)
+
+    def menu_tab_close(self, evt):
+        self._nb.RemovePage(self._nb.GetSelection())
+
+    def menu_help_about(self, evt):
+        wx.MessageBox("regview.py, a part of `python-registry`\n\nhttp://www.williballenthin.com/registry/", "info")
+
+
+
 if __name__ == '__main__':
     app = wx.App(False)
 
-    if len(sys.argv) == 2:
-        filename = sys.argv[1]
-    else:
+    filenames = []
+    if len(sys.argv) == 1:
         while True:
             dialog = wx.FileDialog(None, "Choose Registry File", "", "", "*.*", wx.OPEN)
             if dialog.ShowModal() == wx.ID_OK:
-                filename = os.path.join(dialog.GetDirectory(), dialog.GetFilename())
-                break;
+                filenames = [os.path.join(dialog.GetDirectory(), dialog.GetFilename())]
+                break
+    else:
+        filenames = sys.argv[1:]
 
-
-    registry = Registry.Registry(filename)
-
-
-    frame = RegView(None, registry=registry)
+    frame = RegistryFileViewer(None, filenames)
     frame.Show()
     app.MainLoop()
