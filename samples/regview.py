@@ -17,7 +17,7 @@
 
 
 import sys, os
-import wx, wx.lib.agw.flatnotebook as fnb
+import wx
 from Registry import Registry
 
 ID_FILE_OPEN = wx.NewId()
@@ -152,7 +152,6 @@ class RegistryTreeCtrl(wx.TreeCtrl):
             self._extend(item)
 
 class RegistryFileView(wx.Panel):
-    """Hack alert: the parent must have a SetStatusText(str) method"""
     def __init__(self, parent, registry):
         super(RegistryFileView, self).__init__(parent, -1, size=(800, 600))
 
@@ -190,7 +189,6 @@ class RegistryFileView(wx.Panel):
             item = self._tree.GetSelection()
 
         key = self._tree.GetPyData(item)["key"]
-
 
         parent = self.GetParent()
         while parent:
@@ -251,7 +249,7 @@ class RegistryFileViewer(wx.Frame):
         self.Layout()
 
     def menu_file_open(self, evt):
-        dialog = wx.FileDialog(None, "Choose Registry File", "", "", "*.*", wx.OPEN)
+        dialog = wx.FileDialog(None, "Choose Registry File", "", "", "*", wx.OPEN)
         if dialog.ShowModal() != wx.ID_OK:
             return
         filename = os.path.join(dialog.GetDirectory(), dialog.GetFilename())
@@ -267,7 +265,6 @@ class RegistryFileViewer(wx.Frame):
 
     def menu_help_about(self, evt):
         wx.MessageBox("regview.py, a part of `python-registry`\n\nhttp://www.williballenthin.com/registry/", "info")
-
 
 
 if __name__ == '__main__':
