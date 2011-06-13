@@ -1,6 +1,4 @@
-
 import re, sys, datetime
-
 from Registry import Registry
 
 
@@ -8,6 +6,7 @@ SB_MRU_TYPE_PREDEFINED = 0x1F
 SB_MRU_TYPE_ARCHIVE = 0x32
 SB_MRU_TYPE_UNICODEONLY = 0x2E
 SB_MRU_TYPE_NAMEIMMEDIATE = 0x2F
+SB_MRU_TYPE_NORMAL = 0x31
 
 def dosdate(dosdate, dostime):
     try:
@@ -32,9 +31,11 @@ def dosdate(dosdate, dostime):
 def get_shellbags(registry):
     shellbags = []
     try:
+        # Windows XP NTUSER.DAT location
         windows = registry.open("Software\\Microsoft\\Windows\\ShellNoRoam")
     except Registry.RegistryKeyNotFoundException:
         try:
+            # Windows 7 UsrClass.dat location
             windows = registry.open("Local Settings\\Software\\Microsoft\\Windows\\Shell")
         except Registry.RegistryKeyNotFoundException:
             print "Unable to find shellbag key."
@@ -63,14 +64,18 @@ def get_shellbags(registry):
                 nameAStart = 0xA
             elif mru_type == SB_MRU_TYPE_NAMEIMMEDIATE:
                 nameAStart = 0x3
-            else:
+            elif mru_type == SB_MRU_TYPE_NORMAL:
                 nameAStart = 0xE
+            else:
+                nameAStart = 0x00
             nameA = value.value()[nameAStart:].partition(b"\x00")[0].decode("ascii", "ignore")
 
             # next, get the full unicode version
             if mru_type == SB_MRU_TYPE_PREDEFINED:
-#                nameW = "??"
-                nameW = "[" + bag_prefix + "|" + value.name() + "]"
+                # At this point, the predefined keys are unknown. 
+                # A general survey will have to be made in order to identify
+                # the meaning of the predefined keys
+                nameW = "??%s" % (value.name()) 
             elif mru_type == SB_MRU_TYPE_UNICODEONLY:
                 # the finds the end of the utf16 string in the binary
                 # we know it must end in 00 00, but it could end in 00 00 00
@@ -80,20 +85,32 @@ def get_shellbags(registry):
                 end_idx = bin.find(b"\x00\x00")
                 if end_idx % 2 == 1:
                     end_idx += 1
-                nameW = bin[:end_idx].decode("utf16")
+                nameW = bin[:end_idx]
+                try:
+                    nameW = nameW.decode("utf16")
+                except UnicodeDecodeError:
+                    # This is something to research further, but many 0x2E bags are invalid
+                    # and we can detect this during decoding. 
+                    # This is not perfect, though, and some bad entries slip through.
+                    continue
             elif mru_type == SB_MRU_TYPE_NAMEIMMEDIATE:
                 nameW = nameA
-            else:
-#                needle = nameA.lower().partition("~")[0].encode("utf16")[2:]
-#                wide_start = value.value().lower().find(needle)
+            elif mru_type == SB_MRU_TYPE_NORMAL or mru_type == SB_MRU_TYPE_ARCHIVE:
+                # Windows XP SP3 seems to always have this byte sequence at a predictable offset
+                # We could try to use the nameA to find nameW, however it gets really messy
+                # with spaces and upper/lowercasing
                 anchor = value.value().lower().find(b"\x03\x00\x04\x00\xEF\xBE")
-                wide_start = anchor + 18
-                nameW = value.value()[wide_start:].decode("utf16", "replace").partition(b"\x00")[0]
+
+                # In the standard bag, the UTF16 representation ends 7 bytes from the 
+                # end of the key.
+                nameWstart = value.value().rfind(b"\x00\x00", 0, -7)
+                nameW = value.value()[nameWstart + 2:].decode("utf16", "replace").partition(b"\x00")[0]
 
                 ddate = value.value()[8:10]
                 dtime = value.value()[10:12]
                 mtime = dosdate(ddate, dtime)
 
+                # TODO don't key off the anchor
                 ddate = value.value()[anchor + 6:anchor + 8]
                 dtime = value.value()[anchor + 8:anchor + 10]
                 ctime = dosdate(ddate, dtime)
@@ -101,33 +118,39 @@ def get_shellbags(registry):
                 ddate = value.value()[anchor + 10:anchor + 12]
                 dtime = value.value()[anchor + 12:anchor + 14]
                 atime = dosdate(ddate, dtime)
-            try:
-                path = path_prefix + "\\" + nameW
-                shellbags.append({
-                        "path": path,
-                        "mtime": mtime,
-                        "atime": atime,
-                        "ctime": ctime
-                        })
 
-                if mru_type == SB_MRU_TYPE_ARCHIVE:
-                    # dont recurse, because children are messed up
-                    continue
+            else:
+                nameW = "??%s" % (value.name()) 
 
-                shellbag_rec(key.subkey(value.name()), bag_prefix + "\\" + value.name(), path_prefix + "\\" + nameW)
-            except UnicodeDecodeError:
+#            try:
+            path = path_prefix + "\\" + nameW
+            shellbags.append({
+                    "path": path,
+                    "mtime": mtime,
+                    "atime": atime,
+                    "ctime": ctime
+                    })
+            
+            if mru_type == SB_MRU_TYPE_ARCHIVE:
+                # dont recurse, because children are messed up
                 continue
 
+            shellbag_rec(key.subkey(value.name()), bag_prefix + "\\" + value.name(), path)
+            #            except UnicodeDecodeError as e:
+#                print path
+#                print list(nameW)
+#                print e
+#                sys.exit(-1)
+
+
     shellbag_rec(bagmru, "", "")
-#    print "MTIME, ATIME, CTIME, PATH"
+    print "MTIME, ATIME, CTIME, PATH"
     for shellbag in shellbags:
-#        print "%s, %s, %s, %s" % (shellbag["mtime"], shellbag["atime"], shellbag["ctime"], shellbag["path"])
         try:
-            print "%s" % (shellbag["path"])
+            print "%s, %s, %s, %s" % (shellbag["mtime"], shellbag["atime"], shellbag["ctime"], shellbag["path"])
         except UnicodeEncodeError:
             print list(shellbag["path"])
-
-
+            sys.exit(-1)
 
 def usage():
     return "  USAGE:\n\t%s <Windows Registry file>" % sys.argv[1]
