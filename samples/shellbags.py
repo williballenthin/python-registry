@@ -9,6 +9,11 @@ SB_MRU_TYPE_NAMEIMMEDIATE = 0x2F
 SB_MRU_TYPE_NORMAL = 0x31
 
 def dosdate(dosdate, dostime):
+    """
+    `dosdate`: 2 bytes, little endian.
+    `dostime`: 2 bytes, little endian.
+    returns: datetime.datetime or datetime.datetime.min on error
+    """
     try:
         t  = ord(dosdate[1]) << 8
         t |= ord(dosdate[0])
@@ -30,6 +35,7 @@ def dosdate(dosdate, dostime):
 
 def get_shellbags(registry):
     shellbags = []
+    # TODO try both Shell and ShellNoRoam
     try:
         # Windows XP NTUSER.DAT location
         windows = registry.open("Software\\Microsoft\\Windows\\ShellNoRoam")
@@ -122,7 +128,6 @@ def get_shellbags(registry):
             else:
                 nameW = "??%s" % (value.name()) 
 
-#            try:
             path = path_prefix + "\\" + nameW
             shellbags.append({
                     "path": path,
@@ -136,12 +141,6 @@ def get_shellbags(registry):
                 continue
 
             shellbag_rec(key.subkey(value.name()), bag_prefix + "\\" + value.name(), path)
-            #            except UnicodeDecodeError as e:
-#                print path
-#                print list(nameW)
-#                print e
-#                sys.exit(-1)
-
 
     shellbag_rec(bagmru, "", "")
     print "MTIME, ATIME, CTIME, PATH"
