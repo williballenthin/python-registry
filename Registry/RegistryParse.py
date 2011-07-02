@@ -320,7 +320,7 @@ class HBINCell(RegistryBlock):
 
     def offset(self):
         """
-        Accessor for absolute offset of this block.
+        Accessor for absolute offset of this HBINCell.
         """
         return self._offset
 
