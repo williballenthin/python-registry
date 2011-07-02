@@ -41,6 +41,10 @@ def _expand_into(dest, src):
     dest.SetSizer(vbox)
 
 class DataPanel(wx.Panel):
+    """
+    Displays the contents of a Registry value. 
+    Shows a text string where appropriate, or a hex dump.
+    """
     def __init__(self, *args, **kwargs):
         super(DataPanel, self).__init__(*args, **kwargs)
         self._sizer = wx.BoxSizer(wx.VERTICAL)
@@ -95,6 +99,9 @@ class DataPanel(wx.Panel):
         self._sizer.Layout()
 
 class ValuesListCtrl(wx.ListCtrl):
+    """
+    Shows a list of values associated with a Registry key.
+    """
     def __init__(self, *args, **kwargs):
         super(ValuesListCtrl, self).__init__(*args, **kwargs)
         self.InsertColumn(0, "Value name")
@@ -117,6 +124,9 @@ class ValuesListCtrl(wx.ListCtrl):
         return self.values[valuename]
 
 class RegistryTreeCtrl(wx.TreeCtrl):
+    """ 
+    Treeview control that displays the Registry key structure.
+    """
     def __init__(self, *args, **kwargs):
         super(RegistryTreeCtrl, self).__init__(*args, **kwargs)
         self.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.OnExpandKey)
@@ -152,6 +162,9 @@ class RegistryTreeCtrl(wx.TreeCtrl):
             self._extend(item)
 
 class RegistryFileView(wx.Panel):
+    """
+    A three-paned display of the RegistryTreeCtrl, ValueListCtrl, and DataPanel.
+    """
     def __init__(self, parent, registry):
         super(RegistryFileView, self).__init__(parent, -1, size=(800, 600))
 
@@ -211,6 +224,9 @@ class RegistryFileView(wx.Panel):
 
 
 class RegistryFileViewer(wx.Frame):
+    """
+    The main RegView GUI application.
+    """
     def __init__(self, parent, files):
         super(RegistryFileViewer, self).__init__(parent, -1, "Registry File Viewer", size=(800, 600))
         self.CreateStatusBar()
