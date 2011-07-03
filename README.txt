@@ -82,8 +82,6 @@ python-registry.
 
 Wanted
 ------
-*) Sample Windows Registry files, especially those containing
-   "big-block" instances.
 *) Bug reports.
 *) Feedback.
 
@@ -113,7 +111,7 @@ documentation/ directory of the python-registry source.
 The source directory for python-registry contains a sample/ 
 subdirectory that contains small programs that use python-registry. 
 For example, regview.py is a read-only clone of Microsoft Window's 
-Regedit, implemented in 200 lines.
+Regedit, implemented in a few hundred lines.
 
 Selections of the regview.py source code that are relevant to 
 python-registry are included below to highlight how the module may 
@@ -231,8 +229,6 @@ class RegView(wx.Frame):
                                                    # with .value(name) by name
     def OnValueSelected(self, event):
         ...
-
-...
 
 if __name__ == '__main__':
     ...
