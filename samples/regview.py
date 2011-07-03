@@ -21,6 +21,8 @@ import wx
 from Registry import Registry
 
 ID_FILE_OPEN = wx.NewId()
+ID_FILE_SESSION_SAVE = wx.NewId()
+ID_FILE_SESSION_OPEN = wx.NewId()
 ID_TAB_CLOSE = wx.NewId()
 ID_FILE_EXIT = wx.NewId()
 ID_HELP_ABOUT = wx.NewId()
@@ -149,7 +151,32 @@ class RegistryTreeCtrl(wx.TreeCtrl):
         """
         self.DeleteAllItems()
 
+    def select_path(self, path):
+        """
+        Take a Registry key path separated by back slashes and select 
+        that key. The path should not contain the root key name.
+        If the key is not found, the most specific ancestor key is selected.
+        """
+        parts = path.split("\\")
+        node = self.GetRootItem()
+
+        for part in parts:
+            self._extend(node)
+            (node, cookie) = self.GetFirstChild(node)
+
+            cont = True
+            while node and cont:
+                key = self.GetPyData(node)["key"]
+                if key.name() == part:
+                    self.SelectItem(node)
+                    cont = False
+                else:
+                    node = self.GetNextSibling(node)
+
     def _extend(self, item):
+        """
+        Lazily parse and add children items to the tree.
+        """
         if self.GetPyData(item)["has_expanded"]:
             return
 
@@ -236,7 +263,25 @@ class RegistryFileView(wx.Panel):
         self._data_view.display_value(value)
 
     def filename(self):
+        """
+        Return the filename of the current Registry file as a string.
+        """
         return self._filename
+
+    def selected_path(self):
+        """
+        Return the Registry key path of the currently selected item.
+        """
+        item = self._tree.GetSelection()
+        if item:
+            return self._tree.GetPyData(item)["key"].path()
+        return False
+
+    def select_path(self, path):
+        """
+        Select a Registry key path specified as a string in the relevant panes.
+        """
+        self._tree.select_path(path)
 
 class RegistryFileViewer(wx.Frame):
     """
@@ -250,6 +295,11 @@ class RegistryFileViewer(wx.Frame):
         file_menu = wx.Menu()
         _open = file_menu.Append(ID_FILE_OPEN, '&Open File')
         self.Bind(wx.EVT_MENU, self.menu_file_open, _open)
+        file_menu.AppendSeparator()
+        _session_save = file_menu.Append(ID_FILE_SESSION_SAVE, '&Save Session')
+        self.Bind(wx.EVT_MENU, self.menu_file_session_save, _session_save)
+        _session_open = file_menu.Append(ID_FILE_SESSION_OPEN, '&Open Session')
+        self.Bind(wx.EVT_MENU, self.menu_file_session_open, _session_open)
         file_menu.AppendSeparator()
         _exit = file_menu.Append(ID_FILE_EXIT, 'E&xit Program')
         self.Bind(wx.EVT_MENU, self.menu_file_exit, _exit)
@@ -270,28 +320,72 @@ class RegistryFileViewer(wx.Frame):
         self._nb = wx.Notebook(p)
 
         for filename in files:
-            registry = Registry.Registry(filename)
-            view = RegistryFileView(self._nb, registry=registry)
-            self._nb.AddPage(view, basename(filename))
+            self._open_registry_file(filename)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self._nb, 1, wx.EXPAND)
         p.SetSizer(sizer)
         self.Layout()
 
+    def _open_registry_file(self, filename):
+        with open(filename, "rb") as f:
+            registry = Registry.Registry(f)
+            view = RegistryFileView(self._nb, registry=registry, filename=filename)
+            self._nb.AddPage(view, basename(filename))
+            return view
+        # TODO handle error
+
     def menu_file_open(self, evt):
         dialog = wx.FileDialog(None, "Choose Registry File", "", "", "*", wx.OPEN)
         if dialog.ShowModal() != wx.ID_OK:
             return
         filename = os.path.join(dialog.GetDirectory(), dialog.GetFilename())
-        with open(filename) as f:
-            registry = Registry.Registry(f)
-            view = RegistryFileView(self._nb, registry=registry, filename=filename)
-            self._nb.AddPage(view, basename(filename))
-        # TODO catch error here
+        self._open_registry_file(filename)
 
     def menu_file_exit(self, evt):
         sys.exit(0)
+
+    def menu_file_session_open(self, evt):
+        self._nb.DeleteAllPages()
+
+        dialog = wx.FileDialog(None, "Open Session File", "", "", "*", wx.OPEN)
+        if dialog.ShowModal() != wx.ID_OK:
+            return
+        filename = os.path.join(dialog.GetDirectory(), dialog.GetFilename())
+        with open(filename, "rb") as f:
+            t = f.read()
+
+            lines = t.split("\n")
+
+            if len(lines) % 2 != 1: # there is a trailing newline
+                self.SetStatusText("Malformed session file!")
+                return
+
+            while len(lines) > 1:
+                filename = lines.pop(0)
+                path = lines.pop(0)
+
+                view = self._open_registry_file(filename)
+                view.select_path(path.partition("\\")[2])
+
+            self.SetStatusText("Opened session")
+
+    def menu_file_session_save(self, evt):
+        dialog = wx.FileDialog(None, "Save Session File", "", "", "*", wx.SAVE)
+        if dialog.ShowModal() != wx.ID_OK:
+            return
+        filename = os.path.join(dialog.GetDirectory(), dialog.GetFilename())
+        with open(filename, "wb") as f:
+            for i in range(0, self._nb.GetPageCount()):
+                page = self._nb.GetPage(i)
+                f.write(page.filename() + "\n")
+                
+                path = page.selected_path()
+                if path:
+                    f.write(path)
+                f.write("\n")
+            self.SetStatusText("Saved session")
+        # TODO handle error
 
     def menu_tab_close(self, evt):
         self._nb.RemovePage(self._nb.GetSelection())
