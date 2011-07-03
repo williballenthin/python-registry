@@ -432,7 +432,9 @@ class DataRecord(Record):
         return "Data Record at 0x%x" % (self.offset())
 
 class DBIndirectBlock(Record):
-    """
+    """ 
+    The DBIndirect block is a list of offsets to DataRecords with data 
+    size up to 0x3fd8.
     """
     def __init__(self, buf, offset, parent):
         """
@@ -448,22 +450,26 @@ class DBIndirectBlock(Record):
         return "Large Data Block at 0x%x" % (self.offset())
         
     def large_data(self, length):
-        b = []
+        """
+        Get the data pointed to by the indirect block. It may be large.
+        Return a byte array.
+        """
+        b = bytearray()
         count = 0
         while length > 0:
             off = self.abs_offset_from_hbin_offset(self.unpack_dword(4 * count))
-            print "large block: " + str(hex(off))
-            data = HBINCell(self._buf, off, self)
+            size = min(0x3fd8, length)
+            b += HBINCell(self._buf, off, self).raw_data()[0:size]
 
-            b += data.raw_data()
             count += 1
-            length -= 0x3fd8
-
+            length -= size
         return b
 
 class DBRecord(Record):
     """
-    A DBRecord is a large data block, which is not thoroughly documented. """
+    A DBRecord is a large data block, which is not thoroughly documented.
+    Its similar to an inode in the Ext file systems.
+    """
     def __init__(self, buf, offset, parent):
         """
         Constructor.
@@ -477,15 +483,18 @@ class DBRecord(Record):
         _id = self.unpack_string(0x0, 2)
         if _id != "db":
             raise ParseException("Invalid DB Record ID")
-        print "db!"
 
     def __str__(self):
         return "Large Data Block at 0x%x" % (self.offset())
         
     def large_data(self, length):
+        """
+        Get the data described by the DBRecord. It may be large.
+        Return a byte array.
+        """
         off = self.abs_offset_from_hbin_offset(self.unpack_dword(0x4))
-        print "db indirect block: " + str(hex(off))
-        dbi = DBIndirectBlock(self._buf, off + 4, self)
+        cell = HBINCell(self._buf, off, self)
+        dbi = DBIndirectBlock(self._buf, cell.data_offset(), cell)
         return dbi.large_data(length)
 
 class VKRecord(Record):
@@ -675,6 +684,9 @@ class VKRecord(Record):
             if data_length >= 0x80000000:
                 data_length -= 0x80000000
                 return self._buf[data_offset:data_offset + data_length]
+            elif 0x3fd8 < data_length < 0x80000000:
+                db = HBINCell(self._buf, data_offset, self).child() # should be db
+                return db.large_data(data_length)
             return self._buf[data_offset + 4:data_offset + 4 + data_length]
         elif data_type == RegDWord:
             return self.unpack_dword(0x8)
@@ -683,6 +695,9 @@ class VKRecord(Record):
                 # this means data_length < 5, so it must be 4, and
                 # be composed of completely \x00, so the strings are empty
                 return []
+            elif 0x3fd8 < data_length < 0x80000000:
+                db = HBINCell(self._buf, data_offset, self).child() # should be db
+                data = db.large_data(data_length).decode("utf16")
             else:
                 data = self._buf[data_offset + 4:data_offset + 4 + data_length].decode("utf16")
             return data.split("\x00")
@@ -694,6 +709,9 @@ class VKRecord(Record):
             if data_length >= 0x80000000:
                 data_length -= 0x80000000
                 return self._buf[data_offset:data_offset + data_length]
+            elif 0x3fd8 < data_length < 0x80000000:
+                db = HBINCell(self._buf, data_offset, self).child() # should be db
+                return db.large_data(data_length)
             return self._buf[data_offset + 4:data_offset + 4 + data_length]
         elif data_type == RegBigEndian:
             print "Warning: Data type RegBigEndian not yet supported"
