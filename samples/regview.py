@@ -22,6 +22,7 @@ from Registry import Registry
 
 ID_FILE_OPEN = wx.NewId()
 ID_TAB_CLOSE = wx.NewId()
+ID_TAB_RELOAD = wx.NewId()
 ID_FILE_EXIT = wx.NewId()
 ID_HELP_ABOUT = wx.NewId()
 
@@ -132,6 +133,9 @@ class RegistryTreeCtrl(wx.TreeCtrl):
         self.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.OnExpandKey)
 
     def add_registry(self, registry):
+        """
+        Add the registry to the control as the (a?) root element.
+        """
         root_key = registry.root()
         root_item = self.AddRoot(root_key.name())
         self.SetPyData(root_item, {"key": root_key,
@@ -140,7 +144,16 @@ class RegistryTreeCtrl(wx.TreeCtrl):
         if len(root_key.subkeys()) > 0:
             self.SetItemHasChildren(root_item)
 
+    def delete_registry(self):
+        """
+        Removes all elements from the control.
+        """
+        self.DeleteAllItems()
+
     def _extend(self, item):
+        if self.GetPyData(item)["has_expanded"]:
+            return
+
         key = self.GetPyData(item)["key"]
         
         for subkey in key.subkeys():
@@ -165,8 +178,9 @@ class RegistryFileView(wx.Panel):
     """
     A three-paned display of the RegistryTreeCtrl, ValueListCtrl, and DataPanel.
     """
-    def __init__(self, parent, registry):
+    def __init__(self, parent, registry, filename):
         super(RegistryFileView, self).__init__(parent, -1, size=(800, 600))
+        self._filename = filename
 
         vsplitter = wx.SplitterWindow(self, -1)
         panel_left = wx.Panel(vsplitter, -1)
@@ -222,6 +236,28 @@ class RegistryFileView(wx.Panel):
         value = self._value_list_view.get_value(item.GetText())
         self._data_view.display_value(value)
 
+    def filename(self):
+        return self._filename
+
+    def reload(self, registry):
+        item = self._tree.GetSelection()
+        path = self._tree.GetPyData(item)["key"].path()
+        print "Current path %s" % (path)
+
+        self._tree.delete_registry()
+        print "deleted current tree"
+        self._tree.add_registry(registry)
+        print "added new tree"
+
+        key = registry.open(path.partition("\\")[2])
+        print "opened %s" % (path.partition("\\")[2])
+        self._data_view.clear_value()
+        self._value_list_view.clear_values()
+        for value in key.values():
+            self._value_list_view.add_value(value)
+
+        print "reload!"
+
 
 class RegistryFileViewer(wx.Frame):
     """
@@ -241,6 +277,8 @@ class RegistryFileViewer(wx.Frame):
         menu_bar.Append(file_menu, "&File")
 
         tab_menu = wx.Menu()
+        _reload = tab_menu.Append(ID_TAB_RELOAD, '&Reload')
+        self.Bind(wx.EVT_MENU, self.menu_tab_reload, _reload)
         _close = tab_menu.Append(ID_TAB_CLOSE, '&Close')
         self.Bind(wx.EVT_MENU, self.menu_tab_close, _close)
         menu_bar.Append(tab_menu, "&Tab")
@@ -269,15 +307,25 @@ class RegistryFileViewer(wx.Frame):
         if dialog.ShowModal() != wx.ID_OK:
             return
         filename = os.path.join(dialog.GetDirectory(), dialog.GetFilename())
-        registry = Registry.Registry(filename)
-        view = RegistryFileView(self._nb, registry=registry)
-        self._nb.AddPage(view, basename(filename))
+        with open(filename) as f:
+            registry = Registry.Registry(f)
+            view = RegistryFileView(self._nb, registry=registry, filename=filename)
+            self._nb.AddPage(view, basename(filename))
+        # TODO catch error here
 
     def menu_file_exit(self, evt):
         sys.exit(0)
 
     def menu_tab_close(self, evt):
         self._nb.RemovePage(self._nb.GetSelection())
+
+    def menu_tab_reload(self, evt):
+        cur = self._nb.GetCurrentPage()
+        filename = cur.filename()
+        with open(filename) as f:
+            registry = Registry.Registry(f)
+            cur.reload(registry)
+        # TODO catch error here
 
     def menu_help_about(self, evt):
         wx.MessageBox("regview.py, a part of `python-registry`\n\nhttp://www.williballenthin.com/registry/", "info")
@@ -287,14 +335,7 @@ if __name__ == '__main__':
     app = wx.App(False)
 
     filenames = []
-    if len(sys.argv) == 1:
-        while True:
-            dialog = wx.FileDialog(None, "Choose Registry File", "", "", "*.*", wx.OPEN)
-            if dialog.ShowModal() == wx.ID_OK:
-                filenames = [os.path.join(dialog.GetDirectory(), dialog.GetFilename())]
-                break
-    else:
-        filenames = sys.argv[1:]
+    filenames = sys.argv[1:]
 
     frame = RegistryFileViewer(None, filenames)
     frame.Show()
