@@ -14,6 +14,9 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with python-registry.  If not, see <http://www.gnu.org/licenses/>.
+#
+#    Originally written by Willi Ballenthin <willi.ballenthin@gmail.com> 
+#    while at Mandiant <http://www.mandiant.com>
 
 
 import sys, os
@@ -328,6 +331,9 @@ class RegistryFileViewer(wx.Frame):
         self.Layout()
 
     def _open_registry_file(self, filename):
+        """ 
+        Open a Registry file by filename into a new tab and return the window.
+        """
         with open(filename, "rb") as f:
             registry = Registry.Registry(f)
             view = RegistryFileView(self._nb, registry=registry, filename=filename)

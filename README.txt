@@ -6,7 +6,7 @@ python-registry
 Introduction
 ------------
 python-registry was originally written by Willi Ballenthin,
-a forensicator who wanted to access the contents of the 
+a forensicator at Mandiant who wanted to access the contents of the 
 Windows Registry from his Linux laptop. python-registry 
 currently provides read-only access to Windows Registry files, 
 such as NTUSER.DAT, userdiff, and SAM. The interface is two-fold:

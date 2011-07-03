@@ -14,6 +14,9 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with python-registry.  If not, see <http://www.gnu.org/licenses/>.
+#
+#    Originally written by Willi Ballenthin <willi.ballenthin@gmail.com> 
+#    while at Mandiant <http://www.mandiant.com>
 
 import struct
 from datetime import datetime
