@@ -333,6 +333,12 @@ class HBINCell(RegistryBlock):
         """
         return self._offset + 0x4
 
+    def raw_data(self):
+        """
+        Get the raw data from the buffer contained by this HBINCell.
+        """
+        return self._buf[self.data_offset():self.data_offset() + self.size()]
+
     def data_id(self):
         """
         Get the ID string of the data block of this HBINCell.
@@ -352,7 +358,7 @@ class HBINCell(RegistryBlock):
 
     def child(self):
         """
-        Make a guess as to the contents of this structure and
+        Make a _guess_ as to the contents of this structure and
         return an instance of that class, or just a DataRecord
         otherwise.
         """
@@ -425,6 +431,36 @@ class DataRecord(Record):
     def __str__(self):
         return "Data Record at 0x%x" % (self.offset())
 
+class DBIndirectBlock(Record):
+    """
+    """
+    def __init__(self, buf, offset, parent):
+        """
+        Constructor.
+        Arguments:
+        - `buf`: Byte string containing Windows Registry file.
+        - `offset`: The offset into the buffer at which the block starts.
+        - `parent`: The parent block, which links to this block. This should be an HBINCell.
+        """
+        super(DBIndirectBlock, self).__init__(buf, offset, parent)
+
+    def __str__(self):
+        return "Large Data Block at 0x%x" % (self.offset())
+        
+    def large_data(self, length):
+        b = []
+        count = 0
+        while length > 0:
+            off = self.abs_offset_from_hbin_offset(self.unpack_dword(4 * count))
+            print "large block: " + str(hex(off))
+            data = HBINCell(self._buf, off, self)
+
+            b += data.raw_data()
+            count += 1
+            length -= 0x3fd8
+
+        return b
+
 class DBRecord(Record):
     """
     A DBRecord is a large data block, which is not thoroughly documented. """
@@ -441,11 +477,17 @@ class DBRecord(Record):
         _id = self.unpack_string(0x0, 2)
         if _id != "db":
             raise ParseException("Invalid DB Record ID")
+        print "db!"
 
     def __str__(self):
         return "Large Data Block at 0x%x" % (self.offset())
-
         
+    def large_data(self, length):
+        off = self.abs_offset_from_hbin_offset(self.unpack_dword(0x4))
+        print "db indirect block: " + str(hex(off))
+        dbi = DBIndirectBlock(self._buf, off + 4, self)
+        return dbi.large_data(length)
+
 class VKRecord(Record):
     """
     The VKRecord holds one name-value pair.  The data may be one many types, including
@@ -609,6 +651,9 @@ class VKRecord(Record):
             if data_length >= 0x80000000:
                 # data is contained in the data_offset field
                 s = struct.unpack_from("<%ds" % (4), self._buf, data_offset)[0]
+            elif 0x3fd8 < data_length < 0x80000000:
+                db = HBINCell(self._buf, data_offset, self).child() # should be db
+                s = db.large_data(data_length)
             else:
                 d = HBINCell(self._buf, data_offset, self)
                 s = struct.unpack_from("<%ds" % (data_length), self._buf, d.data_offset())[0]
@@ -756,8 +801,7 @@ class SubkeyList(Record):
 
 class RIRecord(SubkeyList):
     """
-    """
-    
+    """    
     def __init__(self, buf, offset, parent):
         """
         
@@ -895,6 +939,8 @@ class NKRecord(Record):
         if _id != "nk":
             raise ParseException("Invalid NK Record ID")
         
+        print self
+
     def __str__(self):
         classname = self.classname()
         if not self.has_classname():
@@ -1131,4 +1177,14 @@ class HBINBlock(RegistryBlock):
                 c = c.next()
             except RegistryStructureDoesNotExist:
                 break
+
+
+
+
+
+
+
+
+
+
 
