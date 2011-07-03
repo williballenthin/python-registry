@@ -351,6 +351,11 @@ class HBINCell(RegistryBlock):
         return h.first_hbin().offset() + offset
 
     def child(self):
+        """
+        Make a guess as to the contents of this structure and
+        return an instance of that class, or just a DataRecord
+        otherwise.
+        """
         if self.is_free():
             raise RegistryStructureDoesNotExist("HBINCell is free at 0x%x" % (self.offset()))
 
@@ -370,6 +375,8 @@ class HBINCell(RegistryBlock):
             return RIRecord(self._buf, self.data_offset(), self)
         elif id_ == "sk":
             return SKRecord(self._buf, self.data_offset(), self)
+        elif id_ == "db":
+            return DBRecord(self._buf, self.data_offset(), self)
         else:
             return DataRecord(self._buf, self.data_offset(), self)
 
@@ -417,12 +424,32 @@ class DataRecord(Record):
 
     def __str__(self):
         return "Data Record at 0x%x" % (self.offset())
+
+class DBRecord(Record):
+    """
+    A DBRecord is a large data block, which is not thoroughly documented. """
+    def __init__(self, buf, offset, parent):
+        """
+        Constructor.
+        Arguments:
+        - `buf`: Byte string containing Windows Registry file.
+        - `offset`: The offset into the buffer at which the block starts.
+        - `parent`: The parent block, which links to this block. This should be an HBINCell.
+        """
+        super(DBRecord, self).__init__(buf, offset, parent)
+
+        _id = self.unpack_string(0x0, 2)
+        if _id != "db":
+            raise ParseException("Invalid DB Record ID")
+
+    def __str__(self):
+        return "Large Data Block at 0x%x" % (self.offset())
+
         
 class VKRecord(Record):
     """
     The VKRecord holds one name-value pair.  The data may be one many types, including
-    strings, integers, and binary data.
-    """
+    strings, integers, and binary data.    """
     def __init__(self, buf, offset, parent):
         """
         Constructor.
