@@ -11,6 +11,10 @@ if __name__ == '__main__':
 
     registry = Registry.Registry(sys.argv[1])
     key = registry.open(sys.argv[2])
+    if sys.argv[3] == "default":
+        sys.argv[3] = "(default)"
+
     value = key.value(sys.argv[3])
+
 
     sys.stdout.write(value.value())
