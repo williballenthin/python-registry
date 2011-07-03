@@ -22,7 +22,6 @@ from Registry import Registry
 
 ID_FILE_OPEN = wx.NewId()
 ID_TAB_CLOSE = wx.NewId()
-ID_TAB_RELOAD = wx.NewId()
 ID_FILE_EXIT = wx.NewId()
 ID_HELP_ABOUT = wx.NewId()
 
@@ -239,26 +238,6 @@ class RegistryFileView(wx.Panel):
     def filename(self):
         return self._filename
 
-    def reload(self, registry):
-        item = self._tree.GetSelection()
-        path = self._tree.GetPyData(item)["key"].path()
-        print "Current path %s" % (path)
-
-        self._tree.delete_registry()
-        print "deleted current tree"
-        self._tree.add_registry(registry)
-        print "added new tree"
-
-        key = registry.open(path.partition("\\")[2])
-        print "opened %s" % (path.partition("\\")[2])
-        self._data_view.clear_value()
-        self._value_list_view.clear_values()
-        for value in key.values():
-            self._value_list_view.add_value(value)
-
-        print "reload!"
-
-
 class RegistryFileViewer(wx.Frame):
     """
     The main RegView GUI application.
@@ -277,8 +256,6 @@ class RegistryFileViewer(wx.Frame):
         menu_bar.Append(file_menu, "&File")
 
         tab_menu = wx.Menu()
-        _reload = tab_menu.Append(ID_TAB_RELOAD, '&Reload')
-        self.Bind(wx.EVT_MENU, self.menu_tab_reload, _reload)
         _close = tab_menu.Append(ID_TAB_CLOSE, '&Close')
         self.Bind(wx.EVT_MENU, self.menu_tab_close, _close)
         menu_bar.Append(tab_menu, "&Tab")
@@ -318,14 +295,6 @@ class RegistryFileViewer(wx.Frame):
 
     def menu_tab_close(self, evt):
         self._nb.RemovePage(self._nb.GetSelection())
-
-    def menu_tab_reload(self, evt):
-        cur = self._nb.GetCurrentPage()
-        filename = cur.filename()
-        with open(filename) as f:
-            registry = Registry.Registry(f)
-            cur.reload(registry)
-        # TODO catch error here
 
     def menu_help_about(self, evt):
         wx.MessageBox("regview.py, a part of `python-registry`\n\nhttp://www.williballenthin.com/registry/", "info")
