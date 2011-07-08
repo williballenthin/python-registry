@@ -956,8 +956,6 @@ class NKRecord(Record):
         _id = self.unpack_string(0x0, 2)
         if _id != "nk":
             raise ParseException("Invalid NK Record ID")
-        
-        print self
 
     def __str__(self):
         classname = self.classname()
