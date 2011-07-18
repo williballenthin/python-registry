@@ -92,7 +92,8 @@ someone outside of his lonely NYC apartment.
 
 License
 -------
-python-registry is released under the GPLv3.
+As of version 0.2.0, python-registry is released under the Apache 2.0 license.
+Before that, python-registry was released under the GPLv3.
 
 
 Sources
