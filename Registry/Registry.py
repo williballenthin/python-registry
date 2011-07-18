@@ -191,7 +191,7 @@ class RegistryKey(object):
         # a new RegistryKey from the NKRecord parent key, rather
         # than using the parent of this instance, if it exists.
         try:
-            return self._nkrecord.parent_key()
+            return RegistryKey(self._nkrecord.parent_key())
         except RegistryParse.ParseException:
             raise RegistryKeyHasNoParentException(self.name())
 
