@@ -17,7 +17,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import re, sys, datetime
+import re, sys, datetime, time
 from Registry import Registry
 
 
@@ -98,7 +98,7 @@ def get_shellbags(registry):
             # next, get the full unicode version
             if mru_type == SB_MRU_TYPE_PREDEFINED:
                 # At this point, the predefined keys are unknown. 
-                # A general survey will have to be made in order to identify
+                # A general survey will identify
                 # the meaning of the predefined keys
                 nameW = "??%s" % (value.name()) 
             elif mru_type == SB_MRU_TYPE_UNICODEONLY:
@@ -162,13 +162,34 @@ def get_shellbags(registry):
             shellbag_rec(key.subkey(value.name()), bag_prefix + "\\" + value.name(), path)
 
     shellbag_rec(bagmru, "", "")
-    print "MTIME, ATIME, CTIME, PATH"
     for shellbag in shellbags:
         try:
-            print "%s, %s, %s, %s" % (shellbag["mtime"], shellbag["atime"], shellbag["ctime"], shellbag["path"])
+            print shellbag_bodyfile(shellbag["mtime"], shellbag["atime"], shellbag["ctime"], shellbag["path"])
         except UnicodeEncodeError:
-            print list(shellbag["path"])
-            sys.exit(-1)
+            print "#" + str(list(shellbag["path"]))
+#            sys.exit(-1)
+            pass
+
+def shellbag_bodyfile(m, a, c, path):
+    try:
+        modified = int(time.mktime(m.timetuple()))    
+    except ValueError:
+        modified = int(time.mktime(datetime.datetime(1970, 1, 1, 0, 0, 0).timetuple()))
+
+    try:
+        accessed = int(time.mktime(a.timetuple()))
+    except ValueError:
+        accessed = int(time.mktime(datetime.datetime(1970, 1, 1, 0, 0, 0).timetuple()))
+
+    try:
+        created  = int(time.mktime(c.timetuple()))
+    except ValueError:
+        created = int(time.mktime(datetime.datetime(1970, 1, 1, 0, 0, 0).timetuple()))
+
+    changed = int(time.mktime(datetime.datetime(1970, 1, 1, 0, 0, 0).timetuple()))
+
+    return u"0|Shellbag %s|0|0|0|0|0|%s|%s|%s|%s" % (path, modified, accessed, changed, created)
+
 
 def usage():
     return "  USAGE:\n\t%s <Windows Registry file>" % sys.argv[1]
