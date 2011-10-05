@@ -36,4 +36,4 @@ if __name__ == '__main__':
     value = key.value(sys.argv[3])
 
 
-    sys.stdout.write(value.value())
+    sys.stdout.write(str(value.value()))
