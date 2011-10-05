@@ -34,6 +34,15 @@ RegResourceList = 0x0008
 RegFullResourceDescriptor = 0x0009
 RegResourceRequirementsList = 0x000A
 
+_global_warning_messages = []
+
+
+def warn(msg):
+    if msg not in _global_warning_messages:
+        _global_warning_messages.append(msg)
+        print "Warning: %s" % (msg)
+    
+
 def parse_windows_timestamp(qword):
     # see http://integriography.wordpress.com/2010/01/16/using-phython-to-parse-and-present-windows-64-bit-timestamps/
     return datetime.utcfromtimestamp(float(qword) * 1e-7 - 11644473600 )
@@ -713,19 +722,19 @@ class VKRecord(Record):
                 return db.large_data(data_length)
             return self._buf[data_offset + 4:data_offset + 4 + data_length]
         elif data_type == RegBigEndian:
-            print "Warning: Data type RegBigEndian not yet supported"
+            warn("Data type RegBigEndian not yet supported")
             return False
         elif data_type == RegLink:
-            print "Warning: Data type RegLink not yet supported"
+            warn("Data type RegLink not yet supported")
             return False
         elif data_type == RegResourceList:
-            print "Warning: Data type RegResourceList not yet supported"
+            warn("Data type RegResourceList not yet supported")
             return False
         elif data_type == RegFullResourceDescriptor:
-            print "Warning: Data type RegFullResourceDescriptor not yet supported"
+            warn("Data type RegFullResourceDescriptor not yet supported")
             return False
         elif data_type == RegResourceRequirementsList:
-            print "Warning: Data type RegResourceRequirementsList not yet supported"
+            warn("Data type RegResourceRequirementsList not yet supported")
             return False
         else:
             raise UnknownTypeException("Unknown VK Record type 0x%x at 0x%x" % (data_type, self.offset()))
