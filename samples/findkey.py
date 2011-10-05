@@ -7,8 +7,11 @@ from Registry import *
 
 def rec(key, depth, needle):
     for value in key.values():
-        if needle in str(value.value()):
-            print key.path() + "  " + value.name()
+        try:
+            if needle in str(value.value()):
+                print key.path() + "  " + value.name()
+        except UnicodeEncodeError:
+            pass
             
     for subkey in key.subkeys():
         rec(subkey, depth + 1, needle)
