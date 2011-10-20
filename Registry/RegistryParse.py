@@ -35,13 +35,10 @@ RegFullResourceDescriptor = 0x0009
 RegResourceRequirementsList = 0x000A
 
 _global_warning_messages = []
-
-
 def warn(msg):
     if msg not in _global_warning_messages:
         _global_warning_messages.append(msg)
         print "Warning: %s" % (msg)
-    
 
 def parse_windows_timestamp(qword):
     # see http://integriography.wordpress.com/2010/01/16/using-phython-to-parse-and-present-windows-64-bit-timestamps/
