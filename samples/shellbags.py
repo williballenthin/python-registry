@@ -673,6 +673,11 @@ class SHITEM_FILEENTRY(SHITEM):
         debug("SHITEM_FILEENTRY @ %s." % (hex(offset)))
         super(SHITEM_FILEENTRY, self).__init__(buf, offset, parent)
         
+        self._f("byte", "flags", 0x3)
+        self._f("dword", "filesize", 0x4)
+        self._f("dosdate", "m_date", 0x8)
+        self._f("word", "fileattrs", 0xC)
+        self._f("string", "short_name", 0xE)
         self._off_flags = 0x3      # UINT8
         self._off_filesize = 0x4   # UINT32
         self._off_date = 0x8       # DOSDATE
