@@ -41,7 +41,7 @@ def dosdate(dosdate, dostime):
         t = ord(dostime[1]) << 8
         t |= ord(dostime[0])
         sec     = t & 0b0000000000011111
-        sec *= 2
+        sec    *= 2
         minute  = (t & 0b0000011111100000) >> 5
         hour    = (t & 0b1111100000000000) >> 11
 
@@ -159,6 +159,32 @@ class Block(object):
         self._buf = buf
         self._offset = offset
         self._parent = parent
+        self._fields = []
+
+    def _prepare_fields(self, fields=False):
+        """
+        Declaratively add fields to this block.
+        self._fields should contain a list of tuples ("type", "name", offset).
+        This method will dynamically add corresponding offset and unpacker methods
+          to this block.
+        Arguments:
+        - `fields`: (Optional) A list of tuples to add. Otherwise, self._fields is used.
+        """
+        for field in fields or self._fields:
+            if not getattr(self, field[1]):
+                def handler():
+                    f = getattr(self, "unpack_", field[0])
+                    f(*(field[2:]))
+                setattr(self, field[1], handler)
+                setattr(self, "_off_" + field[1], field[2])
+
+    def _f(self, t):
+        """
+        A shortcut to add a field.
+        Arguments:
+        - `t`: A tuple to add.
+        """
+        self._prepare_fields([t])
 
     def unpack_byte(self, offset):
         """
@@ -609,7 +635,7 @@ class SHITEM_NETWORKVOLUMEENTRY(SHITEM):
     def name(self):
         if self.flags() & 0x2:
             return self.unpack_string(self._off_name)
-            return ""
+        return ""
 
     def description(self):
         if self.flags() & 0x2:
