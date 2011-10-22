@@ -69,6 +69,10 @@ def debug(message):
 def warning(message):
     print "# [w] %s" % (message)
 
+def error(message):
+    print "# [e] %s" % (message)
+    sys.exit(-1)
+
 class SHITEMTYPE:
     '''
     This is like an enum...
@@ -80,7 +84,7 @@ class SHITEMTYPE:
     FILE_ENTRY0 = 0x31
     FILE_ENTRY1 = 0x32
     FILE_ENTRY2 = 0xB1
-    FOLDER_IDENTIFIER = 0x1F
+    FOLDER_ENTRY = 0x1F
     VOLUME_NAME = 0x2F
     NETWORK_VOLUME_NAME0 = 0x41
     NETWORK_VOLUME_NAME1 = 0x42
@@ -255,7 +259,7 @@ class Block(object):
             length = end - o
 
         try:
-            return struct.unpack_from("<%ds" % (length), self._buf, o)[0]
+            return struct.unpack_from("<%ds" % (length), self._buf, o)[0].partition("\x00")[0]
         except struct.error:
             raise OverrunBufferException(o, len(self._buf))
 
@@ -275,6 +279,8 @@ class Block(object):
         if not length:
             o = self._offset + offset
             end = self._buf.find("\x00\x00", o)
+            if end - 2 <= o:
+                return ""
 
             if self._buf[end - 2] == "\x00":
                 # then the last UTF-16 character was in the ASCII range
@@ -292,19 +298,45 @@ class Block(object):
                 pass
             length = end - o
         
-        return self._buf[self._offset + offset:self._offset + offset + 2 * length].decode("utf16")
+        return self._buf[self._offset + offset:self._offset + offset + 2 * length].decode("utf16").partition("\x00")[0]
 
     def unpack_dosdate(self, offset):
         """
         Returns a datetime from the DOSDATE and DOSTIME starting at the relative offset.
         Arguments:
         - `offset`: The relative offset from the start of the block.
+        Throws:
+        - `OverrunBufferException`
         """
         try:
             o = self._offset + offset
             return dosdate(self._buf[o:o + 2], self._buf[o + 2:o + 4])
         except struct.error:
             raise OverrunBufferException(o, len(self._buf))
+
+    def unpack_guid(self, offset):
+        """
+        Returns a string containing a GUID starting at the relative offset.
+        Arguments:
+        - `offset`: The relative offset from the start of the block.
+        Throws:
+        - `OverrunBufferException`
+        """
+        o = self._offset + offset
+
+        try:
+            bin = self._buf[o:o + 16]
+        except IndexError:
+            raise OverrunBufferException(o, len(self._buf))
+
+        # Yeah, this is ugly
+        h = map(ord, bin)
+        return "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x" % \
+                                                        (h[3], h[2], h[1], h[0],
+                                                         h[5], h[4],
+                                                         h[7], h[6],
+                                                         h[8], h[9],
+                                                         h[10], h[11], h[12], h[13], h[14], h[15])
 
     def absolute_offset(self, offset):
         """
@@ -328,11 +360,12 @@ class Block(object):
 
 class SHITEM(Block):
     def __init__(self, buf, offset, parent):
-        debug("SHITEM @ %s." % (hex(offset)))
         super(SHITEM, self).__init__(buf, offset, parent)
 
         self._off_size = 0x0    # UINT16
         self._off_type = 0x2    # UINT8
+
+        debug("SHITEM @ %s of type %s." % (hex(offset), hex(self.type())))
 
     def __unicode__(self):
         return u"SHITEM @ %s." % (hex(self.offset()))
@@ -344,19 +377,270 @@ class SHITEM(Block):
         return self.unpack_word(self._off_size)
 
     def type(self):
-        return self.unpack_word(self._off_type)
+        return self.unpack_byte(self._off_type)
 
     def name(self):
         return "??"
 
     def m_date(self):
-        return datetime.datetime.min()
+        return datetime.datetime.min
 
     def a_date(self):
-        return datetime.datetime.min()
+        return datetime.datetime.min
 
     def cr_date(self):
-        return datetime.datetime.min()
+        return datetime.datetime.min
+
+known_guids = {
+    "031e4825-7b94-4dc3-b131-e946b44c8dd5": "Libraries",
+    "1ac14e77-02e7-4e5d-b744-2eb1ae5198b7": "CSIDL_SYSTEM",
+    "208d2c60-3aea-1069-a2d7-08002b30309d": "My Network Places",
+    "20d04fe0-3aea-1069-a2d8-08002b30309d": "My Computer",
+    "21ec2020-3aea-1069-a2dd-08002b30309d": "{Unknown CSIDL}",
+    "22877a6d-37a1-461a-91b0-dbda5aaebc99": "{Unknown CSIDL}",
+    "2400183a-6185-49fb-a2d8-4a392a602ba3": "Public Videos",
+    "2559a1f1-21d7-11d4-bdaf-00c04f60b9f0": "{Unknown CSIDL}",
+    "2559a1f3-21d7-11d4-bdaf-00c04f60b9f0": "{Unknown CSIDL}",
+    "26ee0668-a00a-44d7-9371-beb064c98683": "{Unknown CSIDL}",
+    "3080f90e-d7ad-11d9-bd98-0000947b0257": "{Unknown CSIDL}",
+    "3214fab5-9757-4298-bb61-92a9deaa44ff": "Public Music",
+    "33e28130-4e1e-4676-835a-98395c3bc3bb": "Pictures",
+    "374de290-123f-4565-9164-39c4925e467b": "Downloads",
+    "4336a54d-038b-4685-ab02-99bb52d3fb8b": "{Unknown CSIDL}",
+    "450d8fba-ad25-11d0-98a8-0800361b1103": "My Documents",
+    "4bd8d571-6d19-48d3-be97-422220080e43": "Music",
+    "5399e694-6ce5-4d6c-8fce-1d8870fdcba0": "Control Panel",
+    "59031a47-3f72-44a7-89c5-5595fe6b30ee": "Users",
+    "645ff040-5081-101b-9f08-00aa002f954e": "Recycle Bin",
+    "724ef170-a42d-4fef-9f26-b60e846fba4f": "Administrative Tools",
+    "7b0db17d-9cd2-4a93-9733-46cc89022e7c": "Documents Library",
+    "7c5a40ef-a0fb-4bfc-874a-c0f2e0b9fa8e": "Program Files (x86)",
+    "871c5380-42a0-1069-a2ea-08002b30309d": "Internet Explorer (Homepage)",
+    "905e63b6-c1bf-494e-b29c-65b732d3d21a": "Program Files",
+    "9e52ab10-f80d-49df-acb8-4330f5687855": "Temporary Burn Folder",
+    "a305ce99-f527-492b-8b1a-7e76fa98d6e4": "Installed Updates",
+    "b6ebfb86-6907-413c-9af7-4fc2abf07cc5": "Public Pictures",
+    "c1bae2d0-10df-4334-bedd-7aa20b227a9d": "Common OEM Links",
+    "cce6191f-13b2-44fa-8d14-324728beef2c": "{Unknown CSIDL}",
+    "d0384e7d-bac3-4797-8f14-cba229b392b5": "Common Administrative Tools",
+    "d65231b0-b2f1-4857-a4ce-a8e7c6ea7d27": "System32 (x86)",
+    "de61d971-5ebc-4f02-a3a9-6c82895e5c04": "Get Programs",
+    "df7266ac-9274-4867-8d55-3bd661de872d": "Programs and Features",
+    "dfdf76a2-c82a-4d63-906a-5644ac457385": "Public",
+    "de974d24-d9c6-4d3e-bf91-f4455120b917": "Common Files",
+    "ed228fdf-9ea8-4870-83b1-96b02cfe0d52": "My Games",
+    "f02c1a0d-be21-4350-88b0-7367fc96ef3c": "Network", 
+    "f38bf404-1d43-42f2-9305-67de0b28fc23": "Windows",
+    "f3ce0f7c-4901-4acc-8648-d5d44b04ef8f": "Users Files",
+    "fdd39ad0-238f-46af-adb4-6c85480369c7": "Documents",
+}
+
+class SHITEM_FOLDERENTRY(SHITEM):
+    def __init__(self, buf, offset, parent):
+        debug("SHITEM_FOLDERENTRY @ %s." % (hex(offset)))
+        super(SHITEM_FOLDERENTRY, self).__init__(buf, offset, parent)
+        
+        self._off_folderid = 0x3      # UINT8
+        self._off_guid = 0x4          # UINT8[16]
+
+    def __unicode__(self):
+        return u"SHITEM_FOLDERENTRY @ %s: %s." % (hex(self.offset()), self.name())
+
+    def __str__(self):
+        return "SHITEM_FOLDERENTRY @ %s: %s." % (hex(self.offset()), self.name())
+
+    def folder_id(self):
+        id = self.unpack_byte(self._off_folderid)
+        
+        if id == 0x00:
+            return "INTERNET_EXPLORER"
+        elif id == 0x42:
+            return "LIBRARIES"
+        elif id == 0x44:
+            return "USERS"
+        elif id == 0x48:
+            return "MY_DOCUMENTS"
+        elif id == 0x50:
+            return "MY_COMPUTER"
+        elif id == 0x58:
+            return "NETWORK"
+        elif id == 0x60:
+            return "RECYCLE_BIN"
+        elif id == 0x68:
+            return "INTERNET_EXPLORER"
+        elif id == 0x70:
+            return "UKNOWN"
+        elif id == 0x80:
+            return "MY_GAMES"
+        else:
+            return ""
+
+    def guid(self):
+        return self.unpack_guid(self._off_guid)
+
+    def name(self):
+        if self.guid() in known_guids:
+            return known_guids[self.guid()]
+        else:
+            return "{%s: %s}" % (self.folder_id(), self.guid())
+
+class SHITEM_UNKNOWNENTRY0(SHITEM):
+    def __init__(self, buf, offset, parent):
+        debug("SHITEM_UNKNOWNENTRY0 @ %s." % (hex(offset)))
+        super(SHITEM_UNKNOWNENTRY0, self).__init__(buf, offset, parent)
+        
+        # pretty much completely unknown
+        # TODO, if you have time for research
+
+    def __unicode__(self):
+        return u"SHITEM_UNKNOWNENTRY0 @ %s: %s." % (hex(self.offset()), self.name())
+
+    def __str__(self):
+        return "SHITEM_UNKNOWNENTRY0 @ %s: %s." % (hex(self.offset()), self.name())
+
+    def name(self):
+        return "??"
+
+class SHITEM_UNKNOWNENTRY2(SHITEM):
+    def __init__(self, buf, offset, parent):
+        debug("SHITEM_UNKNOWNENTRY2 @ %s." % (hex(offset)))
+        super(SHITEM_UNKNOWNENTRY2, self).__init__(buf, offset, parent)
+        
+        self._off_flags = 0x3         # UINT8
+        self._off_guid = 0x4          # UINT8[16]
+
+    def __unicode__(self):
+        return u"SHITEM_UNKNOWNENTRY2 @ %s: %s." % (hex(self.offset()), self.name())
+
+    def __str__(self):
+        return "SHITEM_UNKNOWNENTRY2 @ %s: %s." % (hex(self.offset()), self.name())
+
+    def flags(self):
+        return self.unpack_byte(self._off_flags)
+
+    def guid(self):
+        return self.unpack_guid(self._off_guid)
+
+    def name(self):
+        if self.guid() in known_guids:
+            return known_guids[self.guid()]
+        else:
+            return "{%s}" % (self.guid())
+
+class SHITEM_URIENTRY(SHITEM):
+    def __init__(self, buf, offset, parent):
+        debug("SHITEM_URIENTRY @ %s." % (hex(offset)))
+        super(SHITEM_URIENTRY, self).__init__(buf, offset, parent)
+                   
+        self._off_flags = 0x3    # UINT32
+        self._off_uri = 0x7      # wstring
+
+    def __unicode__(self):
+        return u"SHITEM_URIENTRY @ %s: %s." % (hex(self.offset()), self.name())
+
+    def __str__(self):
+        return "SHITEM_URIENTRY @ %s: %s." % (hex(self.offset()), self.name())
+
+    def uri(self):
+        return self.unpack_wstring(self._off_uri)
+
+    def name(self):
+        return self.uri()
+
+class SHITEM_CONTROLPANELENTRY(SHITEM):
+    def __init__(self, buf, offset, parent):
+        debug("SHITEM_CONTROLPANELENTRY @ %s." % (hex(offset)))
+        super(SHITEM_CONTROLPANELENTRY, self).__init__(buf, offset, parent)
+        
+        self._off_flags = 0x3         # UINT8
+        self._off_guid = 0xD          # UINT8[16]
+
+    def __unicode__(self):
+        return u"SHITEM_CONTROLPANELENTRY @ %s: %s." % (hex(self.offset()), self.name())
+
+    def __str__(self):
+        return "SHITEM_CONTROLPANELENTRY @ %s: %s." % (hex(self.offset()), self.name())
+
+    def flags(self):
+        return self.unpack_byte(self._off_flags)
+
+    def guid(self):
+        return self.unpack_guid(self._off_guid)
+
+    def name(self):
+        if self.guid() in known_guids:
+            return known_guids[self.guid()]
+        else:
+            return "{%s}" % (self.guid())
+
+class SHITEM_VOLUMEENTRY(SHITEM):
+    def __init__(self, buf, offset, parent):
+        debug("SHITEM_VOLUMEENTRY @ %s." % (hex(offset)))
+        super(SHITEM_VOLUMEENTRY, self).__init__(buf, offset, parent)
+        
+        self._off_name = 0x3      # ASCII
+
+    def __unicode__(self):
+        return u"SHITEM_VOLUMEENTRY @ %s: %s." % (hex(self.offset()), self.name())
+
+    def __str__(self):
+        return "SHITEM_VOLUMEENTRY @ %s: %s." % (hex(self.offset()), self.name())
+
+    def name(self):
+        return self.unpack_string(self._off_name)
+
+class SHITEM_NETWORKVOLUMEENTRY(SHITEM):
+    def __init__(self, buf, offset, parent):
+        debug("SHITEM_NETWORKVOLUMEENTRY @ %s." % (hex(offset)))
+        super(SHITEM_NETWORKVOLUMEENTRY, self).__init__(buf, offset, parent)
+
+        self._off_flags = 0x4
+        self._off_name = 0x5
+
+    def __unicode__(self):
+        return u"SHITEM_NETWORKVOLUMEENTRY @ %s: %s." % (hex(self.offset()), self.name())
+
+    def __str__(self):
+        return "SHITEM_NETWORKVOLUMEENTRY @ %s: %s." % (hex(self.offset()), self.name())
+
+    def flags(self):
+        return self.unpack_byte(self._off_flags)
+
+    def name(self):
+        if self.flags() & 0x2:
+            return self.unpack_string(self._off_name)
+            return ""
+
+    def description(self):
+        if self.flags() & 0x2:
+            return self.unpack_string(self._off_name + len(self.name()) + 1)
+            return ""
+
+class SHITEM_NETWORKSHAREENTRY(SHITEM):
+    def __init__(self, buf, offset, parent):
+        debug("SHITEM_NETWORKSHAREENTRY @ %s." % (hex(offset)))
+        super(SHITEM_NETWORKSHAREENTRY, self).__init__(buf, offset, parent)
+
+        self._off_flags = 0x4
+        self._off_path = 0x5
+
+    def __unicode__(self):
+        return u"SHITEM_NETWORKSHAREENTRY @ %s: %s." % (hex(self.offset()), self.name())
+
+    def __str__(self):
+        return "SHITEM_NETWORKSHAREENTRY @ %s: %s." % (hex(self.offset()), self.name())
+
+    def flags(self):
+        return self.unpack_byte(self._off_flags)
+
+    def path(self):
+        return self.unpack_string(self._off_path)
+
+    def description(self):
+        return self.unpack_string(self._off_path + len(self.path()) + 1)
+
+    def name(self):
+        return self.path()
 
 class SHITEM_FILEENTRY(SHITEM):
     def __init__(self, buf, offset, parent):
@@ -445,7 +729,7 @@ class SHITEM_FILEENTRY(SHITEM):
         if self._off_long_name_size:
             return self._off_long_name_size
         elif self._off_long_name:
-            return len(self.long_name()) + 2 # include final NULL
+            return len(self.long_name()) + 2 
         else:
             return 0
 
@@ -476,12 +760,46 @@ class SHITEMLIST(Block):
             if size == 0:
                 return
 
-            type = self.unpack_word(off + 2)
+    # UNKNOWN1
+    # NETWORK_SHARE = 0xC3
+    # URI = 0x61
+    # CONTROL_PANEL = 0x71
+
+            type = self.unpack_byte(off + 2)
             if type == SHITEMTYPE.FILE_ENTRY0 or \
                type == SHITEMTYPE.FILE_ENTRY1 or \
                type == SHITEMTYPE.FILE_ENTRY2:
                 item = SHITEM_FILEENTRY(self._buf, off, self)
+
+            elif type == SHITEMTYPE.FOLDER_ENTRY:
+                item = SHITEM_FOLDERENTRY(self._buf, off, self)
+
+            elif type == SHITEMTYPE.VOLUME_NAME:
+                item = SHITEM_VOLUMEENTRY(self._buf, off, self)
+
+            elif type == SHITEMTYPE.NETWORK_VOLUME_NAME0 or \
+                 type == SHITEMTYPE.NETWORK_VOLUME_NAME1 or \
+                 type == SHITEMTYPE.NETWORK_VOLUME_NAME2 or \
+                 type == SHITEMTYPE.NETWORK_VOLUME_NAME3:
+                item = SHITEM_NETWORKVOLUMEENTRY(self._buf, off, self)
+
+            elif type == SHITEMTYPE.NETWORK_SHARE:
+                item = SHITEM_NETWORKSHAREENTRY(self._buf, off, self)
+
+            elif type == SHITEMTYPE.URI:
+                item = SHITEM_URIENTRY(self._buf, off, self)
+
+            elif type == SHITEMTYPE.CONTROL_PANEL:
+                item = SHITEM_CONTROLPANELENTRY(self._buf, off, self)
+
+            elif type == SHITEMTYPE.UNKNOWN0:
+                item = SHITEM_UNKNOWNENTRY0(self._buf, off, self)
+
+            elif type == SHITEMTYPE.UNKNOWN2:
+                item = SHITEM_UNKNOWNENTRY2(self._buf, off, self)
+
             else:
+                debug("Unknown type: %s" % hex(type))
                 item = SHITEM(self._buf, off, self)
 
             yield item
@@ -504,7 +822,7 @@ def get_shellbags(registry):
             # Windows 7 UsrClass.dat location
             windows = registry.open("Local Settings\\Software\\Microsoft\\Windows\\Shell")
         except Registry.RegistryKeyNotFoundException:
-            print "Unable to find shellbag key."
+            error("Unable to find shellbag key.")
             sys.exit(-1)
     bagmru = windows.subkey("BagMRU")
 
@@ -519,23 +837,31 @@ def get_shellbags(registry):
             if not re.match("\d+", value.name()):
                 continue
 
-            print bag_prefix + "\\" + value.name()
-
             mtime = datetime.datetime.min
             atime = datetime.datetime.min
             ctime = datetime.datetime.min
             nameW = "??"
 
+            print bag_prefix + "\\" + value.name()
+
             l = SHITEMLIST(value.value(), 0, False)
             for i in l.items():
                 # assume only one item here, and take the last
+                try:
+                    print i.name()
+                except UnicodeEncodeError, e:
+                    print list(i.name())
                 try:
                     nameW = i.name()
                     mtime = i.m_date()
                     ctime = i.cr_date()
                     atime = i.a_date()
-                except:
+                except Exception, e:
+                    print e
                     pass
+
+            print ""
+            print ""
 
             path = path_prefix + "\\" + nameW
             shellbags.append({
