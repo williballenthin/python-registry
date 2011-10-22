@@ -504,15 +504,17 @@ class DBRecord(Record):
 
 class VKRecord(Record):
     """
-    The VKRecord holds one name-value pair.  The data may be one many types, including
-    strings, integers, and binary data.    """
+    The VKRecord holds one name-value pair.  The data may be one many types, 
+    including strings, integers, and binary data.    
+    """
     def __init__(self, buf, offset, parent):
         """
         Constructor.
         Arguments:
         - `buf`: Byte string containing Windows Registry file.
         - `offset`: The offset into the buffer at which the block starts.
-        - `parent`: The parent block, which links to this block. This should be an HBINCell.
+        - `parent`: The parent block, which links to this block. 
+              This should be an HBINCell.
         """
         super(VKRecord, self).__init__(buf, offset, parent)
 
@@ -666,8 +668,13 @@ class VKRecord(Record):
                 # data is contained in the data_offset field
                 s = struct.unpack_from("<%ds" % (4), self._buf, data_offset)[0]
             elif 0x3fd8 < data_length < 0x80000000:
-                db = HBINCell(self._buf, data_offset, self).child() # should be db
-                s = db.large_data(data_length)
+                d = HBINCell(self._buf, data_offset, self)
+                if d.data_id() == "db":
+                    # this should always be the case
+                    # but empirical testing does not confirm this
+                    s = d.child().large_data(data_length)
+                else:
+                    s = d.raw_data()[:data_length]
             else:
                 d = HBINCell(self._buf, data_offset, self)
                 s = struct.unpack_from("<%ds" % (data_length), self._buf, d.data_offset())[0]
@@ -685,13 +692,18 @@ class VKRecord(Record):
                         raise
             s = s.partition('\x00')[0]
             return s
-        elif data_type == RegBin:
+        elif data_type == RegBin or data_type == RegNone:
             if data_length >= 0x80000000:
                 data_length -= 0x80000000
                 return self._buf[data_offset:data_offset + data_length]
             elif 0x3fd8 < data_length < 0x80000000:
-                db = HBINCell(self._buf, data_offset, self).child() # should be db
-                return db.large_data(data_length)
+                d = HBINCell(self._buf, data_offset, self)
+                if d.data_id() == "db":
+                    # this should always be the case
+                    # but empirical testing does not confirm this
+                    return d.child().large_data(data_length)
+                else:
+                    return d.raw_data()[:data_length]
             return self._buf[data_offset + 4:data_offset + 4 + data_length]
         elif data_type == RegDWord:
             return self.unpack_dword(0x8)
@@ -701,23 +713,18 @@ class VKRecord(Record):
                 # be composed of completely \x00, so the strings are empty
                 return []
             elif 0x3fd8 < data_length < 0x80000000:
-                db = HBINCell(self._buf, data_offset, self).child() # should be db
-                data = db.large_data(data_length).decode("utf16")
+                d = HBINCell(self._buf, data_offset, self)
+                if d.data_id() == "db":
+                    s = d.child().large_data(data_length)
+                else:
+                    s = d.raw_data()[:data_length]
             else:
-                data = self._buf[data_offset + 4:data_offset + 4 + data_length].decode("utf16")
-            return data.split("\x00")
+                s = self._buf[data_offset + 4:data_offset + 4 + data_length]
+            s = s.decode("utf16")
+            return s.split("\x00")
         elif data_type == RegQWord:
             d = HBINCell(self._buf, data_offset, self)
             return struct.unpack_from("<Q", self._buf, d.data_offset())[0]
-        elif data_type == RegNone:
-            # TODO test this
-            if data_length >= 0x80000000:
-                data_length -= 0x80000000
-                return self._buf[data_offset:data_offset + data_length]
-            elif 0x3fd8 < data_length < 0x80000000:
-                db = HBINCell(self._buf, data_offset, self).child() # should be db
-                return db.large_data(data_length)
-            return self._buf[data_offset + 4:data_offset + 4 + data_length]
         elif data_type == RegBigEndian:
             warn("Data type RegBigEndian not yet supported")
             return False
