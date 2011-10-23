@@ -801,56 +801,46 @@ class SHITEMLIST(Block):
     def __str__(self):
         return "SHITEMLIST @ %s." % (hex(self.offset()))
 
-def get_shellbags(registry):
+def get_shellbags(shell_key):
     shellbags = []
-    # TODO try both Shell and ShellNoRoam
-    try:
-        # Windows XP NTUSER.DAT location
-        windows = registry.open("Software\\Microsoft\\Windows\\ShellNoRoam")
-    except Registry.RegistryKeyNotFoundException:
-        try:
-            # Windows 7 UsrClass.dat location
-            windows = registry.open("Local Settings\\Software\\Microsoft\\Windows\\Shell")
-        except Registry.RegistryKeyNotFoundException:
-            error("Unable to find shellbag key.")
-            sys.exit(-1)
-    bagmru = windows.subkey("BagMRU")
+    bagmru_key = shell_key.subkey("BagMRU")
+    bags_key = shell_key.subkey("Bags")
 
     def shellbag_rec(key, bag_prefix, path_prefix):
         """
         `key`: The current 'BagsMRU' key to recurse into.
         `bag_prefix`: A string containing the current subkey path of the relevant 'Bags' key.
             It will look something like '1\\2\\3\\4'.
-        `path_prefix` A string containing the current human-readable, file system path so far constructed.
+        `path_prefix` A string containing the current human-readable, file system path 
+            so far constructed.
         """
-
         try:
             slot = key.value("NodeSlot").value()
-            bag = windows.subkey("Bags").subkey(str(slot)).subkey("Shell")
+            for bag in bags_key.subkey(str(slot)).subkeys():
 
-            for value in [value for value in bag.values() if "ItemPos" in value.name()]:
-                buf = value.value()
-                debug("Slot %s ITEMPOS @ %s" % (str(slot), value.name()))
+                for value in [value for value in bag.values() if "ItemPos" in value.name()]:
+                    buf = value.value()
+                    debug("Slot %s ITEMPOS @ %s" % (str(slot), value.name()))
 
-                block = Block(buf, 0x0, False)
-                offset = 0x10
+                    block = Block(buf, 0x0, False)
+                    offset = 0x10
                 
-                while True:
-                    offset += 0x8
-                    size = block.unpack_word(offset)
-                    if size == 0:
-                        break
-                    elif size < 0x15:
-                        pass
-                    else:
-                        item = ITEMPOS_FILEENTRY(buf, offset, False)
-                        shellbags.append({
-                            "path": path_prefix + "\\" + item.name(),
-                            "mtime": item.m_date(),
-                            "atime": item.a_date(),
-                            "ctime": item.cr_date()
-                        })
-                    offset += size
+                    while True:
+                        offset += 0x8
+                        size = block.unpack_word(offset)
+                        if size == 0:
+                            break
+                        elif size < 0x15:
+                            pass
+                        else:
+                            item = ITEMPOS_FILEENTRY(buf, offset, False)
+                            shellbags.append({
+                                "path": path_prefix + "\\" + item.name(),
+                                "mtime": item.m_date(),
+                                "atime": item.a_date(),
+                                "ctime": item.cr_date()
+                            })
+                        offset += size
         except Registry.RegistryValueNotFoundException:
             pass
 
@@ -872,15 +862,31 @@ def get_shellbags(registry):
 
             shellbag_rec(key.subkey(value.name()), bag_prefix + "\\" + value.name(), path)
 
-    shellbag_rec(bagmru, "", "")
-    for shellbag in shellbags:
+    shellbag_rec(bagmru_key, "", "")
+    return shellbags
+
+def get_all_shellbags(registry):
+    shellbags = []
+    paths = [
+        # xp
+        "Software\\Microsoft\\Windows\\Shell",
+        "Software\\Microsoft\\Windows\\ShellNoRoam",
+        # win7
+        "Local Settings\\Software\\Microsoft\\Windows\\ShellNoRoam"
+        "Local Settings\\Software\\Microsoft\\Windows\\Shell",
+    ]
+
+    for path in paths:
         try:
-            print shellbag_bodyfile(shellbag["mtime"], 
-                                    shellbag["atime"], 
-                                    shellbag["ctime"], 
-                                    shellbag["path"])
-        except UnicodeEncodeError:
-            warning("Failed printing path: " + str(list(shellbag["path"])))
+            debug("Processing: %s" % (path))
+            shell_key = registry.open(path)
+            new = get_shellbags(shell_key)
+            debug("Found %s new shellbags" % (len(new)))
+            shellbags.extend(new)
+        except Registry.RegistryKeyNotFoundException:
+            pass
+
+    return shellbags
 
 def date_safe(d):
     try:
@@ -905,4 +911,12 @@ if __name__ == '__main__':
 
     registry = Registry.Registry(sys.argv[1])
 
-    get_shellbags(registry)
+    for shellbag in get_all_shellbags(registry):
+        try:
+            print shellbag_bodyfile(shellbag["mtime"], 
+                                    shellbag["atime"], 
+                                    shellbag["ctime"], 
+                                    shellbag["path"])
+        except UnicodeEncodeError:
+            warning("Failed printing path: " + str(list(shellbag["path"])))
+
