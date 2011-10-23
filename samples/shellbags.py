@@ -22,7 +22,7 @@ import struct, array
 from Registry import Registry
 
 # Global
-verbose = True
+verbose = False
 
 def dosdate(dosdate, dostime):
     """
@@ -171,20 +171,26 @@ class Block(object):
         - `fields`: (Optional) A list of tuples to add. Otherwise, self._fields is used.
         """
         for field in fields or self._fields:
-            if not getattr(self, field[1]):
-                def handler():
-                    f = getattr(self, "unpack_", field[0])
-                    f(*(field[2:]))
-                setattr(self, field[1], handler)
-                setattr(self, "_off_" + field[1], field[2])
+            def handler():
+                f = getattr(self, "unpack_" + field[0])
+                return f(*(field[2:]))
+            setattr(self, field[1], handler)
+            debug("(%s) %s @ %s : %s" % (field[0].upper(), 
+                                         field[1], 
+                                         hex(self.absolute_offset(field[2])),
+                                         str(handler())))
+            setattr(self, "_off_" + field[1], field[2])
 
-    def _f(self, t):
+    def _f(self, type, name, offset, length=False):
         """
         A shortcut to add a field.
         Arguments:
         - `t`: A tuple to add.
         """
-        self._prepare_fields([t])
+        if length:
+            self._prepare_fields([(type, name, offset, length)])
+        else:
+            self._prepare_fields([(type, name, offset)])
 
     def unpack_byte(self, offset):
         """
@@ -289,7 +295,7 @@ class Block(object):
         except struct.error:
             raise OverrunBufferException(o, len(self._buf))
 
-    def unpack_wstring(self, offset, length=False):
+    def unpack_wstring(self, offset, ilength=False):
         """
         Returns a UTF-16 decoded string from the relative offset with the given length,
         where each character is a wchar (2 bytes). The string does not include the final
@@ -302,7 +308,7 @@ class Block(object):
         - `UnicodeDecodeError`
         - `IndexError`
         """
-        if not length:
+        if not ilength:
             o = self._offset + offset
             end = self._buf.find("\x00\x00", o)
             if end - 2 <= o:
@@ -323,8 +329,9 @@ class Block(object):
                 #         +----+ +-------+ +-------+ 
                 pass
             length = end - o
-        
-        return self._buf[self._offset + offset:self._offset + offset + 2 * length].decode("utf16").partition("\x00")[0]
+        else:
+            length = ilength
+        return self._buf[self._offset + offset:self._offset + offset + length].decode("utf16").partition("\x00")[0]
 
     def unpack_dosdate(self, offset):
         """
@@ -388,9 +395,8 @@ class SHITEM(Block):
     def __init__(self, buf, offset, parent):
         super(SHITEM, self).__init__(buf, offset, parent)
 
-        self._off_size = 0x0    # UINT16
-        self._off_type = 0x2    # UINT8
-
+        self._f("word", "size", 0x0)
+        self._f("byte", "type", 0x2)
         debug("SHITEM @ %s of type %s." % (hex(offset), hex(self.type())))
 
     def __unicode__(self):
@@ -398,12 +404,6 @@ class SHITEM(Block):
 
     def __str__(self):
         return "SHITEM @ %s." % (hex(self.offset()))
-
-    def size(self):
-        return self.unpack_word(self._off_size)
-
-    def type(self):
-        return self.unpack_byte(self._off_type)
 
     def name(self):
         return "??"
@@ -467,7 +467,7 @@ class SHITEM_FOLDERENTRY(SHITEM):
         super(SHITEM_FOLDERENTRY, self).__init__(buf, offset, parent)
         
         self._off_folderid = 0x3      # UINT8
-        self._off_guid = 0x4          # UINT8[16]
+        self._f("guid", "guid", 0x4)
 
     def __unicode__(self):
         return u"SHITEM_FOLDERENTRY @ %s: %s." % (hex(self.offset()), self.name())
@@ -501,9 +501,6 @@ class SHITEM_FOLDERENTRY(SHITEM):
         else:
             return ""
 
-    def guid(self):
-        return self.unpack_guid(self._off_guid)
-
     def name(self):
         if self.guid() in known_guids:
             return known_guids[self.guid()]
@@ -531,21 +528,15 @@ class SHITEM_UNKNOWNENTRY2(SHITEM):
     def __init__(self, buf, offset, parent):
         debug("SHITEM_UNKNOWNENTRY2 @ %s." % (hex(offset)))
         super(SHITEM_UNKNOWNENTRY2, self).__init__(buf, offset, parent)
-        
-        self._off_flags = 0x3         # UINT8
-        self._off_guid = 0x4          # UINT8[16]
+
+        self._f("byte", "flags", 0x3)
+        self._f("guid", "guid", 0x4)
 
     def __unicode__(self):
         return u"SHITEM_UNKNOWNENTRY2 @ %s: %s." % (hex(self.offset()), self.name())
 
     def __str__(self):
         return "SHITEM_UNKNOWNENTRY2 @ %s: %s." % (hex(self.offset()), self.name())
-
-    def flags(self):
-        return self.unpack_byte(self._off_flags)
-
-    def guid(self):
-        return self.unpack_guid(self._off_guid)
 
     def name(self):
         if self.guid() in known_guids:
@@ -557,18 +548,15 @@ class SHITEM_URIENTRY(SHITEM):
     def __init__(self, buf, offset, parent):
         debug("SHITEM_URIENTRY @ %s." % (hex(offset)))
         super(SHITEM_URIENTRY, self).__init__(buf, offset, parent)
-                   
-        self._off_flags = 0x3    # UINT32
-        self._off_uri = 0x7      # wstring
+
+        self._f("dword", "flags", 0x3)
+        self._f("wstring", "uri", 0x7)
 
     def __unicode__(self):
         return u"SHITEM_URIENTRY @ %s: %s." % (hex(self.offset()), self.name())
 
     def __str__(self):
         return "SHITEM_URIENTRY @ %s: %s." % (hex(self.offset()), self.name())
-
-    def uri(self):
-        return self.unpack_wstring(self._off_uri)
 
     def name(self):
         return self.uri()
@@ -577,21 +565,15 @@ class SHITEM_CONTROLPANELENTRY(SHITEM):
     def __init__(self, buf, offset, parent):
         debug("SHITEM_CONTROLPANELENTRY @ %s." % (hex(offset)))
         super(SHITEM_CONTROLPANELENTRY, self).__init__(buf, offset, parent)
-        
-        self._off_flags = 0x3         # UINT8
-        self._off_guid = 0xD          # UINT8[16]
+
+        self._f("byte", "flags", 0x3)
+        self._f("guid", "guid", 0xD)
 
     def __unicode__(self):
         return u"SHITEM_CONTROLPANELENTRY @ %s: %s." % (hex(self.offset()), self.name())
 
     def __str__(self):
         return "SHITEM_CONTROLPANELENTRY @ %s: %s." % (hex(self.offset()), self.name())
-
-    def flags(self):
-        return self.unpack_byte(self._off_flags)
-
-    def guid(self):
-        return self.unpack_guid(self._off_guid)
 
     def name(self):
         if self.guid() in known_guids:
@@ -603,8 +585,8 @@ class SHITEM_VOLUMEENTRY(SHITEM):
     def __init__(self, buf, offset, parent):
         debug("SHITEM_VOLUMEENTRY @ %s." % (hex(offset)))
         super(SHITEM_VOLUMEENTRY, self).__init__(buf, offset, parent)
-        
-        self._off_name = 0x3      # ASCII
+
+        self._f("string", "name", 0x3)
 
     def __unicode__(self):
         return u"SHITEM_VOLUMEENTRY @ %s: %s." % (hex(self.offset()), self.name())
@@ -612,15 +594,12 @@ class SHITEM_VOLUMEENTRY(SHITEM):
     def __str__(self):
         return "SHITEM_VOLUMEENTRY @ %s: %s." % (hex(self.offset()), self.name())
 
-    def name(self):
-        return self.unpack_string(self._off_name)
-
 class SHITEM_NETWORKVOLUMEENTRY(SHITEM):
     def __init__(self, buf, offset, parent):
         debug("SHITEM_NETWORKVOLUMEENTRY @ %s." % (hex(offset)))
         super(SHITEM_NETWORKVOLUMEENTRY, self).__init__(buf, offset, parent)
 
-        self._off_flags = 0x4
+        self._f("byte", "flags", 0x4)
         self._off_name = 0x5
 
     def __unicode__(self):
@@ -628,9 +607,6 @@ class SHITEM_NETWORKVOLUMEENTRY(SHITEM):
 
     def __str__(self):
         return "SHITEM_NETWORKVOLUMEENTRY @ %s: %s." % (hex(self.offset()), self.name())
-
-    def flags(self):
-        return self.unpack_byte(self._off_flags)
 
     def name(self):
         if self.flags() & 0x2:
@@ -640,15 +616,16 @@ class SHITEM_NETWORKVOLUMEENTRY(SHITEM):
     def description(self):
         if self.flags() & 0x2:
             return self.unpack_string(self._off_name + len(self.name()) + 1)
-            return ""
+        return ""
 
 class SHITEM_NETWORKSHAREENTRY(SHITEM):
     def __init__(self, buf, offset, parent):
         debug("SHITEM_NETWORKSHAREENTRY @ %s." % (hex(offset)))
         super(SHITEM_NETWORKSHAREENTRY, self).__init__(buf, offset, parent)
 
-        self._off_flags = 0x4
-        self._off_path = 0x5
+        self._f("byte", "flags", 0x4)
+        self._f("string", "path", 0x5)
+        self._f("string", "description", 0x5 + len(self.path()) + 1)
 
     def __unicode__(self):
         return u"SHITEM_NETWORKSHAREENTRY @ %s: %s." % (hex(self.offset()), self.name())
@@ -656,105 +633,62 @@ class SHITEM_NETWORKSHAREENTRY(SHITEM):
     def __str__(self):
         return "SHITEM_NETWORKSHAREENTRY @ %s: %s." % (hex(self.offset()), self.name())
 
-    def flags(self):
-        return self.unpack_byte(self._off_flags)
-
-    def path(self):
-        return self.unpack_string(self._off_path)
-
-    def description(self):
-        return self.unpack_string(self._off_path + len(self.path()) + 1)
-
     def name(self):
         return self.path()
 
-class SHITEM_FILEENTRY(SHITEM):
-    def __init__(self, buf, offset, parent):
-        debug("SHITEM_FILEENTRY @ %s." % (hex(offset)))
-        super(SHITEM_FILEENTRY, self).__init__(buf, offset, parent)
-        
-        self._f("byte", "flags", 0x3)
-        self._f("dword", "filesize", 0x4)
-        self._f("dosdate", "m_date", 0x8)
-        self._f("word", "fileattrs", 0xC)
-        self._f("string", "short_name", 0xE)
-        self._off_flags = 0x3      # UINT8
-        self._off_filesize = 0x4   # UINT32
-        self._off_date = 0x8       # DOSDATE
-        self._off_fileattrs = 0xC  # UINT16
-        self._off_short_name = 0xE # ASCII string
+class Fileentry(SHITEM):
+    def __init__(self, buf, offset, parent, filesize_offset):
+        debug("Fileentry @ %s." % (hex(offset)))
+        super(Fileentry, self).__init__(buf, offset, parent)
 
-        offset = self._off_short_name + len(self.short_name()) + 1
-        offset = align(offset, 2)
+        off = filesize_offset
+        self._f("dword", "filesize", off); off += 4
+        self._f("dosdate", "m_date", off); off += 4
+        self._f("word", "fileattrs", off); off += 2
+        self._f("string", "short_name", off)
 
-        self._off_ext_size = offset
-        offset += 2
+        off += len(self.short_name()) + 1
+        off = align(off, 2)
 
-        self._off_ext_version = offset
-        offset += 2
+        self._f("word", "ext_size", off); off += 2
+        self._f("word", "ext_version", off); off += 2
 
-        if self.ext_version() >= 0x0003:
-            offset += 4 # unknown
+        if self.ext_version() >= 0x03:
+            off += 4 # unknown
 
-            self._off_cr_date = offset 
-            offset += 4
+            self._f("dosdate", "cr_date", off); off += 4
+            self._f("dosdate", "a_date", off); off += 4
 
-            self._off_a_date = offset 
-            offset += 4
-
-            offset += 2 # unknown
+            off += 4 # unknown
         else:
-            self._off_cr_date = False
-            self._off_a_date = False
+            self.cr_date = lambda x: datetime.datetime.min
+            self.a_date = lambda x: datetime.datetime.min
 
         if self.ext_version() >= 0x0007:
-            offset += 8 # fileref
-            offset += 8 # unknown
-            
-            self._off_long_name_size = offset
-            offset += 2
+            off += 8 # fileref
+            off += 8 # unknown
+
+            self._off_long_name_size = off
+            off += 2
 
             if self.ext_version() >= 0x0008:
-                offset += 4 # unknown
+                off += 4 # unknown
 
-            self._off_long_name = offset
-            offset += self.long_name_size()
+            self._off_long_name = off
+            off += self.long_name_size()
         elif self.ext_version() >= 0x0003:
             self._off_long_name_size = False
-            self._off_long_name = offset
+            self._off_long_name = off
+            debug("(WSTRING) long_name @ %s" % (hex(self.absolute_offset(off))))
         else:
             self._off_long_name_size = False
             self._off_long_name = False
 
     def __unicode__(self):
-        return u"SHITEM_FILEENTRY @ %s: %s." % (hex(self.offset()), self.name())
+        return u"Fileentry @ %s: %s." % (hex(self.offset()), self.name())
 
     def __str__(self):
-        return "SHITEM_FILEENTRY @ %s: %s." % (hex(self.offset()), self.name())
-
-    def filesize(self):
-        return self.unpack_dword(self._off_filesize)
-
-    def m_date(self):
-        return self.unpack_dosdate(self._off_date)
-
-    def short_name(self):
-        return self.unpack_string(self._off_short_name)
-
-    def ext_version(self):
-        return self.unpack_word(self._off_ext_version)
-        
-    def cr_date(self):
-        if self._off_cr_date:
-            return self.unpack_dosdate(self._off_cr_date)
-        else:
-            return datetime.datetime.min
-
-    def a_date(self):
-        if self._off_a_date:
-            return self.unpack_dosdate(self._off_a_date)
-        else:
-            return datetime.datetime.min
+        return "Fileentry @ %s: %s." % (hex(self.offset()), self.name())
 
     def long_name_size(self):
         if self._off_long_name_size:
@@ -776,7 +710,35 @@ class SHITEM_FILEENTRY(SHITEM):
         n = self.long_name()
         if len(n) > 0:
             return n
-        return self.short_name()
+        else:
+            return self.short_name()
+
+class SHITEM_FILEENTRY(Fileentry):
+    def __init__(self, buf, offset, parent):
+        debug("SHITEM_FILEENTRY @ %s." % (hex(offset)))
+        super(SHITEM_FILEENTRY, self).__init__(buf, offset, parent, 0x4)
+
+        self._f("byte", "flags", 0x3); 
+
+    def __unicode__(self):
+        return u"SHITEM_FILEENTRY @ %s: %s." % (hex(self.offset()), self.name())
+
+    def __str__(self):
+        return "SHITEM_FILEENTRY @ %s: %s." % (hex(self.offset()), self.name())
+
+class ITEMPOS_FILEENTRY(Fileentry):
+    def __init__(self, buf, offset, parent):
+        debug("ITEMPOS_FILEENTRY @ %s." % (hex(offset)))
+        super(ITEMPOS_FILEENTRY, self).__init__(buf, offset, parent, 0x4)
+
+        self._f("word", "size", 0x0) # override
+        self._f("word", "flags", 0x2); 
+
+    def __unicode__(self):
+        return u"ITEMPOS_FILEENTRY @ %s: %s." % (hex(self.offset()), self.name())
+
+    def __str__(self):
+        return "ITEMPOS_FILEENTRY @ %s: %s." % (hex(self.offset()), self.name())
 
 class SHITEMLIST(Block):
     def __init__(self, buf, offset, parent):
@@ -792,9 +754,6 @@ class SHITEMLIST(Block):
                 return
 
     # UNKNOWN1
-    # NETWORK_SHARE = 0xC3
-    # URI = 0x61
-    # CONTROL_PANEL = 0x71
 
             type = self.unpack_byte(off + 2)
             if type == SHITEMTYPE.FILE_ENTRY0 or \
@@ -864,74 +823,77 @@ def get_shellbags(registry):
             It will look something like '1\\2\\3\\4'.
         `path_prefix` A string containing the current human-readable, file system path so far constructed.
         """
+
+        try:
+            slot = key.value("NodeSlot").value()
+            bag = windows.subkey("Bags").subkey(str(slot)).subkey("Shell")
+
+            for value in [value for value in bag.values() if "ItemPos" in value.name()]:
+                buf = value.value()
+                debug("Slot %s ITEMPOS @ %s" % (str(slot), value.name()))
+
+                block = Block(buf, 0x0, False)
+                offset = 0x10
+                
+                while True:
+                    offset += 0x8
+                    size = block.unpack_word(offset)
+                    if size == 0:
+                        break
+                    elif size < 0x15:
+                        pass
+                    else:
+                        item = ITEMPOS_FILEENTRY(buf, offset, False)
+                        shellbags.append({
+                            "path": path_prefix + "\\" + item.name(),
+                            "mtime": item.m_date(),
+                            "atime": item.a_date(),
+                            "ctime": item.cr_date()
+                        })
+                    offset += size
+        except Registry.RegistryValueNotFoundException:
+            pass
+
         for value in key.values():
             if not re.match("\d+", value.name()):
                 continue
 
-            mtime = datetime.datetime.min
-            atime = datetime.datetime.min
-            ctime = datetime.datetime.min
-            nameW = "??"
-
-            print bag_prefix + "\\" + value.name()
-
             l = SHITEMLIST(value.value(), 0, False)
-            for i in l.items():
-                # assume only one item here, and take the last
-                try:
-                    print i.name()
-                except UnicodeEncodeError, e:
-                    print list(i.name())
-                try:
-                    nameW = i.name()
-                    mtime = i.m_date()
-                    ctime = i.cr_date()
-                    atime = i.a_date()
-                except Exception, e:
-                    print e
-                    pass
-
-            print ""
-            print ""
-
-            path = path_prefix + "\\" + nameW
-            shellbags.append({
-                    "path": path,
-                    "mtime": mtime,
-                    "atime": atime,
-                    "ctime": ctime
-                    })
+            for item in l.items():
+                # assume there is only one entry, or take the last
+                # as the path component
+                path = path_prefix + "\\" + item.name()
+                shellbags.append({
+                    "path":  path,
+                    "mtime": item.m_date(),
+                    "atime": item.a_date(),
+                    "ctime": item.cr_date()
+                })
 
             shellbag_rec(key.subkey(value.name()), bag_prefix + "\\" + value.name(), path)
 
     shellbag_rec(bagmru, "", "")
     for shellbag in shellbags:
         try:
-            print shellbag_bodyfile(shellbag["mtime"], shellbag["atime"], shellbag["ctime"], shellbag["path"])
+            print shellbag_bodyfile(shellbag["mtime"], 
+                                    shellbag["atime"], 
+                                    shellbag["ctime"], 
+                                    shellbag["path"])
         except UnicodeEncodeError:
-            print "#" + str(list(shellbag["path"]))
-            pass
+            warning("Failed printing path: " + str(list(shellbag["path"])))
+
+def date_safe(d):
+    try:
+        return int(time.mktime(d.timetuple()))
+    except ValueError:
+        return int(time.mktime(datetime.datetime(1970, 1, 1, 0, 0, 0).timetuple()))
 
 def shellbag_bodyfile(m, a, c, path):
-    try:
-        modified = int(time.mktime(m.timetuple()))    
-    except ValueError:
-        modified = int(time.mktime(datetime.datetime(1970, 1, 1, 0, 0, 0).timetuple()))
-
-    try:
-        accessed = int(time.mktime(a.timetuple()))
-    except ValueError:
-        accessed = int(time.mktime(datetime.datetime(1970, 1, 1, 0, 0, 0).timetuple()))
-
-    try:
-        created  = int(time.mktime(c.timetuple()))
-    except ValueError:
-        created = int(time.mktime(datetime.datetime(1970, 1, 1, 0, 0, 0).timetuple()))
-
+    modified = date_safe(m)
+    accessed = date_safe(a)
+    created = date_safe(c)
     changed = int(time.mktime(datetime.datetime(1970, 1, 1, 0, 0, 0).timetuple()))
-
     return u"0|Shellbag %s|0|0|0|0|0|%s|%s|%s|%s" % (path, modified, accessed, changed, created)
-
 
 def usage():
     return "  USAGE:\n\t%s <Windows Registry file>" % sys.argv[1]
