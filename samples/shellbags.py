@@ -73,27 +73,6 @@ def error(message):
     print "# [e] %s" % (message)
     sys.exit(-1)
 
-class SHITEMTYPE:
-    '''
-    This is like an enum...
-    These are the 'supported' SHITEM types
-    '''
-    UNKNOWN0 = 0x00
-    UNKNOWN1 = 0x01
-    UNKNOWN2 = 0x2E
-    FILE_ENTRY0 = 0x31
-    FILE_ENTRY1 = 0x32
-    FILE_ENTRY2 = 0xB1
-    FOLDER_ENTRY = 0x1F
-    VOLUME_NAME = 0x2F
-    NETWORK_VOLUME_NAME0 = 0x41
-    NETWORK_VOLUME_NAME1 = 0x42
-    NETWORK_VOLUME_NAME2 = 0x46
-    NETWORK_VOLUME_NAME3 = 0x47
-    NETWORK_SHARE = 0xC3
-    URI = 0x61
-    CONTROL_PANEL = 0x71
-
 class ShellbagException(Exception):
     """
     Base Exception class for shellbag parsing.
@@ -390,6 +369,27 @@ class Block(object):
         Equivalent to self.absolute_offset(0x0), which is the starting offset of this block.
         """
         return self._offset
+
+class SHITEMTYPE:
+    '''
+    This is like an enum...
+    These are the 'supported' SHITEM types
+    '''
+    UNKNOWN0 = 0x00
+    UNKNOWN1 = 0x01
+    UNKNOWN2 = 0x2E
+    FILE_ENTRY0 = 0x31
+    FILE_ENTRY1 = 0x32
+    FILE_ENTRY2 = 0xB1
+    FOLDER_ENTRY = 0x1F
+    VOLUME_NAME = 0x2F
+    NETWORK_VOLUME_NAME0 = 0x41
+    NETWORK_VOLUME_NAME1 = 0x42
+    NETWORK_VOLUME_NAME2 = 0x46
+    NETWORK_VOLUME_NAME3 = 0x47
+    NETWORK_SHARE = 0xC3
+    URI = 0x61
+    CONTROL_PANEL = 0x71
 
 class SHITEM(Block):
     def __init__(self, buf, offset, parent):
