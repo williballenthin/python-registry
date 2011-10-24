@@ -87,7 +87,7 @@ class ShellbagException(Exception):
         self._value = value
 
     def __str__(self):
-        return "Shellbag Exception: %s" % (self._value)
+        return str(unicode(self))
 
     def __unicode__(self):
         return u"Shellbag Exception: %s" % (self._value)
@@ -106,7 +106,7 @@ class ParseException(ShellbagException):
         super(ParseException, self).__init__(value)
 
     def __str__(self):
-        return "Parse Exception(%s)" % (self._value)
+        return str(unicode(self))
 
     def __unicode__(self):
         return u"Parse Exception(%s)" % (self._value)
@@ -117,7 +117,7 @@ class OverrunBufferException(ParseException):
         super(ParseException, self).__init__(tvalue)
 
     def __str__(self):
-        return "Tried to parse beyond the end of the file (%s)" % (self._value)
+        return str(unicode(self))
 
     def __unicode__(self):
         return u"Tried to parse beyond the end of the file (%s)" % (self._value)
@@ -139,6 +139,12 @@ class Block(object):
         self._offset = offset
         self._parent = parent
         self._fields = []
+
+    def __unicode__(self):
+        return u"BLOCK @ %s." % (hex(self.offset()))
+
+    def __str__(self):
+        return str(unicode(self))
 
     def _prepare_fields(self, fields=False):
         """
@@ -401,10 +407,7 @@ class SHITEM(Block):
 
     def __unicode__(self):
         return u"SHITEM @ %s." % (hex(self.offset()))
-
-    def __str__(self):
-        return "SHITEM @ %s." % (hex(self.offset()))
-
+        
     def name(self):
         return "??"
 
@@ -472,9 +475,6 @@ class SHITEM_FOLDERENTRY(SHITEM):
     def __unicode__(self):
         return u"SHITEM_FOLDERENTRY @ %s: %s." % (hex(self.offset()), self.name())
 
-    def __str__(self):
-        return "SHITEM_FOLDERENTRY @ %s: %s." % (hex(self.offset()), self.name())
-
     def folder_id(self):
         id = self.unpack_byte(self._off_folderid)
         
@@ -518,9 +518,6 @@ class SHITEM_UNKNOWNENTRY0(SHITEM):
     def __unicode__(self):
         return u"SHITEM_UNKNOWNENTRY0 @ %s: %s." % (hex(self.offset()), self.name())
 
-    def __str__(self):
-        return "SHITEM_UNKNOWNENTRY0 @ %s: %s." % (hex(self.offset()), self.name())
-
     def name(self):
         return "??"
 
@@ -534,9 +531,6 @@ class SHITEM_UNKNOWNENTRY2(SHITEM):
 
     def __unicode__(self):
         return u"SHITEM_UNKNOWNENTRY2 @ %s: %s." % (hex(self.offset()), self.name())
-
-    def __str__(self):
-        return "SHITEM_UNKNOWNENTRY2 @ %s: %s." % (hex(self.offset()), self.name())
 
     def name(self):
         if self.guid() in known_guids:
@@ -555,9 +549,6 @@ class SHITEM_URIENTRY(SHITEM):
     def __unicode__(self):
         return u"SHITEM_URIENTRY @ %s: %s." % (hex(self.offset()), self.name())
 
-    def __str__(self):
-        return "SHITEM_URIENTRY @ %s: %s." % (hex(self.offset()), self.name())
-
     def name(self):
         return self.uri()
 
@@ -571,9 +562,6 @@ class SHITEM_CONTROLPANELENTRY(SHITEM):
 
     def __unicode__(self):
         return u"SHITEM_CONTROLPANELENTRY @ %s: %s." % (hex(self.offset()), self.name())
-
-    def __str__(self):
-        return "SHITEM_CONTROLPANELENTRY @ %s: %s." % (hex(self.offset()), self.name())
 
     def name(self):
         if self.guid() in known_guids:
@@ -591,9 +579,6 @@ class SHITEM_VOLUMEENTRY(SHITEM):
     def __unicode__(self):
         return u"SHITEM_VOLUMEENTRY @ %s: %s." % (hex(self.offset()), self.name())
 
-    def __str__(self):
-        return "SHITEM_VOLUMEENTRY @ %s: %s." % (hex(self.offset()), self.name())
-
 class SHITEM_NETWORKVOLUMEENTRY(SHITEM):
     def __init__(self, buf, offset, parent):
         debug("SHITEM_NETWORKVOLUMEENTRY @ %s." % (hex(offset)))
@@ -604,9 +589,6 @@ class SHITEM_NETWORKVOLUMEENTRY(SHITEM):
 
     def __unicode__(self):
         return u"SHITEM_NETWORKVOLUMEENTRY @ %s: %s." % (hex(self.offset()), self.name())
-
-    def __str__(self):
-        return "SHITEM_NETWORKVOLUMEENTRY @ %s: %s." % (hex(self.offset()), self.name())
 
     def name(self):
         if self.flags() & 0x2:
@@ -629,9 +611,6 @@ class SHITEM_NETWORKSHAREENTRY(SHITEM):
 
     def __unicode__(self):
         return u"SHITEM_NETWORKSHAREENTRY @ %s: %s." % (hex(self.offset()), self.name())
-
-    def __str__(self):
-        return "SHITEM_NETWORKSHAREENTRY @ %s: %s." % (hex(self.offset()), self.name())
 
     def name(self):
         return self.path()
@@ -687,9 +666,6 @@ class Fileentry(SHITEM):
     def __unicode__(self):
         return u"Fileentry @ %s: %s." % (hex(self.offset()), self.name())
 
-    def __str__(self):
-        return "Fileentry @ %s: %s." % (hex(self.offset()), self.name())
-
     def long_name_size(self):
         if self._off_long_name_size:
             return self._off_long_name_size
@@ -723,9 +699,6 @@ class SHITEM_FILEENTRY(Fileentry):
     def __unicode__(self):
         return u"SHITEM_FILEENTRY @ %s: %s." % (hex(self.offset()), self.name())
 
-    def __str__(self):
-        return "SHITEM_FILEENTRY @ %s: %s." % (hex(self.offset()), self.name())
-
 class ITEMPOS_FILEENTRY(Fileentry):
     def __init__(self, buf, offset, parent):
         debug("ITEMPOS_FILEENTRY @ %s." % (hex(offset)))
@@ -736,9 +709,6 @@ class ITEMPOS_FILEENTRY(Fileentry):
 
     def __unicode__(self):
         return u"ITEMPOS_FILEENTRY @ %s: %s." % (hex(self.offset()), self.name())
-
-    def __str__(self):
-        return "ITEMPOS_FILEENTRY @ %s: %s." % (hex(self.offset()), self.name())
 
 class SHITEMLIST(Block):
     def __init__(self, buf, offset, parent):
@@ -797,9 +767,6 @@ class SHITEMLIST(Block):
 
     def __unicode__(self):
         return u"SHITEMLIST @ %s." % (hex(self.offset()))
-
-    def __str__(self):
-        return "SHITEMLIST @ %s." % (hex(self.offset()))
 
 def get_shellbags(shell_key):
     shellbags = []
