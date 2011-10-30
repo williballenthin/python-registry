@@ -38,7 +38,7 @@ def dosdate(dosdate, dostime):
         year  = (t & 0b1111111000000000) >> 9
         year += 1980
         
-        t = ord(dostime[1]) << 8
+        t  = ord(dostime[1]) << 8
         t |= ord(dostime[0])
         sec     = t & 0b0000000000011111
         sec    *= 2
@@ -133,6 +133,10 @@ class ParseException(ShellbagException):
         return u"Parse Exception(%s)" % (self._value)
 
 class OverrunBufferException(ParseException):
+    """
+    An exception to be thrown during parsing when something is unpack into 
+    or from a location beyond the boundaries of a buffer.
+    """
     def __init__(self, readOffs, bufLen):
         tvalue = "read: %s, buffer length: %s" % (hex(readOffs), hex(bufLen))
         super(ParseException, self).__init__(tvalue)
@@ -168,7 +172,8 @@ class Block(object):
         This method will dynamically add corresponding offset and unpacker methods
           to this block.
         Arguments:
-        - `fields`: (Optional) A list of tuples to add. Otherwise, self._fields is used.
+        - `fields`: (Optional) A list of tuples to add. Otherwise, 
+            self._fields is used.
         """
         for field in fields or self._fields:
             def handler():
@@ -297,8 +302,9 @@ class Block(object):
 
     def unpack_wstring(self, offset, ilength=False):
         """
-        Returns a UTF-16 decoded string from the relative offset with the given length,
-        where each character is a wchar (2 bytes). The string does not include the final
+        Returns a UTF-16 decoded string from the relative offset with 
+        the given length, where each character is a wchar (2 bytes). 
+        The string does not include the final
         NULL character.
         Arguments:
         - `offset`: The relative offset from the start of the block.
@@ -335,7 +341,8 @@ class Block(object):
 
     def unpack_dosdate(self, offset):
         """
-        Returns a datetime from the DOSDATE and DOSTIME starting at the relative offset.
+        Returns a datetime from the DOSDATE and DOSTIME starting at 
+        the relative offset.
         Arguments:
         - `offset`: The relative offset from the start of the block.
         Throws:
@@ -365,11 +372,11 @@ class Block(object):
         # Yeah, this is ugly
         h = map(ord, bin)
         return "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x" % \
-                                                        (h[3], h[2], h[1], h[0],
-                                                         h[5], h[4],
-                                                         h[7], h[6],
-                                                         h[8], h[9],
-                                                         h[10], h[11], h[12], h[13], h[14], h[15])
+            (h[3], h[2], h[1], h[0],
+             h[5], h[4],
+             h[7], h[6],
+             h[8], h[9],
+             h[10], h[11], h[12], h[13], h[14], h[15])
 
     def absolute_offset(self, offset):
         """
@@ -381,13 +388,15 @@ class Block(object):
 
     def parent(self):
         """
-        Get the parent block. See the class documentation for what the parent link is.
+        Get the parent block. See the class documentation for what the 
+        parent link is.
         """
         return self._parent
 
     def offset(self):
         """
-        Equivalent to self.absolute_offset(0x0), which is the starting offset of this block.
+        Equivalent to self.absolute_offset(0x0), which is the starting 
+        offset of this block.
         """
         return self._offset
 
@@ -470,10 +479,12 @@ class SHITEM_FOLDERENTRY(SHITEM):
         self._f("guid", "guid", 0x4)
 
     def __unicode__(self):
-        return u"SHITEM_FOLDERENTRY @ %s: %s." % (hex(self.offset()), self.name())
+        return u"SHITEM_FOLDERENTRY @ %s: %s." % \
+          (hex(self.offset()), self.name())
 
     def __str__(self):
-        return "SHITEM_FOLDERENTRY @ %s: %s." % (hex(self.offset()), self.name())
+        return "SHITEM_FOLDERENTRY @ %s: %s." % \
+          (hex(self.offset()), self.name())
 
     def folder_id(self):
         id = self.unpack_byte(self._off_folderid)
@@ -516,10 +527,12 @@ class SHITEM_UNKNOWNENTRY0(SHITEM):
         # TODO, if you have time for research
 
     def __unicode__(self):
-        return u"SHITEM_UNKNOWNENTRY0 @ %s: %s." % (hex(self.offset()), self.name())
+        return u"SHITEM_UNKNOWNENTRY0 @ %s: %s." % \
+          (hex(self.offset()), self.name())
 
     def __str__(self):
-        return "SHITEM_UNKNOWNENTRY0 @ %s: %s." % (hex(self.offset()), self.name())
+        return "SHITEM_UNKNOWNENTRY0 @ %s: %s." % \
+          (hex(self.offset()), self.name())
 
     def name(self):
         return "??"
@@ -533,10 +546,12 @@ class SHITEM_UNKNOWNENTRY2(SHITEM):
         self._f("guid", "guid", 0x4)
 
     def __unicode__(self):
-        return u"SHITEM_UNKNOWNENTRY2 @ %s: %s." % (hex(self.offset()), self.name())
+        return u"SHITEM_UNKNOWNENTRY2 @ %s: %s." % \
+          (hex(self.offset()), self.name())
 
     def __str__(self):
-        return "SHITEM_UNKNOWNENTRY2 @ %s: %s." % (hex(self.offset()), self.name())
+        return "SHITEM_UNKNOWNENTRY2 @ %s: %s." % \
+          (hex(self.offset()), self.name())
 
     def name(self):
         if self.guid() in known_guids:
@@ -553,10 +568,12 @@ class SHITEM_URIENTRY(SHITEM):
         self._f("wstring", "uri", 0x7)
 
     def __unicode__(self):
-        return u"SHITEM_URIENTRY @ %s: %s." % (hex(self.offset()), self.name())
+        return u"SHITEM_URIENTRY @ %s: %s." % \
+          (hex(self.offset()), self.name())
 
     def __str__(self):
-        return "SHITEM_URIENTRY @ %s: %s." % (hex(self.offset()), self.name())
+        return "SHITEM_URIENTRY @ %s: %s." % \
+          (hex(self.offset()), self.name())
 
     def name(self):
         return self.uri()
@@ -570,10 +587,12 @@ class SHITEM_CONTROLPANELENTRY(SHITEM):
         self._f("guid", "guid", 0xD)
 
     def __unicode__(self):
-        return u"SHITEM_CONTROLPANELENTRY @ %s: %s." % (hex(self.offset()), self.name())
+        return u"SHITEM_CONTROLPANELENTRY @ %s: %s." % \
+          (hex(self.offset()), self.name())
 
     def __str__(self):
-        return "SHITEM_CONTROLPANELENTRY @ %s: %s." % (hex(self.offset()), self.name())
+        return "SHITEM_CONTROLPANELENTRY @ %s: %s." % \
+          (hex(self.offset()), self.name())
 
     def name(self):
         if self.guid() in known_guids:
@@ -589,10 +608,12 @@ class SHITEM_VOLUMEENTRY(SHITEM):
         self._f("string", "name", 0x3)
 
     def __unicode__(self):
-        return u"SHITEM_VOLUMEENTRY @ %s: %s." % (hex(self.offset()), self.name())
+        return u"SHITEM_VOLUMEENTRY @ %s: %s." % \
+          (hex(self.offset()), self.name())
 
     def __str__(self):
-        return "SHITEM_VOLUMEENTRY @ %s: %s." % (hex(self.offset()), self.name())
+        return "SHITEM_VOLUMEENTRY @ %s: %s." % \
+          (hex(self.offset()), self.name())
 
 class SHITEM_NETWORKVOLUMEENTRY(SHITEM):
     def __init__(self, buf, offset, parent):
@@ -603,10 +624,12 @@ class SHITEM_NETWORKVOLUMEENTRY(SHITEM):
         self._off_name = 0x5
 
     def __unicode__(self):
-        return u"SHITEM_NETWORKVOLUMEENTRY @ %s: %s." % (hex(self.offset()), self.name())
+        return u"SHITEM_NETWORKVOLUMEENTRY @ %s: %s." % \
+          (hex(self.offset()), self.name())
 
     def __str__(self):
-        return "SHITEM_NETWORKVOLUMEENTRY @ %s: %s." % (hex(self.offset()), self.name())
+        return "SHITEM_NETWORKVOLUMEENTRY @ %s: %s." % \
+          (hex(self.offset()), self.name())
 
     def name(self):
         if self.flags() & 0x2:
@@ -628,15 +651,21 @@ class SHITEM_NETWORKSHAREENTRY(SHITEM):
         self._f("string", "description", 0x5 + len(self.path()) + 1)
 
     def __unicode__(self):
-        return u"SHITEM_NETWORKSHAREENTRY @ %s: %s." % (hex(self.offset()), self.name())
+        return u"SHITEM_NETWORKSHAREENTRY @ %s: %s." % \
+          (hex(self.offset()), self.name())
 
     def __str__(self):
-        return "SHITEM_NETWORKSHAREENTRY @ %s: %s." % (hex(self.offset()), self.name())
+        return "SHITEM_NETWORKSHAREENTRY @ %s: %s." % \
+          (hex(self.offset()), self.name())
 
     def name(self):
         return self.path()
 
 class Fileentry(SHITEM):
+    """
+    The Fileentry structure is used both in the BagMRU and Bags keys with
+    minor differences (eg. sizeof and location of size field).
+    """
     def __init__(self, buf, offset, parent, filesize_offset):
         debug("Fileentry @ %s." % (hex(offset)))
         super(Fileentry, self).__init__(buf, offset, parent)
@@ -802,23 +831,35 @@ class SHITEMLIST(Block):
         return "SHITEMLIST @ %s." % (hex(self.offset()))
 
 def get_shellbags(shell_key):
+    """
+    Given a python-registry RegistryKey object, look for and return a
+    list of shellbag items. A shellbag item is a dict with the keys
+    (mtime, atime, crtime, path).
+    Arguments:
+    - `shell_key`: A python-registry Registry object.
+    Throws:
+    """
     shellbags = []
     bagmru_key = shell_key.subkey("BagMRU")
     bags_key = shell_key.subkey("Bags")
 
     def shellbag_rec(key, bag_prefix, path_prefix):
         """
+        Function to recursively parse the BagMRU Registry key structure.
+        Arguments:
         `key`: The current 'BagsMRU' key to recurse into.
-        `bag_prefix`: A string containing the current subkey path of the relevant 'Bags' key.
-            It will look something like '1\\2\\3\\4'.
-        `path_prefix` A string containing the current human-readable, file system path 
-            so far constructed.
+        `bag_prefix`: A string containing the current subkey path of 
+            the relevant 'Bags' key. It will look something like '1\\2\\3\\4'.
+        `path_prefix` A string containing the current human-readable, 
+            file system path so far constructed.
+        Throws:
         """
         try:
+            # First, consider the current key, and extract shellbag items
             slot = key.value("NodeSlot").value()
             for bag in bags_key.subkey(str(slot)).subkeys():
-
-                for value in [value for value in bag.values() if "ItemPos" in value.name()]:
+                for value in [value for value in bag.values() if \
+                              "ItemPos" in value.name()]:
                     buf = value.value()
                     debug("Slot %s ITEMPOS @ %s" % (str(slot), value.name()))
 
@@ -838,41 +879,53 @@ def get_shellbags(shell_key):
                                 "path": path_prefix + "\\" + item.name(),
                                 "mtime": item.m_date(),
                                 "atime": item.a_date(),
-                                "ctime": item.cr_date()
+                                "crtime": item.cr_date()
                             })
                         offset += size
         except Registry.RegistryValueNotFoundException:
             pass
 
+        # Next, recurse into each BagMRU key
         for value in key.values():
             if not re.match("\d+", value.name()):
+                # ignore NodeSlot, etc.
                 continue
 
             l = SHITEMLIST(value.value(), 0, False)
             for item in l.items():
-                # assume there is only one entry, or take the last
+                # assume there is only one entry in the value, or take the last
                 # as the path component
                 path = path_prefix + "\\" + item.name()
                 shellbags.append({
                     "path":  path,
                     "mtime": item.m_date(),
                     "atime": item.a_date(),
-                    "ctime": item.cr_date()
+                    "crtime": item.cr_date()
                 })
 
-            shellbag_rec(key.subkey(value.name()), bag_prefix + "\\" + value.name(), path)
+            shellbag_rec(key.subkey(value.name()), 
+                         bag_prefix + "\\" + value.name(), 
+                         path)
 
     shellbag_rec(bagmru_key, "", "")
     return shellbags
 
 def get_all_shellbags(registry):
+    """
+    Given a python-registry Registry object, look for and return a
+    list of shellbag items. A shellbag item is a dict with the keys
+    (mtime, atime, crtime, path).
+    Arguments:
+    - `registry`: A python-registry Registry object.
+    Throws:
+    """
     shellbags = []
     paths = [
         # xp
         "Software\\Microsoft\\Windows\\Shell",
         "Software\\Microsoft\\Windows\\ShellNoRoam",
         # win7
-        "Local Settings\\Software\\Microsoft\\Windows\\ShellNoRoam"
+        "Local Settings\\Software\\Microsoft\\Windows\\ShellNoRoam",
         "Local Settings\\Software\\Microsoft\\Windows\\Shell",
     ]
 
@@ -889,17 +942,35 @@ def get_all_shellbags(registry):
     return shellbags
 
 def date_safe(d):
+    """
+    From a Python datetime object, return a corresponding Unix timestamp
+    or the epoch timestamp if the datetime object doesn't make sense
+    Arguments:
+    - `d`: A Python datetime object
+    Throws:
+    """
     try:
         return int(time.mktime(d.timetuple()))
     except ValueError:
         return int(time.mktime(datetime.datetime(1970, 1, 1, 0, 0, 0).timetuple()))
 
-def shellbag_bodyfile(m, a, c, path):
+def shellbag_bodyfile(m, a, cr, path):
+    """
+    Given the MAC timestamps and a path, return a Bodyfile v3 string entry
+    formatted with the data.
+    Arguments:
+    - `m`: A Python datetime object representing the modified date.
+    - `a`: A Python datetime object representing the accessed date.
+    - `cr`: A Python datetime object representing the created date.
+    - `path`: A string with the entry path.
+    Throws:
+    """
     modified = date_safe(m)
     accessed = date_safe(a)
-    created = date_safe(c)
+    created = date_safe(cr)
     changed = int(time.mktime(datetime.datetime(1970, 1, 1, 0, 0, 0).timetuple()))
-    return u"0|Shellbag %s|0|0|0|0|0|%s|%s|%s|%s" % (path, modified, accessed, changed, created)
+    return u"0|Shellbag %s|0|0|0|0|0|%s|%s|%s|%s" % \
+                 (path, modified, accessed, changed, created)
 
 def usage():
     return "  USAGE:\n\t%s <Windows Registry file>" % sys.argv[1]
@@ -915,7 +986,7 @@ if __name__ == '__main__':
         try:
             print shellbag_bodyfile(shellbag["mtime"], 
                                     shellbag["atime"], 
-                                    shellbag["ctime"], 
+                                    shellbag["crtime"], 
                                     shellbag["path"])
         except UnicodeEncodeError:
             warning("Failed printing path: " + str(list(shellbag["path"])))
