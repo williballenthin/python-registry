@@ -822,6 +822,9 @@ class SubkeyList(Record):
     def __str__(self):
         return "SubkeyList(Length: %d) at 0x%x" % (0, self.offset())
 
+    def _keys_len(self):
+        return self.unpack_word(0x2)
+
     def keys(self):
         """
         A generator that yields the NKRecords referenced by this list.
@@ -880,9 +883,6 @@ class DirectSubkeyList(SubkeyList):
 
     def __str__(self):
         return "DirectSubkeyList(Length: %d) at 0x%x" % (self._keys_len(), self.offset())
-        
-    def _keys_len(self):
-        return self.unpack_word(0x2)
 
     def keys(self):
         """
