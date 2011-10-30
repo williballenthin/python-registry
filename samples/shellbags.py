@@ -19,19 +19,29 @@
 
 import re, sys, datetime, time
 import struct, array
+import argparse
 from Registry import Registry
 
-from colorama import init, Fore
-init()
+################ HACKY SETUP #############
+# Set placeholder values for Colorama 
+# constants, so we can use them in our
+# code, even if Colorama is not installed
+class SimpleObject(object):
+    def __init__(self):
+        pass
 
+Fore = SimpleObject()
+Fore.GREEN = ""
+Fore.YELLOW = ""
+Fore.RED = ""
+Fore.BLUE = ""
+Fore.RESET = ""
 
-# Global
-global verbose
-verbose = True
+################ GLOBALS #############
+global _g_indent
+_g_indent = []
 
-global indent
-indent = []
-
+################ HELPERS #############
 def dosdate(dosdate, dostime):
     """
     `dosdate`: 2 bytes, little endian.
@@ -69,18 +79,33 @@ def align(offset, alignment):
     return offset + (alignment - (offset % alignment))
 
 def debug(message):
-    global verbose
-    if verbose:
-        global indent
+    global _g_verbose
+    if _g_verbose:
+        global _g_indent
 
-        print "# [%sd%s] %s%s" % (Fore.GREEN, Fore.RESET, "".join(indent), message)
+        print "# [%sd%s] %s%s" % (Fore.GREEN, Fore.RESET, "".join(_g_indent), message)
 
 def warning(message):
-    print "# [w] %s" % (message)
+    print "# [%sw%s] %s%s" % (Fore.YELLOW, Fore.RESET, message)
 
 def error(message):
-    print "# [e] %s" % (message)
+    print "# [%se%s] %s%s" % (Fore.RED, Fore.RESET, message)
     sys.exit(-1)
+
+def date_safe(d):
+    """
+    From a Python datetime object, return a corresponding Unix timestamp
+    or the epoch timestamp if the datetime object doesn't make sense
+    Arguments:
+    - `d`: A Python datetime object
+    Throws:
+    """
+    try:
+        return int(time.mktime(d.timetuple()))
+    except ValueError:
+        return int(time.mktime(datetime.datetime(1970, 1, 1, 0, 0, 0).timetuple()))
+
+################ CLASS DEFINITIONS #############v
 
 class SHITEMTYPE:
     '''
@@ -190,7 +215,7 @@ class Block(object):
                 f = getattr(self, "unpack_" + field[0])
                 return f(*(field[2:]))
             setattr(self, field[1], handler)
-            debug("(%s) %s @ %s : %s" % (field[0].upper(), 
+            debug("(%s) %s\t@ %s\t: %s" % (field[0].upper(), 
                                          field[1], 
                                          hex(self.absolute_offset(field[2])),
                                          str(handler())))
@@ -970,6 +995,8 @@ class SHITEMLIST(Block):
     def __str__(self):
         return "SHITEMLIST @ %s." % (hex(self.offset()))
 
+################ PROGRAM FUNCTIONS #############
+
 def get_shellbags(shell_key):
     """
     Given a python-registry RegistryKey object, look for and return a
@@ -994,10 +1021,10 @@ def get_shellbags(shell_key):
             file system path so far constructed.
         Throws:
         """
-        global indent
+        global _g_indent
 
         debug("Considering %sBagMRU key %s%s" % (Fore.YELLOW, key.path(), Fore.RESET))
-        indent.append("  ")
+        _g_indent.append("  ")
         try:
             # First, consider the current key, and extract shellbag items
             slot = key.value("NodeSlot").value()
@@ -1019,7 +1046,7 @@ def get_shellbags(shell_key):
                             pass
                         else:
                             item = ITEMPOS_FILEENTRY(buf, offset, False)
-                            debug(item.name())
+                            debug("Name: " + Fore.GREEN + item.name() + Fore.RESET)
                             shellbags.append({
                                 "path": path_prefix + "\\" + item.name(),
                                 "mtime": item.m_date(),
@@ -1034,12 +1061,15 @@ def get_shellbags(shell_key):
         # Next, recurse into each BagMRU key
         for value in [value for value in key.values() \
                       if re.match("\d+", value.name())]:
-            debug("%sBagMRU value %s%s (%s)" % (Fore.BLUE, value.name(), Fore.RESET, key.path()))
+            debug("%sBagMRU value %s%s (%s)" % (Fore.BLUE, 
+                                                value.name(), 
+                                                Fore.RESET, 
+                                                key.path()))
             l = SHITEMLIST(value.value(), 0, False)
             for item in l.items():
                 # assume there is only one entry in the value, or take the last
                 # as the path component
-                debug(item.name())
+                debug("Name: " + Fore.GREEN + item.name() + Fore.RESET)
                 path = path_prefix + "\\" + item.name()
                 shellbags.append({
                     "path":  path,
@@ -1052,7 +1082,7 @@ def get_shellbags(shell_key):
             shellbag_rec(key.subkey(value.name()), 
                          bag_prefix + "\\" + value.name(), 
                          path)
-        indent.pop(0)
+        _g_indent.pop(0)
 
     shellbag_rec(bagmru_key, "", "")
     return shellbags
@@ -1088,19 +1118,6 @@ def get_all_shellbags(registry):
 
     return shellbags
 
-def date_safe(d):
-    """
-    From a Python datetime object, return a corresponding Unix timestamp
-    or the epoch timestamp if the datetime object doesn't make sense
-    Arguments:
-    - `d`: A Python datetime object
-    Throws:
-    """
-    try:
-        return int(time.mktime(d.timetuple()))
-    except ValueError:
-        return int(time.mktime(datetime.datetime(1970, 1, 1, 0, 0, 0).timetuple()))
-
 def shellbag_bodyfile(m, a, cr, path, source=False):
     """
     Given the MAC timestamps and a path, return a Bodyfile v3 string entry
@@ -1116,41 +1133,36 @@ def shellbag_bodyfile(m, a, cr, path, source=False):
     accessed = date_safe(a)
     created = date_safe(cr)
     changed = int(time.mktime(datetime.datetime(1970, 1, 1, 0, 0, 0).timetuple()))
-    if source:
-        return u"0|Shellbag %s (%s)|0|0|0|0|0|%s|%s|%s|%s" % \
-          (path, source, modified, accessed, changed, created)
-    else:
-        return u"0|Shellbag %s|0|0|0|0|0|%s|%s|%s|%s" % \
-          (path, modified, accessed, changed, created)
+    return u"0|%s (Shellbag)|0|0|0|0|0|%s|%s|%s|%s" % \
+      (path, modified, accessed, changed, created)
 
-def usage():
-    return "  USAGE:\n\t%s <Windows Registry file>" % sys.argv[1]
+################ MAIN  #############
 
 if __name__ == '__main__':
+    global _g_verbose
+    parser = argparse.ArgumentParser(description='Parse Shellbag entries from a Windows Registry.')
+    parser.add_argument('-v', action='store_true', dest="vverbose", help="Print debugging information while parsing")
+    parser.add_argument('-p', action='store_true', dest="pretty", help="If debugging messages are enabled, augment the formatting with ANSI color codes")
+    parser.add_argument('file', nargs='+', help="Windows Registry hive file(s)")
+    args = parser.parse_args()
 
-    if len(sys.argv) != 2:
-        print usage()
-        sys.exit(-1)
+    if args.vverbose:
+        _g_verbose = True
+    else:
+        _g_verbose = False
 
-    registry = Registry.Registry(sys.argv[1])
+    if args.pretty:
+        from colorama import init, Fore
+        init()
 
-    for shellbag in get_all_shellbags(registry):
-        try:
-            # if verbose:
-            #     print shellbag_bodyfile(shellbag["mtime"], 
-            #                             shellbag["atime"], 
-            #                             shellbag["crtime"], 
-            #                             shellbag["path"],
-            #                             shellbag["source"])
-            # else:
-            #     print shellbag_bodyfile(shellbag["mtime"], 
-            #                             shellbag["atime"], 
-            #                             shellbag["crtime"], 
-            #                             shellbag["path"])
-            print shellbag_bodyfile(shellbag["mtime"], 
-                                    shellbag["atime"], 
-                                    shellbag["crtime"], 
-                                    shellbag["path"])
-        except UnicodeEncodeError:
-            warning("Failed printing path: " + str(list(shellbag["path"])))
+    for f in args.file:
+        registry = Registry.Registry(f)
 
+        for shellbag in get_all_shellbags(registry):
+            try:
+                print shellbag_bodyfile(shellbag["mtime"], 
+                                        shellbag["atime"], 
+                                        shellbag["crtime"], 
+                                        shellbag["path"])
+            except UnicodeEncodeError:
+                warning("Failed printing path: " + str(list(shellbag["path"])))
