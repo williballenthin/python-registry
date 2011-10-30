@@ -21,8 +21,16 @@ import re, sys, datetime, time
 import struct, array
 from Registry import Registry
 
+from colorama import init, Fore
+init()
+
+
 # Global
-verbose = False
+global verbose
+verbose = True
+
+global indent
+indent = []
 
 def dosdate(dosdate, dostime):
     """
@@ -62,9 +70,10 @@ def align(offset, alignment):
 
 def debug(message):
     global verbose
-    
     if verbose:
-        print "# [d] %s" % (message)
+        global indent
+
+        print "# [%sd%s] %s%s" % (Fore.GREEN, Fore.RESET, "".join(indent), message)
 
 def warning(message):
     print "# [w] %s" % (message)
@@ -93,7 +102,8 @@ class SHITEMTYPE:
     NETWORK_SHARE = 0xC3
     URI = 0x61
     CONTROL_PANEL = 0x71
-
+    UNKNOWN3 = 0x74
+    
 class ShellbagException(Exception):
     """
     Base Exception class for shellbag parsing.
@@ -454,6 +464,7 @@ known_guids = {
     "905e63b6-c1bf-494e-b29c-65b732d3d21a": "Program Files",
     "9e52ab10-f80d-49df-acb8-4330f5687855": "Temporary Burn Folder",
     "a305ce99-f527-492b-8b1a-7e76fa98d6e4": "Installed Updates",
+    "b4bfcc3a-db2c-424c-b029-7fe99a87c641": "Desktop",
     "b6ebfb86-6907-413c-9af7-4fc2abf07cc5": "Public Pictures",
     "c1bae2d0-10df-4334-bedd-7aa20b227a9d": "Common OEM Links",
     "cce6191f-13b2-44fa-8d14-324728beef2c": "{Unknown CSIDL}",
@@ -468,6 +479,100 @@ known_guids = {
     "f38bf404-1d43-42f2-9305-67de0b28fc23": "Windows",
     "f3ce0f7c-4901-4acc-8648-d5d44b04ef8f": "Users Files",
     "fdd39ad0-238f-46af-adb4-6c85480369c7": "Documents",
+    # Control Panel Items
+    "d20ea4e1-3957-11d2-a40b-0c5020524153": "Administrative Tools",
+    "9c60de1e-e5fc-40f4-a487-460851a8d915": "AutoPlay",
+    "d9ef8727-cac2-4e60-809e-86f80a666c91": "BitLocker Drive Encryption",
+    "b2c761c6-29bc-4f19-9251-e6195265baf1": "Color Management",
+    "e2e7934b-dce5-43c4-9576-7fe4f75e7480": "Date and Time",
+    "17cd9488-1228-4b2f-88ce-4298e93e0966": "Default Programs",
+    "74246bfc-4c96-11d0-abef-0020af6b0b7a": "Device Manager",
+    "d555645e-d4f8-4c29-a827-d93c859c4f2a": "Ease of Access Center",
+    "6dfd7c5c-2451-11d3-a299-00c04f8ef6af": "Folder Options",
+    "93412589-74d4-4e4e-ad0e-e0cb621440fd": "Fonts",
+    "259ef4b1-e6c9-4176-b574-481532c9bce8": "Game Controllers",
+    "15eae92e-f17a-4431-9f28-805e482dafd4": "Get Programs",
+    "87d66a43-7b11-4a28-9811-c86ee395acf7": "Indexing Options",
+    "a3dd4f92-658a-410f-84fd-6fbbbef2fffe": "Internet Options",
+    "a304259d-52b8-4526-8b1a-a1d6cecc8243": "iSCSI Initiator",
+    "725be8f7-668e-4c7b-8f90-46bdb0936430": "Keyboard",
+    "6c8eec18-8d75-41b2-a177-8831d59d2d50": "Mouse",
+    "8e908fc9-becc-40f6-915b-f4ca0e70d03d": "Network and Sharing Center",
+    "d24f75aa-4f2b-4d07-a3c4-469b3d9030c4": "Offline Files",
+    "96ae8d84-a250-4520-95a5-a47a7e3c548b": "Parental Controls",
+    "5224f545-a443-4859-ba23-7b5a95bdc8ef": "People Near Me",
+    "78f3955e-3b90-4184-bd14-5397c15f1efc": "Performance Information and Tools",
+    "ed834ed6-4b5a-4bfe-8f11-a626dcb6a921": "Personalization",
+    "025a5937-a6be-4686-a844-36fe4bec8b6d": "Power Options",
+    "7b81be6a-ce2b-4676-a29e-eb907a5126c5": "Programs and Features",
+    "00f2886f-cd64-4fc9-8ec5-30ef6cdbe8c3": "Scanners and Cameras",
+    "9c73f5e5-7ae7-4e32-a8e8-8d23b85255bf": "Sync Center",
+    "bb06c0e4-d293-4f75-8a90-cb05b6477eee": "System ",
+    "80f3f1d5-feca-45f3-bc32-752c152e456e": "Tablet PC Settings",
+    "0df44eaa-ff21-4412-828e-260a8728e7f1": "Taskbar and Start Menu",
+    "d17d1d6d-cc3f-4815-8fe3-607e7d5d10b3": "Text to Speech",
+    "60632754-c523-4b62-b45c-4172da012619": "User Accounts",
+    "be122a0e-4503-11da-8bde-f66bad1e3f3a": "Windows Anytime Upgrade",
+    "78cb147a-98ea-4aa6-b0df-c8681f69341c": "Windows CardSpace",
+    "d8559eb9-20c0-410e-beda-7ed416aecc2a": "Windows Defender",
+    "4026492f-2f69-46b8-b9bf-5654fc07e423": "Windows Firewall",
+    "5ea4f148-308c-46d7-98a9-49041b1dd468": "Windows Mobility Center",
+    "e95a4861-d57a-4be1-ad0f-35267e261739": "Windows SideShow",
+    "36eef7db-88ad-4e81-ad49-0e313f0c35f8": "Windows Update",
+    # Vista Control Panel Items
+    "7a979262-40ce-46ff-aeee-7884ac3b6136": "Add Hardware",
+    "f2ddfc82-8f12-4cdd-b7dc-d4fe1425aa4d": "Sound",
+    "b98a2bea-7d42-4558-8bd1-832f41bac6fd": "Backup and Restore Center",
+    "3e7efb4c-faf1-453d-89eb-56026875ef90": "Windows Marketplace",
+    "a0275511-0e86-4eca-97c2-ecd8f1221d08": "Infrared",
+    "f82df8f7-8b9f-442e-a48c-818ea735ff9b": "Pen and Input Devices",
+    "40419485-c444-4567-851a-2dd7bfa1684d": "Phone and Modem",
+    "2227a280-3aea-1069-a2de-08002b30309d": "Printers",
+    "fcfeecae-ee1b-4849-ae50-685dcf7717ec": "Problem Reports and Solutions",
+    "62d8ed13-c9d0-4ce8-a914-47dd628fb1b0": "Regional and Language Options",
+    "087da31b-0dd3-4537-8e23-64a18591f88b": "Windows Security Center",
+    "58e3c745-d971-4081-9034-86e34b30836a": "Speech Recognition Options",
+    "cb1b7f8c-c50a-4176-b604-9e24dee8d4d1": "Welcome Center",
+    "37efd44d-ef8d-41b1-940d-96973a50e9e0": "Windows Sidebar Properties",
+    # Windows 7 Control Panel Items
+    "bb64f8a7-bee7-4e1a-ab8d-7d8273f7fdb6": "Action Center",
+    "b98a2bea-7d42-4558-8bd1-832f41bac6fd": "Backup and Restore",
+    "0142e4d0-fb7a-11dc-ba4a-000ffe7ab428": "Biometric Devices",
+    "1206f5f1-0569-412c-8fec-3204630dfb70": "Credential Manager",
+    "00c6d95f-329c-409a-81d7-c46c66ea7f33": "Default Location",
+    "37efd44d-ef8d-41b1-940d-96973a50e9e0": "Desktop Gadgets",
+    "a8a91a66-3a7d-4424-8d24-04e180695c7a": "Devices and Printers",
+    "c555438b-3c23-4769-a71f-b6d3d9b6053a": "Display",
+    "cb1b7f8c-c50a-4176-b604-9e24dee8d4d1": "Getting Started",
+    "67ca7650-96e6-4fdd-bb43-a8e774f73a57": "HomeGroup",
+    "a0275511-0e86-4eca-97c2-ecd8f1221d08": "Infrared",
+    "e9950154-c418-419e-a90a-20c5287ae24b": "Location and Other Sensors",
+    "05d7b0f4-2121-4eff-bf6b-ed3f69b894d9": "Notification Area Icons",
+    "f82df8f7-8b9f-442e-a48c-818ea735ff9b": "Pen and Touch",
+    "40419485-c444-4567-851a-2dd7bfa1684d": "Phone and Modem",
+    "9fe63afd-59cf-4419-9775-abcc3849f861": "Recovery",
+    "62d8ed13-c9d0-4ce8-a914-47dd628fb1b0": "Region and Language",
+    "241d7c96-f8bf-4f85-b01f-e2b043341a4b": "RemoteApp and Desktop Connections",
+    "f2ddfc82-8f12-4cdd-b7dc-d4fe1425aa4d": "Sound",
+    "58e3c745-d971-4081-9034-86e34b30836a": "Speech Recognition",
+    "c58c4893-3be0-4b45-abb5-a63e4b8c8651": "Troubleshooting",
+    # Folder Types
+    "0b2baaeb-0042-4dca-aa4d-3ee8648d03e5": "Pictures Library",
+    "36011842-dccc-40fe-aa3d-6177ea401788": "Documents Search Results",
+    "3f2a72a7-99fa-4ddb-a5a8-c604edf61d6b": "Music Library",
+    "4dcafe13-e6a7-4c28-be02-ca8c2126280d": "Pictures Search Results",
+    "5c4f28b5-f869-4e84-8e60-f11db97c5cc7": "Generic (All folder items)",
+    "5f4eab9a-6833-4f61-899d-31cf46979d49": "Generic Library",
+    "5fa96407-7e77-483c-ac93-691d05850de8": "Videos",
+    "631958a6-ad0f-4035-a745-28ac066dc6ed": "Videos Library",
+    "71689ac1-cc88-45d0-8a22-2943c3e7dfb3": "Music Search Results",
+    "7d49d726-3c21-4f05-99aa-fdc2c9474656": "Documents",
+    "7fde1a1e-8b31-49a5-93b8-6be14cfa4943": "Generic Search Results",
+    "80213e82-bcfd-4c4f-8817-bb27601267a9": "Compressed Folder (zip folder)",
+    "94d6ddcc-4a68-4175-a374-bd584a510b78": "Music",
+    "b3690e58-e961-423b-b687-386ebfd83239": "Pictures",
+    "ea25fbd7-3bf7-409e-b97f-3352240903f4": "Videos Search Results",
+    "fbb3477e-c9e4-4b3b-a2ba-d3f5d3cd46f9": "Documents Library",
 }
 
 class SHITEM_FOLDERENTRY(SHITEM):
@@ -523,6 +628,9 @@ class SHITEM_UNKNOWNENTRY0(SHITEM):
         debug("SHITEM_UNKNOWNENTRY0 @ %s." % (hex(offset)))
         super(SHITEM_UNKNOWNENTRY0, self).__init__(buf, offset, parent)
         
+        self._f("word", "size", 0x0) 
+        if self.size() == 0x20:
+            self._f("guid", "guid", 0xE)
         # pretty much completely unknown
         # TODO, if you have time for research
 
@@ -535,7 +643,13 @@ class SHITEM_UNKNOWNENTRY0(SHITEM):
           (hex(self.offset()), self.name())
 
     def name(self):
-        return "??"
+        if self.size() == 0x20:
+            if self.guid() in known_guids:
+                return known_guids[self.guid()]
+            else:
+                return "{%s}" % (self.guid())
+        else:
+            return "??"
 
 class SHITEM_UNKNOWNENTRY2(SHITEM):
     def __init__(self, buf, offset, parent):
@@ -598,7 +712,7 @@ class SHITEM_CONTROLPANELENTRY(SHITEM):
         if self.guid() in known_guids:
             return known_guids[self.guid()]
         else:
-            return "{%s}" % (self.guid())
+            return "{CONTROL PANEL %s}" % (self.guid())
 
 class SHITEM_VOLUMEENTRY(SHITEM):
     def __init__(self, buf, offset, parent):
@@ -769,6 +883,29 @@ class ITEMPOS_FILEENTRY(Fileentry):
     def __str__(self):
         return "ITEMPOS_FILEENTRY @ %s: %s." % (hex(self.offset()), self.name())
 
+class SHITEM_UNKNOWNENTRY3(Fileentry):
+    def __init__(self, buf, offset, parent):
+        debug("SHITEM_UNKNOWNENTRY3 @ %s." % (hex(offset)))
+        super(SHITEM_UNKNOWNENTRY3, self).__init__(buf, offset, parent, 0x4)
+
+        self._f("word", "size", 0x0) 
+        # most of this is unknown
+        offs = 0x18
+        self._f("string", "short_name", offs)
+        offs += len(self.short_name()) + 1
+        offs = align(offs, 2)
+        offs += 0x4C
+        self._f("wstring", "long_name", offs)
+
+    def __unicode__(self):
+        return u"SHITEM_UNKNOWNENTRY3 @ %s: %s." % (hex(self.offset()), self.name())
+
+    def __str__(self):
+        return "SHITEM_UNKNOWNENTRY3 @ %s: %s." % (hex(self.offset()), self.name())
+
+    def name(self):
+        return self.long_name()
+
 class SHITEMLIST(Block):
     def __init__(self, buf, offset, parent):
         debug("SHITEMLIST @ %s." % (hex(offset)))
@@ -817,6 +954,9 @@ class SHITEMLIST(Block):
             elif type == SHITEMTYPE.UNKNOWN2:
                 item = SHITEM_UNKNOWNENTRY2(self._buf, off, self)
 
+            elif type == SHITEMTYPE.UNKNOWN3:
+                item = SHITEM_UNKNOWNENTRY3(self._buf, off, self)
+            
             else:
                 debug("Unknown type: %s" % hex(type))
                 item = SHITEM(self._buf, off, self)
@@ -854,6 +994,10 @@ def get_shellbags(shell_key):
             file system path so far constructed.
         Throws:
         """
+        global indent
+
+        debug("Considering %sBagMRU key %s%s" % (Fore.YELLOW, key.path(), Fore.RESET))
+        indent.append("  ")
         try:
             # First, consider the current key, and extract shellbag items
             slot = key.value("NodeSlot").value()
@@ -875,37 +1019,40 @@ def get_shellbags(shell_key):
                             pass
                         else:
                             item = ITEMPOS_FILEENTRY(buf, offset, False)
+                            debug(item.name())
                             shellbags.append({
                                 "path": path_prefix + "\\" + item.name(),
                                 "mtime": item.m_date(),
                                 "atime": item.a_date(),
-                                "crtime": item.cr_date()
+                                "crtime": item.cr_date(),
+                                "source":  bag.path()
                             })
                         offset += size
         except Registry.RegistryValueNotFoundException:
             pass
 
         # Next, recurse into each BagMRU key
-        for value in key.values():
-            if not re.match("\d+", value.name()):
-                # ignore NodeSlot, etc.
-                continue
-
+        for value in [value for value in key.values() \
+                      if re.match("\d+", value.name())]:
+            debug("%sBagMRU value %s%s (%s)" % (Fore.BLUE, value.name(), Fore.RESET, key.path()))
             l = SHITEMLIST(value.value(), 0, False)
             for item in l.items():
                 # assume there is only one entry in the value, or take the last
                 # as the path component
+                debug(item.name())
                 path = path_prefix + "\\" + item.name()
                 shellbags.append({
                     "path":  path,
                     "mtime": item.m_date(),
                     "atime": item.a_date(),
-                    "crtime": item.cr_date()
+                    "crtime": item.cr_date(),
+                    "source": key.path()
                 })
 
             shellbag_rec(key.subkey(value.name()), 
                          bag_prefix + "\\" + value.name(), 
                          path)
+        indent.pop(0)
 
     shellbag_rec(bagmru_key, "", "")
     return shellbags
@@ -954,7 +1101,7 @@ def date_safe(d):
     except ValueError:
         return int(time.mktime(datetime.datetime(1970, 1, 1, 0, 0, 0).timetuple()))
 
-def shellbag_bodyfile(m, a, cr, path):
+def shellbag_bodyfile(m, a, cr, path, source=False):
     """
     Given the MAC timestamps and a path, return a Bodyfile v3 string entry
     formatted with the data.
@@ -969,13 +1116,18 @@ def shellbag_bodyfile(m, a, cr, path):
     accessed = date_safe(a)
     created = date_safe(cr)
     changed = int(time.mktime(datetime.datetime(1970, 1, 1, 0, 0, 0).timetuple()))
-    return u"0|Shellbag %s|0|0|0|0|0|%s|%s|%s|%s" % \
-                 (path, modified, accessed, changed, created)
+    if source:
+        return u"0|Shellbag %s (%s)|0|0|0|0|0|%s|%s|%s|%s" % \
+          (path, source, modified, accessed, changed, created)
+    else:
+        return u"0|Shellbag %s|0|0|0|0|0|%s|%s|%s|%s" % \
+          (path, modified, accessed, changed, created)
 
 def usage():
     return "  USAGE:\n\t%s <Windows Registry file>" % sys.argv[1]
 
 if __name__ == '__main__':
+
     if len(sys.argv) != 2:
         print usage()
         sys.exit(-1)
@@ -984,6 +1136,17 @@ if __name__ == '__main__':
 
     for shellbag in get_all_shellbags(registry):
         try:
+            # if verbose:
+            #     print shellbag_bodyfile(shellbag["mtime"], 
+            #                             shellbag["atime"], 
+            #                             shellbag["crtime"], 
+            #                             shellbag["path"],
+            #                             shellbag["source"])
+            # else:
+            #     print shellbag_bodyfile(shellbag["mtime"], 
+            #                             shellbag["atime"], 
+            #                             shellbag["crtime"], 
+            #                             shellbag["path"])
             print shellbag_bodyfile(shellbag["mtime"], 
                                     shellbag["atime"], 
                                     shellbag["crtime"], 
