@@ -1,5 +1,4 @@
 
-
 python-registry
 ===============
 
@@ -64,8 +63,7 @@ Find a key and print all string values
 
 Advanced users who wish to study the structure of the Windows
 Registry may find the Registry.RegistryParse module useful. 
-This module implements all known structures of the Windows Registry, 
-with the exception of the big-block data chunks.
+This module implements all known structures of the Windows Registry.
 
 Testing
 -------
