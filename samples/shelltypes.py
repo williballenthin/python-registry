@@ -47,7 +47,7 @@ def get_shellbags(registry):
     shellbag_rec(bagmru, "")
 
 def usage():
-    return "  USAGE:\n\t%s <Windows Registry file>" % sys.argv[1]
+    return "  USAGE:\n\t%s <Windows Registry file>" % sys.argv[0]
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
