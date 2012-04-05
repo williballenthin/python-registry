@@ -93,6 +93,10 @@ class DataPanel(wx.Panel):
             view.SetFont(font)
             view.SetValue(self._format_hex(value.value()))            
 
+        else:
+            view = wx.TextCtrl(self, style=wx.TE_MULTILINE)
+            view.SetValue(unicode(value.value()))
+
         self._sizer.Add(view, 1, wx.EXPAND)
         self._sizer.Layout()
 

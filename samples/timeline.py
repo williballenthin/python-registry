@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import sys
 from Registry import *
 
@@ -8,9 +10,9 @@ def rec(key):
     for subkey in key.subkeys():
         rec(subkey)
 
-
-reg = Registry.Registry(sys.argv[1])
-rec(reg.root())
+for path in sys.argv[1:]: 
+    reg = Registry.Registry(path)
+    rec(reg.root())
 
 for i in sorted(items, key=lambda x: x[0]):
     print "%s\t%s" % i
