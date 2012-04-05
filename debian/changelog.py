@@ -8,6 +8,6 @@ with open("debian/changelog", "w") as fd:
 
   * Upstream release
 
--- Willy Ballenthin <willi.ballenthin@gmail.com>  %s
+-- Willi Ballenthin <willi.ballenthin@gmail.com>  %s
 """ % (_version_, datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')))
 
