@@ -1,0 +1,6 @@
+You need fakeroot and the Debian tools for building packages.
+
+Then run ./debian/makedeb
+
+***
+
