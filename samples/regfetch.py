@@ -21,7 +21,7 @@ import sys
 from Registry import Registry
 
 def usage():
-    return "  USAGE:\n\t%s <Windows Registry file> <Registry key path> <Registry Value>" % sys.argv[1]
+    return "  USAGE:\n\t%s <Windows Registry file> <Registry key path> <Registry Value>" % sys.argv[0]
 
 if __name__ == '__main__':
     if len(sys.argv) != 4:
