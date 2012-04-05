@@ -1,0 +1,15 @@
+Source: python-registry
+Section: python
+Priority: extra
+Maintainer: Willy Ballenthin <willi.ballenthin@gmail.com>
+Standards-Version: 3.8.4
+Build-Depends: debhelper (>= 8.0),
+               python-all-dev,
+               python-support
+Homepage: http://www.williballenthin.com/registry/
+
+
+Package: python-registry
+Architecture: all
+Depends: ${python:Depends}, ${misc:Depends}
+Description: Python module providing access to Windows registry files.
