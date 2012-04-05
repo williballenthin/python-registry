@@ -3,7 +3,7 @@
 from distutils.core import setup
 from Registry import _version_
 
-setup(name='registry',
+setup(name='python-registry',
       version=_version_,
       description='Read access to Windows Registry files.',
       author='Willi Ballenthin',
