@@ -6,7 +6,10 @@ from Registry import *
 items = []
 
 def rec(key):
-    items.append((key.timestamp(), key.path()))
+    try:
+        items.append((key.timestamp(), key.path()))
+    except ValueError:
+        pass
     for subkey in key.subkeys():
         rec(subkey)
 
