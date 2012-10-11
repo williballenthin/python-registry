@@ -221,7 +221,7 @@ class RegistryKey(object):
             raise RegistryKeyNotFoundException(self.path() + "\\" + name)
 
         for k in self._nkrecord.subkey_list().keys():
-            if k.name() == name:
+            if k.name().lower() == name.lower():
                 return RegistryKey(k)
         raise RegistryKeyNotFoundException(self.path() + "\\" + name)
 
@@ -246,7 +246,7 @@ class RegistryKey(object):
         if name == "(default)":
             name = ""
         for v in self._nkrecord.values_list().values():
-            if v.name() == name:
+            if v.name().lower() == name.lower():
                 return RegistryValue(v)
         raise RegistryValueNotFoundException(self.path() + " : " + name)
 
