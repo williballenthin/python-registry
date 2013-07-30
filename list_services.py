@@ -20,20 +20,42 @@
 import sys
 from Registry import Registry
 
-def usage():
-    return "  USAGE:\n\t%s <Windows Registry file> <Registry key path> <Registry Value>" % sys.argv[0]
 
-if __name__ == '__main__':
-    if len(sys.argv) != 4:
+def usage():
+    return "  USAGE:\n\t%s <Windows Registry file> <Registry key path>" % sys.argv[0]
+
+
+def main():
+    if len(sys.argv) != 2:
         print usage()
         sys.exit(-1)
 
     registry = Registry.Registry(sys.argv[1])
-    key = registry.open(sys.argv[2])
-    if sys.argv[3] == "default":
-        sys.argv[3] = "(default)"
+    select = registry.open("Select")
+    current = select.value("Current").value()
+    services = registry.open("ControlSet00%d\\Services" % (current))
+    for service in services.subkeys():
+        try:
+            display_name = service.value("DisplayName").value()
+        except:
+            display_name = "???"
 
-    value = key.value(sys.argv[3])
+        try:
+            description = service.value("Description").value()
+        except:
+            description = "???"
+
+        try:
+            image_path = service.value("ImagePath").value()
+        except:
+            image_path = "???"
+
+        try:
+            dll = service.subkey("Parameters").value("ServiceDll").value()
+        except:
+            dll = "???"
+        print '%s, %s, "%s", "%s", "%s"' % (service.name(), display_name, image_path, dll, description)
 
 
-    sys.stdout.write(str(value.value()))
+if __name__ == '__main__':
+    main()
