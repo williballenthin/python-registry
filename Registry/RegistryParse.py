@@ -251,7 +251,7 @@ class REGFBlock(RegistryBlock):
         """
         Get the hive name of the open Windows Registry file as a string.
         """
-        return self.unpack_string(0x30, 64)
+        return self.unpack_string(0x30, 64).decode("utf-16le").rstrip("\x00")
 
     def last_hbin_offset(self):
         """
