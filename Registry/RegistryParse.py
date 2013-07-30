@@ -1028,7 +1028,7 @@ class NKRecord(Record):
 
         offset = self.abs_offset_from_hbin_offset(classname_offset)
         d = HBINCell(self._buf, offset, self)
-        return struct.unpack_from("<%ds" % (classname_length), self._buf, d.data_offset())[0]
+        return struct.unpack_from("<%ds" % (classname_length), self._buf, d.data_offset())[0].decode("utf-16le").rstrip("\x00")
 
     def timestamp(self):
         """
