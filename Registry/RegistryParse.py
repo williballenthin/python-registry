@@ -593,10 +593,6 @@ class VKRecord(Record):
         Is the name of this value in the ASCII charset?
         Note, this doesnt work, yet... TODO
         """
-        if self.unpack_word(0x10) & 1 == 1:
-            print "ascii name"
-        else:
-            print "not ascii name"
         return self.unpack_word(0x10) & 1 == 1
 
     def name(self):
