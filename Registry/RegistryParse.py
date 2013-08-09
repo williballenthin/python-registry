@@ -1198,7 +1198,7 @@ class HBINBlock(RegistryBlock):
         try:
             HBINBlock(self._buf, self._offset_next_hbin, self.parent())
             return True
-        except ParseException:
+        except (ParseException, struct.error):
             return False
 
     def next(self):
