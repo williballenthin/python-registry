@@ -1149,7 +1149,6 @@ class NKRecord(Record):
         elif id_ == "li":
             l = LIRecord(self._buf, d.data_offset(), self)
         else:
-            print id_ + " subkey list"
             raise ParseException("Subkey list with type %s encountered, but not yet supported." % (id_))
 
         return l
