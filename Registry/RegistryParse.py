@@ -459,7 +459,7 @@ class DBIndirectBlock(Record):
     def large_data(self, length):
         """
         Get the data pointed to by the indirect block. It may be large.
-        Return a byte array.
+        Return a byte string.
         """
         b = bytearray()
         count = 0
@@ -470,7 +470,7 @@ class DBIndirectBlock(Record):
 
             count += 1
             length -= size
-        return b
+        return str(b)
 
 class DBRecord(Record):
     """
