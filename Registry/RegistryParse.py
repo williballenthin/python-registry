@@ -743,20 +743,26 @@ class VKRecord(Record):
             d = HBINCell(self._buf, data_offset, self)
             return struct.unpack_from("<Q", self._buf, d.data_offset())[0]
         elif data_type == RegBigEndian:
-            warn("Data type RegBigEndian not yet supported")
-            return False
-        elif data_type == RegLink:
-            warn("Data type RegLink not yet supported")
-            return False
-        elif data_type == RegResourceList:
-            warn("Data type RegResourceList not yet supported")
-            return False
-        elif data_type == RegFullResourceDescriptor:
-            warn("Data type RegFullResourceDescriptor not yet supported")
-            return False
-        elif data_type == RegResourceRequirementsList:
-            warn("Data type RegResourceRequirementsList not yet supported")
-            return False
+            d = HBINCell(self._buf, data_offset, self)
+            return struct.unpack_from(">I", self._buf, d.data_offset())[0]
+        elif data_type == RegLink or \
+                        data_type == RegResourceList or \
+                        data_type == RegFullResourceDescriptor or \
+                        data_type == RegResourceRequirementsList:
+            # we don't really support these types, but can at least
+            #  return raw binary for someone else to work with.
+            if data_length >= 0x80000000:
+                data_length -= 0x80000000
+                return self._buf[data_offset:data_offset + data_length]
+            elif 0x3fd8 < data_length < 0x80000000:
+                d = HBINCell(self._buf, data_offset, self)
+                if d.data_id() == "db":
+                    # this should always be the case
+                    # but empirical testing does not confirm this
+                    return d.child().large_data(data_length)
+                else:
+                    return d.raw_data()[:data_length]
+            return self._buf[data_offset + 4:data_offset + 4 + data_length]
         elif data_length < 5 or data_length >= 0x80000000:
             return self.unpack_dword(0x8)
         else:
