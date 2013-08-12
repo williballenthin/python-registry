@@ -40,9 +40,11 @@ def warn(msg):
         _global_warning_messages.append(msg)
         print "Warning: %s" % (msg)
 
+
 def parse_windows_timestamp(qword):
     # see http://integriography.wordpress.com/2010/01/16/using-phython-to-parse-and-present-windows-64-bit-timestamps/
     return datetime.utcfromtimestamp(float(qword) * 1e-7 - 11644473600 )
+
 
 class RegistryException(Exception):
     """
@@ -61,6 +63,7 @@ class RegistryException(Exception):
     def __str__(self):
         return "Registry Exception: %s" % (self._value)
 
+
 class RegistryStructureDoesNotExist(RegistryException):
     """
     Exception to be raised when a structure or block is requested which does not exist.
@@ -78,6 +81,7 @@ class RegistryStructureDoesNotExist(RegistryException):
     def __str__(self):
         return "Registry Structure Does Not Exist Exception: %s" % (self._value)
 
+
 class ParseException(RegistryException):
     """
     An exception to be thrown during Windows Registry parsing, such as
@@ -93,6 +97,7 @@ class ParseException(RegistryException):
 
     def __str__(self):
         return "Registry Parse Exception(%s)" % (self._value)
+
 
 class UnknownTypeException(RegistryException):
     """
@@ -121,6 +126,7 @@ class UnknownTypeException(RegistryException):
 
     def __str__(self):
         return "Unknown Type Exception(%s)" % (self._value)
+
 
 class RegistryBlock(object):
     """
@@ -205,6 +211,7 @@ class RegistryBlock(object):
         """
         return self._offset
 
+
 class REGFBlock(RegistryBlock):
     """
     The Windows Registry file header. This block has a length of 4k, although
@@ -277,6 +284,7 @@ class REGFBlock(RegistryBlock):
         while h.has_next():
             h = h.next()
             yield h
+
 
 class HBINCell(RegistryBlock):
     """
@@ -393,6 +401,7 @@ class HBINCell(RegistryBlock):
         else:
             return DataRecord(self._buf, self.data_offset(), self)
 
+
 class Record(RegistryBlock):
     """
     Abstract class for Records contained by cells in HBINs
@@ -419,6 +428,7 @@ class Record(RegistryBlock):
 
         return h.first_hbin().offset() + offset
 
+
 class DataRecord(Record):
     """
     A DataRecord is a HBINCell that does not contain any further structural data, but
@@ -437,6 +447,7 @@ class DataRecord(Record):
 
     def __str__(self):
         return "Data Record at 0x%x" % (self.offset())
+
 
 class DBIndirectBlock(Record):
     """
@@ -472,6 +483,7 @@ class DBIndirectBlock(Record):
             length -= size
         return str(b)
 
+
 class DBRecord(Record):
     """
     A DBRecord is a large data block, which is not thoroughly documented.
@@ -503,6 +515,7 @@ class DBRecord(Record):
         cell = HBINCell(self._buf, off, self)
         dbi = DBIndirectBlock(self._buf, cell.data_offset(), cell)
         return dbi.large_data(length)
+
 
 class VKRecord(Record):
     """
@@ -743,6 +756,7 @@ class VKRecord(Record):
         else:
             raise UnknownTypeException("Unknown VK Record type 0x%x at 0x%x" % (data_type, self.offset()))
 
+
 class SKRecord(Record):
     """
     Security Record. Contains Windows security descriptor,
@@ -770,6 +784,7 @@ class SKRecord(Record):
 
     def __str__(self):
         return "SK Record at 0x%x" % (self.offset())
+
 
 class ValuesList(HBINCell):
     """
@@ -803,6 +818,7 @@ class ValuesList(HBINCell):
             value_item += 4
             yield v
 
+
 class SubkeyList(Record):
     """
     A base class for use by structures recording the subkeys of Registry key.
@@ -831,6 +847,7 @@ class SubkeyList(Record):
         The base SubkeyList class returns no NKRecords, since it should not be used directly.
         """
         return
+
 
 class RIRecord(SubkeyList):
     """
@@ -870,6 +887,7 @@ class RIRecord(SubkeyList):
 
             key_index += 4
 
+
 class DirectSubkeyList(SubkeyList):
     def __init__(self, buf, offset, parent):
         """
@@ -897,6 +915,7 @@ class DirectSubkeyList(SubkeyList):
             d = HBINCell(self._buf, key_offset, self)
             yield NKRecord(self._buf, d.data_offset(), self)
             key_index += 8
+
 
 class LIRecord(DirectSubkeyList):
     """
@@ -930,6 +949,7 @@ class LIRecord(DirectSubkeyList):
             yield NKRecord(self._buf, d.data_offset(), self)
             key_index += 4
 
+
 class LFRecord(DirectSubkeyList):
     """
     The LFRecord is a simple structure containing a list of offsets/pointers
@@ -952,6 +972,7 @@ class LFRecord(DirectSubkeyList):
 
     def __str__(self):
         return "LFRecord(Length: %d) at 0x%x" % (self._keys_len(), self.offset())
+
 
 class LHRecord(DirectSubkeyList):
     """
@@ -976,6 +997,7 @@ class LHRecord(DirectSubkeyList):
 
     def __str__(self):
         return "LHRecord(Length: %d) at 0x%x" % (self._keys_len(), self.offset())
+
 
 class NKRecord(Record):
     """
@@ -1152,6 +1174,7 @@ class NKRecord(Record):
             raise ParseException("Subkey list with type %s encountered, but not yet supported." % (id_))
 
         return l
+
 
 class HBINBlock(RegistryBlock):
     """
