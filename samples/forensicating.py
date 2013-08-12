@@ -17,13 +17,6 @@ except ImportError:
     print "[!] Python-Registry not found"
 
 """
-File locations
-"""
-sys_reg    = "SYSTEM"
-soft_reg   = "SOFTWARE"
-ntuser_reg = "NTUSER.DAT"
-
-"""
 Some repetitively used functions
 """
 
@@ -303,14 +296,21 @@ def users_info(soft_reg):
     for line in results:
         print line
 
-"""
-Print out all of the information
-"""         
-print "[+] The system's Control Set is :",control_set_check(sys_reg)
-print "[+] The system's Architecture is:",arch_check(sys_reg)
-tz_settings(sys_reg)
-env_settings(sys_reg)
-os_settings(sys_reg, soft_reg)
-network_settings(sys_reg, soft_reg)
-users_info(soft_reg)
-user_reg_locs(users_paths(soft_reg, users_sids(soft_reg)))
+
+if __name__ == "__main__":
+    """
+    Print out all of the information
+    """            
+    import sys
+    sys_reg = sys.argv[1]
+    soft_reg = sys.argv[2]
+    print "[+] SYSTEM hive:   %s" % sys_reg
+    print "[+] SOFTWARE hive: %s" % soft_reg
+    print "[+] The system's Control Set is :",control_set_check(sys_reg)
+    print "[+] The system's Architecture is:",arch_check(sys_reg)
+    tz_settings(sys_reg)
+    env_settings(sys_reg)
+    os_settings(sys_reg, soft_reg)
+    network_settings(sys_reg, soft_reg)
+    users_info(soft_reg)
+    user_reg_locs(users_paths(soft_reg, users_sids(soft_reg)))
