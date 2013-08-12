@@ -626,7 +626,16 @@ class VKRecord(Record):
 
     def data_length(self):
         """
-        Get the length of this value data.
+        Get the length of this value data. This is the actual length of the data that should be parsed for the value.
+        """
+        size = self.unpack_dword(0x4)
+        if size > 0x80000000:
+            size -= 0x80000000
+        return size
+
+    def raw_data_length(self):
+        """
+        Get the literal length of this value data. Some interpretation may be required to make sense of the value.
         """
         return self.unpack_dword(0x4)
 
@@ -634,7 +643,7 @@ class VKRecord(Record):
         """
         Get the offset to the raw data associated with this value.
         """
-        if self.data_length() < 5 or self.data_length() >= 0x80000000:
+        if self.raw_data_length() < 5 or self.raw_data_length() >= 0x80000000:
             return self.absolute_offset(0x8)
         else:
             return self.abs_offset_from_hbin_offset(self.unpack_dword(0x8))
@@ -671,7 +680,7 @@ class VKRecord(Record):
           Not currently supported. TODO.
         """
         data_type = self.data_type()
-        data_length = self.data_length()
+        data_length = self.raw_data_length()
         data_offset = self.data_offset()
 
         if data_type == RegSZ or data_type == RegExpandSZ:
