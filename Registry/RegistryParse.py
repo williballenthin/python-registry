@@ -690,20 +690,21 @@ class VKRecord(Record):
                 d = HBINCell(self._buf, data_offset, self)
                 s = struct.unpack_from("<%ds" % (data_length), self._buf, d.data_offset())[0]
 
-            index = s.index("\x00\x00")
-            if index > 2:
-                if s[index - 2] != "\x00":
-                    #  61 00 62 00 63 64 00 00
-                    #                    ^  ^-- end of string
-                    #                    +-- index
-                    s = s[:index + 2]
-                else:
-                    #  61 00 62 00 63 00 00 00
-                    #                 ^     ^-- end of string
-                    #                 +-- index
-                    #  TODO(wb): really, we should check that s[index + 2] == \x00
-                    #    but i think we won't, since the Unicode decode below will fail
-                    s = s[:index + 3]
+            if "\x00\x00" in s:
+                index = s.index("\x00\x00")
+                if index > 2:
+                    if s[index - 2] != "\x00":
+                        #  61 00 62 00 63 64 00 00
+                        #                    ^  ^-- end of string
+                        #                    +-- index
+                        s = s[:index + 2]
+                    else:
+                        #  61 00 62 00 63 00 00 00
+                        #                 ^     ^-- end of string
+                        #                 +-- index
+                        #  TODO(wb): really, we should check that s[index + 2] == \x00
+                        #    but i think we won't, since the Unicode decode below will fail
+                        s = s[:index + 3]
 
             s = s.decode("utf16")
             s = s.partition('\x00')[0]
