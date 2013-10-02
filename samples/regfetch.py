@@ -16,6 +16,8 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import sys
 from Registry import Registry
@@ -25,7 +27,7 @@ def usage():
 
 if __name__ == '__main__':
     if len(sys.argv) != 4:
-        print usage()
+        print(usage())
         sys.exit(-1)
 
     registry = Registry.Registry(sys.argv[1])

@@ -1,4 +1,8 @@
 #!/usr/bin/python
+
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import calendar
 
 import argparse
@@ -39,8 +43,8 @@ def main():
 
             def visitor(timestamp, path):
                 try:
-                    print u"0|[Registry %s] %s|0|0|0|0|0|%s|0|0|0" % \
-                      (hive, path, int(calendar.timegm(timestamp.timetuple())))
+                    print("0|[Registry %s] %s|0|0|0|0|0|%s|0|0|0" % \
+                      (hive, path, int(calendar.timegm(timestamp.timetuple()))))
                 except UnicodeDecodeError:
                     pass
 
@@ -49,7 +53,7 @@ def main():
             items = []
             rec(reg.root(), lambda a, b: items.append((a, b)))
             for i in sorted(items, key=lambda x: x[0]):
-                print "%s\t%s" % i
+                print("%s\t%s" % i)
 
 if __name__ == "__main__":
     main()

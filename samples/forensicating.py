@@ -7,6 +7,9 @@
 # Date: 07-23-2013
 # (while at FireEye)
 
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import os
 import re
 import sys
@@ -14,7 +17,7 @@ import time
 try:
     from Registry import Registry
 except ImportError:
-    print "[!] Python-Registry not found"
+    print("[!] Python-Registry not found")
 
 """
 Some repetitively used functions
@@ -125,7 +128,7 @@ def env_settings(sys_reg):
     results = []
     sys_architecture = []
     registry = Registry.Registry(sys_reg)    
-    print ("=" * 51) + "\n[+] Environment Settings\n" + ("=" * 51)
+    print(("=" * 51) + "\n[+] Environment Settings\n" + ("=" * 51))
     key = registry.open("ControlSet00%s\\Control\\Session Manager\\Environment" % control_set_check(sys_reg))    
     for v in key.values():
         if v.name() == "PROCESSOR_ARCHITECTURE":
@@ -138,7 +141,7 @@ def env_settings(sys_reg):
         if v.name() == "TMP":
             results.append("[-] Tmp path.........: " + str(v.value()))                                                                             
     for line in results:
-        print line
+        print(line)
 
 def tz_settings(sys_reg):
     """
@@ -150,7 +153,7 @@ def tz_settings(sys_reg):
     registry = Registry.Registry(sys_reg)
     key = registry.open(k)
     results.append(("=" * 51) + "\nTime Zone Settings\n" + ("=" * 51))    
-    print "[-] Checking %s based on 'Select' settings" % current_control_set
+    print("[-] Checking %s based on 'Select' settings" % current_control_set)
     results.append("[+] %s" % k)
     results.append("---------------------------------------")
     for v in key.values():
@@ -187,14 +190,14 @@ def os_settings(sys_reg, soft_reg):
         if v.name() == "RegisteredOwner":
             os_dict['RegisteredOwner'] = v.value()          
                           
-    print ("=" * 51) + "\n[+] Operating System Information\n" + ("=" * 51)
-    print "[-] Product Name.....: %s" % os_dict['ProductName']
-    print "[-] Product ID.......: %s" % os_dict['ProductId']
-    print "[-] CSDVersion.......: %s" % os_dict['CSDVersion']
-    print "[-] Path Name........: %s" % os_dict['PathName']    
-    print "[-] Install Date.....: %s" % os_dict['InstallDate']       
-    print "[-] Registered Org...: %s" % os_dict['RegisteredOrganization']
-    print "[-] Registered Owner : %s" % os_dict['RegisteredOwner']
+    print(("=" * 51) + "\n[+] Operating System Information\n" + ("=" * 51))
+    print("[-] Product Name.....: %s" % os_dict['ProductName'])
+    print("[-] Product ID.......: %s" % os_dict['ProductId'])
+    print("[-] CSDVersion.......: %s" % os_dict['CSDVersion'])
+    print("[-] Path Name........: %s" % os_dict['PathName']    )
+    print("[-] Install Date.....: %s" % os_dict['InstallDate']       )
+    print("[-] Registered Org...: %s" % os_dict['RegisteredOrganization'])
+    print("[-] Registered Owner : %s" % os_dict['RegisteredOwner'])
 
 def network_settings(sys_reg, soft_reg):
     """
@@ -207,7 +210,7 @@ def network_settings(sys_reg, soft_reg):
     int_list = []
     registry = Registry.Registry(soft_reg)
     key = registry.open("Microsoft\\Windows NT\\CurrentVersion\\NetworkCards")
-    print ("=" * 51) + "\n[+] Network Adapters\n" + ("=" * 51)
+    print(("=" * 51) + "\n[+] Network Adapters\n" + ("=" * 51))
 
     # Populate the subkeys containing the NICs information
     for v in key.subkeys():
@@ -231,7 +234,7 @@ def network_settings(sys_reg, soft_reg):
         int_list.append(v.name())
 
     def guid_to_name(g):
-        for k,v in nics_dict.iteritems():
+        for k,v in nics_dict.items():
             '''
             k = ServiceName, Description
             v = GUID, Adapter name
@@ -241,8 +244,8 @@ def network_settings(sys_reg, soft_reg):
 
     # Grab the NICs info based on the above list
     for i in int_list:
-        print "[-] Interface........: %s" % guid_to_name(i)
-        print "[-] GUID.............: %s" % i
+        print("[-] Interface........: %s" % guid_to_name(i))
+        print("[-] GUID.............: %s" % i)
         key3 = reg.open("ControlSet00%s\\services\\Tcpip\\Parameters\\Interfaces\\%s" % (control_set_check(sys_reg), i))  
         for v in key3.values():
             if v.name() == "Domain":
@@ -270,12 +273,12 @@ def network_settings(sys_reg, soft_reg):
         if not 'DhcpSubnetMask' in results_dict: 
             results_dict['DhcpSubnetMask'] = "N/A"        
 
-        print "[-] Domain...........: %s" % results_dict['Domain']
-        print "[-] IP Address.......: %s" % results_dict['IPAddress']
-        print "[-] DHCP IP..........: %s" % results_dict['DhcpIPAddress']
-        print "[-] DHCP Server......: %s" % results_dict['DhcpServer']
-        print "[-] DHCP Subnet......: %s" % results_dict['DhcpSubnetMask']
-        print "\n"                                      
+        print("[-] Domain...........: %s" % results_dict['Domain'])
+        print("[-] IP Address.......: %s" % results_dict['IPAddress'])
+        print("[-] DHCP IP..........: %s" % results_dict['DhcpIPAddress'])
+        print("[-] DHCP Server......: %s" % results_dict['DhcpServer'])
+        print("[-] DHCP Subnet......: %s" % results_dict['DhcpSubnetMask'])
+        print("\n"                                      )
 
 def users_info(soft_reg):
     """
@@ -292,9 +295,9 @@ def users_info(soft_reg):
     for l in sid_to_user(users_sids(soft_reg), soft_reg):
         results.append(l)
                             
-    print ("=" * 51) + "\n[+] User Accounts\n" + ("=" * 51)
+    print(("=" * 51) + "\n[+] User Accounts\n" + ("=" * 51))
     for line in results:
-        print line
+        print(line)
 
 
 if __name__ == "__main__":
@@ -304,10 +307,10 @@ if __name__ == "__main__":
     import sys
     sys_reg = sys.argv[1]
     soft_reg = sys.argv[2]
-    print "[+] SYSTEM hive:   %s" % sys_reg
-    print "[+] SOFTWARE hive: %s" % soft_reg
-    print "[+] The system's Control Set is :",control_set_check(sys_reg)
-    print "[+] The system's Architecture is:",arch_check(sys_reg)
+    print("[+] SYSTEM hive:   %s" % sys_reg)
+    print("[+] SOFTWARE hive: %s" % soft_reg)
+    print("[+] The system's Control Set is :",control_set_check(sys_reg))
+    print("[+] The system's Architecture is:",arch_check(sys_reg))
     tz_settings(sys_reg)
     env_settings(sys_reg)
     os_settings(sys_reg, soft_reg)
