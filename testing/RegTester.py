@@ -17,6 +17,9 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import sys, struct
 import registry
 
@@ -38,14 +41,14 @@ def parse(f):
         raise "THIS ISNT SUPPORTED YET"
         try:
             t = t.decode("utf16")
-            print "Decoded input file with UTF16 decoder"
+            print("Decoded input file with UTF16 decoder")
         except:
             raise
     elif "REGEDIT4" in h: # Regedit
         t = t.decode("iso-8859-1", "replace")
-        print "Decoded input file with ASCII decoder"
+        print("Decoded input file with ASCII decoder")
     else:
-        print "Unable to parse header"
+        print("Unable to parse header")
         sys.exit(-1)
 
     lines = t.split("\n")
@@ -54,10 +57,10 @@ def parse(f):
     current_value  = False
     keys = []
 
-    print "Found " + str(len(lines)) + " lines"
+    print("Found " + str(len(lines)) + " lines")
 
     line_count = 0
-    for line in [l.rstrip(u'\r') for l in lines[1:]]:
+    for line in [l.rstrip('\r') for l in lines[1:]]:
         line_count += 1
 
         if len(line.lstrip(" ")) < 2:
@@ -162,15 +165,15 @@ def usage():
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:
-        print usage()
+        print(usage())
         sys.exit(-1)
 
     f = open(sys.argv[1])
     keys = parse(f)
-    print "Parsed .reg file"
+    print("Parsed .reg file")
 
     r = registry.Registry(sys.argv[2])
-    print "Parsed Registry file"
+    print("Parsed Registry file")
 
     not_found_keys = 0
     incorrect_data = 0
@@ -200,19 +203,19 @@ if __name__ == '__main__':
                         vv = unicode(v.data).partition('\x00')[0]
                         
                         if not rvv == vv:
-                            print "DATA VALUE INCORRECT: " + k.name + ":" + v.name
-                            print "                      " + rk.path() + ":" + rv.name()
-                            print key_long_str(rk)
+                            print("DATA VALUE INCORRECT: " + k.name + ":" + v.name)
+                            print("                      " + rk.path() + ":" + rv.name())
+                            print(key_long_str(rk))
 
-                            print "|%s|" % (rvv)
-                            print rvv.__class__.__name__
-                            print len(rvv)
-                            print list(rvv)
+                            print("|%s|" % (rvv))
+                            print(rvv.__class__.__name__)
+                            print(len(rvv))
+                            print(list(rvv))
 
-                            print "|%s|" % (vv)
-                            print vv.__class__.__name__
-                            print len(vv)
-                            print list(vv)
+                            print("|%s|" % (vv))
+                            print(vv.__class__.__name__)
+                            print(len(vv))
+                            print(list(vv))
 
                             incorrect_data += 1
 
@@ -224,21 +227,21 @@ if __name__ == '__main__':
                         try:
                             rvv = map(lambda x: x.decode("utf8"), rv.value())
                         except:
-                            print rk.path()
-                            print rv.name()
-                            print rv.value()
+                            print(rk.path())
+                            print(rv.name())
+                            print(rv.value())
                             raise
 
                         for vvv in vv:
                             if vvv not in rvv:
-                                print "REGMULTISZ DATA VALUE MISSING: " + vvv
-                                print rk.path()
-                                print rv.name()
-                                print rv.value()
+                                print("REGMULTISZ DATA VALUE MISSING: " + vvv)
+                                print(rk.path())
+                                print(rv.name())
+                                print(rv.value())
 
-                                print list(v.data)
-                                print vv
-                                print rvv
+                                print(list(v.data))
+                                print(vv)
+                                print(rvv)
 
                                 incorrect_data += 1
 
@@ -247,11 +250,11 @@ if __name__ == '__main__':
                             
                         rvv = rv.value()
                         if not rvv == vv:
-                            print "DWORD INCORRECT: " + str(vv) + " != " + str(rvv)
-                            print list(vv)
-                            print rk.path()
-                            print rv.name()
-                            print rv.value()
+                            print("DWORD INCORRECT: " + str(vv) + " != " + str(rvv))
+                            print(list(vv))
+                            print(rk.path())
+                            print(rv.name())
+                            print(rv.value())
 
                             incorrect_data += 1
 
@@ -259,10 +262,10 @@ if __name__ == '__main__':
                         vv = struct.unpack("<Q", v.data)[0]
                         rvv = rv.value()
                         if not rvv == vv:
-                            print "QWORD INCORRECT: " + str(vv) + " != " + str(rvv)
-                            print rk.path()
-                            print rv.name()
-                            print rv.value()
+                            print("QWORD INCORRECT: " + str(vv) + " != " + str(rvv))
+                            print(rk.path())
+                            print(rv.name())
+                            print(rv.value())
 
                             incorrect_data += 1
 
@@ -271,33 +274,33 @@ if __name__ == '__main__':
                         vv = v.data
                         rvv = rv.value()
                         if not rvv == vv:
-                            print "BIN INCORRECT"
-                            print rk.path()
-                            print rv.name()
+                            print("BIN INCORRECT")
+                            print(rk.path())
+                            print(rv.name())
 
                             incorrect_data += 1
 
                 except registry.RegistryValueNotFoundException:
-                    print "VALUE NOT FOUND: " + k.name + ":" +  v.name
+                    print("VALUE NOT FOUND: " + k.name + ":" +  v.name)
                     not_found_values += 1
 
         except registry.RegistryKeyNotFoundException:
-            print "KEY NOT FOUND: " + k.name
+            print("KEY NOT FOUND: " + k.name)
             not_found_keys += 1
 
     if not_found_keys > 0:
-        print "Unable to find %d keys" % (not_found_keys)
+        print("Unable to find %d keys" % (not_found_keys))
     else:
-        print "Found all keys"
+        print("Found all keys")
 
     if not_found_values > 0:
-        print "Unable to find %d values" % (not_found_values)
+        print("Unable to find %d values" % (not_found_values))
     else:
-        print "Found all values"
+        print("Found all values")
 
     if incorrect_data > 0:
-        print "%d incorrect data values" % (incorrect_data)
+        print("%d incorrect data values" % (incorrect_data))
     else:
-        print "All supported data values correct"
+        print("All supported data values correct")
 
 

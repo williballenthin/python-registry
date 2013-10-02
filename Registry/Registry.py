@@ -16,9 +16,11 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+from __future__ import print_function
 
 import sys
-import RegistryParse
+
+from . import RegistryParse
 
 RegSZ = 0x0001
 RegExpandSZ = 0x0002
@@ -301,7 +303,7 @@ class Registry(object):
 
 def print_all(key):
     if len(key.subkeys()) == 0:
-        print key.path()
+        print(key.path())
     else:
         for k in key.subkeys():
             print_all(k)

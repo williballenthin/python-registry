@@ -16,6 +16,8 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import re, sys, datetime, time
 import struct, array
@@ -49,15 +51,15 @@ def dosdate(dosdate, dostime):
     returns: datetime.datetime or datetime.datetime.min on error
     """
     try:
-        t  = ord(dosdate[1]) << 8
-        t |= ord(dosdate[0])
+        t  = ord(dosdate[1:2]) << 8
+        t |= ord(dosdate[0:1])
         day   = t & 0b0000000000011111
         month = (t & 0b0000000111100000) >> 5
         year  = (t & 0b1111111000000000) >> 9
         year += 1980
         
-        t  = ord(dostime[1]) << 8
-        t |= ord(dostime[0])
+        t  = ord(dostime[1:2]) << 8
+        t |= ord(dostime[0:1])
         sec     = t & 0b0000000000011111
         sec    *= 2
         minute  = (t & 0b0000011111100000) >> 5
@@ -83,13 +85,13 @@ def debug(message):
     if _g_verbose:
         global _g_indent
 
-        print "# [%sd%s] %s%s" % (Fore.GREEN, Fore.RESET, "".join(_g_indent), message)
+        print("# [%sd%s] %s%s" % (Fore.GREEN, Fore.RESET, "".join(_g_indent), message))
 
 def warning(message):
-    print "# [%sw%s] %s%s" % (Fore.YELLOW, Fore.RESET, message)
+    print("# [%sw%s] %s%s" % (Fore.YELLOW, Fore.RESET, message))
 
 def error(message):
-    print "# [%se%s] %s%s" % (Fore.RED, Fore.RESET, message)
+    print("# [%se%s] %s%s" % (Fore.RED, Fore.RESET, message))
     sys.exit(-1)
 
 def date_safe(d):
@@ -104,7 +106,8 @@ def date_safe(d):
         return int(time.mktime(d.timetuple()))
     except ValueError:
         return int(time.mktime(datetime.datetime(1970, 1, 1, 0, 0, 0).timetuple()))
-
+    except OverflowError:
+        return int(time.mktime(datetime.datetime(1970, 1, 1, 0, 0, 0).timetuple()))
 ################ CLASS DEFINITIONS #############v
 
 class ShellbagException(Exception):
@@ -121,10 +124,10 @@ class ShellbagException(Exception):
         self._value = value
 
     def __str__(self):
-        return str(unicode(self))
+        return str(self)
 
     def __unicode__(self):
-        return u"Shellbag Exception: %s" % (self._value)
+        return "Shellbag Exception: %s" % (self._value)
 
 class ParseException(ShellbagException):
     """
@@ -140,10 +143,10 @@ class ParseException(ShellbagException):
         super(ParseException, self).__init__(value)
 
     def __str__(self):
-        return str(unicode(self))
+        return str(self)
 
     def __unicode__(self):
-        return u"Parse Exception(%s)" % (self._value)
+        return "Parse Exception(%s)" % (self._value)
 
 class OverrunBufferException(ParseException):
     """
@@ -155,10 +158,10 @@ class OverrunBufferException(ParseException):
         super(ParseException, self).__init__(tvalue)
 
     def __str__(self):
-        return str(unicode(self))
+        return str(self)
 
     def __unicode__(self):
-        return u"Tried to parse beyond the end of the file (%s)" % (self._value)
+        return "Tried to parse beyond the end of the file (%s)" % (self._value)
 
 class Block(object):
     """ 
@@ -179,10 +182,10 @@ class Block(object):
         self._fields = []
 
     def __unicode__(self):
-        return u"BLOCK @ %s." % (hex(self.offset()))
+        return "BLOCK @ %s." % (hex(self.offset()))
 
     def __str__(self):
-        return str(unicode(self))
+        return str(self)
 
     def _prepare_fields(self, fields=False):
         """
@@ -226,7 +229,7 @@ class Block(object):
         """
         o = self._offset + offset
         try:
-            return struct.unpack_from("<B", self._buf, o)[0]
+            return struct.unpack_from(str("<B"), self._buf, o)[0]
         except struct.error:
             raise OverrunBufferException(o, len(self._buf))
 
@@ -240,7 +243,7 @@ class Block(object):
         """
         o = self._offset + offset
         try:
-            return struct.unpack_from("<H", self._buf, o)[0]
+            return struct.unpack_from(str("<H"), self._buf, o)[0]
         except struct.error:
             raise OverrunBufferException(o, len(self._buf))
 
@@ -252,7 +255,7 @@ class Block(object):
         - `word`: The data to apply.
         """
         o = self._offset + offset
-        return struct.pack_into("<H", self._buf, o, word)
+        return struct.pack_into(str("<H"), self._buf, o, word)
 
     def unpack_dword(self, offset):
         """
@@ -264,7 +267,7 @@ class Block(object):
         """
         o = self._offset + offset
         try:
-            return struct.unpack_from("<I", self._buf, o)[0]
+            return struct.unpack_from(str("<I"), self._buf, o)[0]
         except struct.error:
             raise OverrunBufferException(o, len(self._buf))
 
@@ -278,7 +281,7 @@ class Block(object):
         """
         o = self._offset + offset
         try:
-            return struct.unpack_from("<i", self._buf, o)[0]
+            return struct.unpack_from(str("<i"), self._buf, o)[0]
         except struct.error:
             raise OverrunBufferException(o, len(self._buf))
 
@@ -292,7 +295,7 @@ class Block(object):
         """
         o = self._offset + offset
         try:
-            return struct.unpack_from("<Q", self._buf, o)[0]
+            return struct.unpack_from(str("<Q"), self._buf, o)[0]
         except struct.error:
             raise OverrunBufferException(o, len(self._buf))
 
@@ -311,11 +314,11 @@ class Block(object):
         o = self._offset + offset
 
         if not length:
-            end = self._buf.find("\x00", o)
+            end = self._buf.find(b"\x00", o)
             length = end - o
 
         try:
-            return struct.unpack_from("<%ds" % (length), self._buf, o)[0].partition("\x00")[0]
+            return struct.unpack_from(str("<%ds") % (length), self._buf, o)[0].partition(b"\x00")[0].decode("utf-8")
         except struct.error:
             raise OverrunBufferException(o, len(self._buf))
 
@@ -335,11 +338,11 @@ class Block(object):
         """
         if not ilength:
             o = self._offset + offset
-            end = self._buf.find("\x00\x00", o)
+            end = self._buf.find(b"\x00\x00", o)
             if end - 2 <= o:
                 return ""
 
-            if self._buf[end - 2] == "\x00":
+            if self._buf[end - 2] == b"\x00"[0]:
                 # then the last UTF-16 character was in the ASCII range
                 # and the \x00\x00 matched on the second half of the char
                 # and continued into the final null char
@@ -389,7 +392,10 @@ class Block(object):
             raise OverrunBufferException(o, len(self._buf))
 
         # Yeah, this is ugly
-        h = map(ord, bin)
+        if sys.version_info[0] == 2:
+            h = map(ord, bin)
+        else:
+            h = bin
         return "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x" % \
             (h[3], h[2], h[1], h[0],
              h[5], h[4],
@@ -450,7 +456,7 @@ class SHITEM(Block):
         debug("SHITEM @ %s of type %s." % (hex(offset), hex(self.type())))
 
     def __unicode__(self):
-        return u"SHITEM @ %s." % (hex(self.offset()))
+        return "SHITEM @ %s." % (hex(self.offset()))
         
     def name(self):
         return "??"
@@ -612,7 +618,7 @@ class SHITEM_FOLDERENTRY(SHITEM):
         self._f("guid", "guid", 0x4)
 
     def __unicode__(self):
-        return u"SHITEM_FOLDERENTRY @ %s: %s." % \
+        return "SHITEM_FOLDERENTRY @ %s: %s." % \
           (hex(self.offset()), self.name())
 
     def folder_id(self):
@@ -659,7 +665,7 @@ class SHITEM_UNKNOWNENTRY0(SHITEM):
         # TODO, if you have time for research
 
     def __unicode__(self):
-        return u"SHITEM_UNKNOWNENTRY0 @ %s: %s." % \
+        return "SHITEM_UNKNOWNENTRY0 @ %s: %s." % \
           (hex(self.offset()), self.name())
 
     def name(self):
@@ -680,7 +686,7 @@ class SHITEM_UNKNOWNENTRY2(SHITEM):
         self._f("guid", "guid", 0x4)
 
     def __unicode__(self):
-        return u"SHITEM_UNKNOWNENTRY2 @ %s: %s." % \
+        return "SHITEM_UNKNOWNENTRY2 @ %s: %s." % \
           (hex(self.offset()), self.name())
 
     def __str__(self):
@@ -702,7 +708,7 @@ class SHITEM_URIENTRY(SHITEM):
         self._f("wstring", "uri", 0x7)
 
     def __unicode__(self):
-        return u"SHITEM_URIENTRY @ %s: %s." % \
+        return "SHITEM_URIENTRY @ %s: %s." % \
           (hex(self.offset()), self.name())
 
     def name(self):
@@ -717,7 +723,7 @@ class SHITEM_CONTROLPANELENTRY(SHITEM):
         self._f("guid", "guid", 0xD)
 
     def __unicode__(self):
-        return u"SHITEM_CONTROLPANELENTRY @ %s: %s." % \
+        return "SHITEM_CONTROLPANELENTRY @ %s: %s." % \
           (hex(self.offset()), self.name())
 
     def name(self):
@@ -734,7 +740,7 @@ class SHITEM_VOLUMEENTRY(SHITEM):
         self._f("string", "name", 0x3)
 
     def __unicode__(self):
-        return u"SHITEM_VOLUMEENTRY @ %s: %s." % \
+        return "SHITEM_VOLUMEENTRY @ %s: %s." % \
           (hex(self.offset()), self.name())
 
 class SHITEM_NETWORKVOLUMEENTRY(SHITEM):
@@ -746,7 +752,7 @@ class SHITEM_NETWORKVOLUMEENTRY(SHITEM):
         self._off_name = 0x5
 
     def __unicode__(self):
-        return u"SHITEM_NETWORKVOLUMEENTRY @ %s: %s." % \
+        return "SHITEM_NETWORKVOLUMEENTRY @ %s: %s." % \
           (hex(self.offset()), self.name())
 
     def name(self):
@@ -769,7 +775,7 @@ class SHITEM_NETWORKSHAREENTRY(SHITEM):
         self._f("string", "description", 0x5 + len(self.path()) + 1)
 
     def __unicode__(self):
-        return u"SHITEM_NETWORKSHAREENTRY @ %s: %s." % \
+        return "SHITEM_NETWORKSHAREENTRY @ %s: %s." % \
           (hex(self.offset()), self.name())
 
     def name(self):
@@ -828,7 +834,7 @@ class Fileentry(SHITEM):
             self._off_long_name = False
 
     def __unicode__(self):
-        return u"Fileentry @ %s: %s." % (hex(self.offset()), self.name())
+        return "Fileentry @ %s: %s." % (hex(self.offset()), self.name())
 
     def long_name_size(self):
         if self._off_long_name_size:
@@ -861,7 +867,7 @@ class SHITEM_FILEENTRY(Fileentry):
         self._f("byte", "flags", 0x3); 
 
     def __unicode__(self):
-        return u"SHITEM_FILEENTRY @ %s: %s." % (hex(self.offset()), self.name())
+        return "SHITEM_FILEENTRY @ %s: %s." % (hex(self.offset()), self.name())
 
 class ITEMPOS_FILEENTRY(Fileentry):
     def __init__(self, buf, offset, parent):
@@ -872,7 +878,7 @@ class ITEMPOS_FILEENTRY(Fileentry):
         self._f("word", "flags", 0x2); 
 
     def __unicode__(self):
-        return u"ITEMPOS_FILEENTRY @ %s: %s." % (hex(self.offset()), self.name())
+        return "ITEMPOS_FILEENTRY @ %s: %s." % (hex(self.offset()), self.name())
 
 class SHITEM_UNKNOWNENTRY3(Fileentry):
     def __init__(self, buf, offset, parent):
@@ -889,7 +895,7 @@ class SHITEM_UNKNOWNENTRY3(Fileentry):
         self._f("wstring", "long_name", offs)
 
     def __unicode__(self):
-        return u"SHITEM_UNKNOWNENTRY3 @ %s: %s." % (hex(self.offset()), self.name())
+        return "SHITEM_UNKNOWNENTRY3 @ %s: %s." % (hex(self.offset()), self.name())
 
     def name(self):
         return self.long_name()
@@ -953,7 +959,7 @@ class SHITEMLIST(Block):
             off += item.size()
 
     def __unicode__(self):
-        return u"SHITEMLIST @ %s." % (hex(self.offset()))
+        return "SHITEMLIST @ %s." % (hex(self.offset()))
 
 ################ PROGRAM FUNCTIONS #############
 
@@ -1093,7 +1099,7 @@ def shellbag_bodyfile(m, a, cr, path, source=False):
     accessed = date_safe(a)
     created = date_safe(cr)
     changed = int(time.mktime(datetime.datetime(1970, 1, 1, 0, 0, 0).timetuple()))
-    return u"0|%s (Shellbag)|0|0|0|0|0|%s|%s|%s|%s" % \
+    return "0|%s (Shellbag)|0|0|0|0|0|%s|%s|%s|%s" % \
       (path, modified, accessed, changed, created)
 
 ################ MAIN  #############
@@ -1120,9 +1126,9 @@ if __name__ == '__main__':
 
         for shellbag in get_all_shellbags(registry):
             try:
-                print shellbag_bodyfile(shellbag["mtime"], 
+                print(shellbag_bodyfile(shellbag["mtime"], 
                                         shellbag["atime"], 
                                         shellbag["crtime"], 
-                                        shellbag["path"])
+                                        shellbag["path"]))
             except UnicodeEncodeError:
                 warning("Failed printing path: " + str(list(shellbag["path"])))

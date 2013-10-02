@@ -17,6 +17,10 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+# Added for python2-3 compatibility
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import struct
 from datetime import datetime
 
@@ -38,7 +42,7 @@ _global_warning_messages = []
 def warn(msg):
     if msg not in _global_warning_messages:
         _global_warning_messages.append(msg)
-        print "Warning: %s" % (msg)
+        print("Warning: %s" % (msg))
 
 
 def parse_windows_timestamp(qword):
@@ -156,7 +160,7 @@ class RegistryBlock(object):
         Arguments:
         - `offset`: The relative offset from the start of the block.
         """
-        return struct.unpack_from("<H", self._buf, self._offset + offset)[0]
+        return struct.unpack_from(str("<H"), self._buf, self._offset + offset)[0]
 
     def unpack_dword(self, offset):
         """
@@ -164,7 +168,7 @@ class RegistryBlock(object):
         Arguments:
         - `offset`: The relative offset from the start of the block.
         """
-        return struct.unpack_from("<I", self._buf, self._offset + offset)[0]
+        return struct.unpack_from(str("<I"), self._buf, self._offset + offset)[0]
 
     def unpack_int(self, offset):
         """
@@ -172,7 +176,7 @@ class RegistryBlock(object):
         Arguments:
         - `offset`: The relative offset from the start of the block.
         """
-        return struct.unpack_from("<i", self._buf, self._offset + offset)[0]
+        return struct.unpack_from(str("<i"), self._buf, self._offset + offset)[0]
 
     def unpack_qword(self, offset):
         """
@@ -180,16 +184,16 @@ class RegistryBlock(object):
         Arguments:
         - `offset`: The relative offset from the start of the block.
         """
-        return struct.unpack_from("<Q", self._buf, self._offset + offset)[0]
+        return struct.unpack_from(str("<Q"), self._buf, self._offset + offset)[0]
 
     def unpack_string(self, offset, length):
         """
-        Returns a string from the relative offset with the given length.
+        Returns a byte string from the relative offset with the given length.
         Arguments:
         - `offset`: The relative offset from the start of the block.
         - `length`: The length of the string.
         """
-        return struct.unpack_from("<%ds" % (length), self._buf, self._offset + offset)[0]
+        return struct.unpack_from(str("<%ds") % (length), self._buf, self._offset + offset)[0]
 
     def absolute_offset(self, offset):
         """
@@ -267,7 +271,7 @@ class REGFBlock(RegistryBlock):
         return self.unpack_dword(0x28)
 
     def first_key(self):
-        first_hbin = self.hbins().next()
+        first_hbin = next(self.hbins())
 
         key_offset = first_hbin.absolute_offset(self.unpack_dword(0x24))
 
@@ -381,22 +385,22 @@ class HBINCell(RegistryBlock):
             raise RegistryStructureDoesNotExist("HBINCell is free at 0x%x" % (self.offset()))
 
         id_ = self.data_id()
-
-        if id_ == "vk":
+        
+        if id_ == b"vk":
             return VKRecord(self._buf, self.data_offset(), self)
-        elif id_ == "nk":
+        elif id_ == b"nk":
             return NKRecord(self._buf, self.data_offset(), self)
-        elif id_ == "lf":
+        elif id_ == b"lf":
             return LFRecord(self._buf, self.data_offset(), self)
-        elif id_ == "lh":
+        elif id_ == b"lh":
             return LHRecord(self._buf, self.data_offset(), self)
-        elif id_ == "li":
+        elif id_ == b"li":
             return LIRecord(self._buf, self.data_offset(), self)
-        elif id_ == "ri":
+        elif id_ == b"ri":
             return RIRecord(self._buf, self.data_offset(), self)
-        elif id_ == "sk":
+        elif id_ == b"sk":
             return SKRecord(self._buf, self.data_offset(), self)
-        elif id_ == "db":
+        elif id_ == b"db":
             return DBRecord(self._buf, self.data_offset(), self)
         else:
             return DataRecord(self._buf, self.data_offset(), self)
@@ -500,7 +504,7 @@ class DBRecord(Record):
         super(DBRecord, self).__init__(buf, offset, parent)
 
         _id = self.unpack_string(0x0, 2)
-        if _id != "db":
+        if _id != b"db":
             raise ParseException("Invalid DB Record ID")
 
     def __str__(self):
@@ -534,7 +538,7 @@ class VKRecord(Record):
         super(VKRecord, self).__init__(buf, offset, parent)
 
         _id = self.unpack_string(0x0, 2)
-        if _id != "vk":
+        if _id != b"vk":
             raise ParseException("Invalid VK Record ID")
 
     def data_type_str(self):
@@ -611,12 +615,13 @@ class VKRecord(Record):
     def name(self):
         """
         Get the name, if it exists. If not, the empty string is returned.
+        @return: ascii string containing the name
         """
         if not self.has_name():
             return ""
         else:
             name_length = self.unpack_word(0x2)
-            return self.unpack_string(0x14, name_length)
+            return self.unpack_string(0x14, name_length).decode("ascii")
 
     def data_type(self):
         """
@@ -686,10 +691,10 @@ class VKRecord(Record):
         if data_type == RegSZ or data_type == RegExpandSZ:
             if data_length >= 0x80000000:
                 # data is contained in the data_offset field
-                s = struct.unpack_from("<%ds" % (4), self._buf, data_offset)[0]
+                s = struct.unpack_from(str("<%ds") % (4), self._buf, data_offset)[0]
             elif 0x3fd8 < data_length < 0x80000000:
                 d = HBINCell(self._buf, data_offset, self)
-                if d.data_id() == "db":
+                if d.data_id() == b"db":
                     # this should always be the case
                     # but empirical testing does not confirm this
                     s = d.child().large_data(data_length)
@@ -697,12 +702,11 @@ class VKRecord(Record):
                     s = d.raw_data()[:data_length]
             else:
                 d = HBINCell(self._buf, data_offset, self)
-                s = struct.unpack_from("<%ds" % (data_length), self._buf, d.data_offset())[0]
-
-            if "\x00\x00" in s:
-                index = s.index("\x00\x00")
+                s = struct.unpack_from(str("<%ds") % (data_length), self._buf, d.data_offset())[0]
+            if b"\x00\x00" in s:
+                index = s.index(b"\x00\x00")
                 if index > 2:
-                    if s[index - 2] != "\x00":
+                    if s[index - 2] != b"\x00"[0]: #py2+3 
                         #  61 00 62 00 63 64 00 00
                         #                    ^  ^-- end of string
                         #                    +-- index
@@ -714,7 +718,6 @@ class VKRecord(Record):
                         #  TODO(wb): really, we should check that s[index + 2] == \x00
                         #    but i think we won't, since the Unicode decode below will fail
                         s = s[:index + 3]
-
             s = s.decode("utf16")
             s = s.partition('\x00')[0]
             return s
@@ -724,7 +727,7 @@ class VKRecord(Record):
                 return self._buf[data_offset:data_offset + data_length]
             elif 0x3fd8 < data_length < 0x80000000:
                 d = HBINCell(self._buf, data_offset, self)
-                if d.data_id() == "db":
+                if d.data_id() == b"db":
                     # this should always be the case
                     # but empirical testing does not confirm this
                     return d.child().large_data(data_length)
@@ -740,7 +743,7 @@ class VKRecord(Record):
                 return []
             elif 0x3fd8 < data_length < 0x80000000:
                 d = HBINCell(self._buf, data_offset, self)
-                if d.data_id() == "db":
+                if d.data_id() == b"db":
                     s = d.child().large_data(data_length)
                 else:
                     s = d.raw_data()[:data_length]
@@ -750,10 +753,10 @@ class VKRecord(Record):
             return s.split("\x00")
         elif data_type == RegQWord:
             d = HBINCell(self._buf, data_offset, self)
-            return struct.unpack_from("<Q", self._buf, d.data_offset())[0]
+            return struct.unpack_from(str("<Q"), self._buf, d.data_offset())[0]
         elif data_type == RegBigEndian:
             d = HBINCell(self._buf, data_offset, self)
-            return struct.unpack_from(">I", self._buf, d.data_offset())[0]
+            return struct.unpack_from(str(">I"), self._buf, d.data_offset())[0]
         elif data_type == RegLink or \
                         data_type == RegResourceList or \
                         data_type == RegFullResourceDescriptor or \
@@ -765,7 +768,7 @@ class VKRecord(Record):
                 return self._buf[data_offset:data_offset + data_length]
             elif 0x3fd8 < data_length < 0x80000000:
                 d = HBINCell(self._buf, data_offset, self)
-                if d.data_id() == "db":
+                if d.data_id() == b"db":
                     # this should always be the case
                     # but empirical testing does not confirm this
                     return d.child().large_data(data_length)
@@ -797,7 +800,7 @@ class SKRecord(Record):
         super(SKRecord, self).__init__(buf, offset, parent)
 
         _id = self.unpack_string(0x0, 2)
-        if _id != "sk":
+        if _id != b"sk":
             raise ParseException("Invalid SK Record ID")
 
         self._offset_prev_sk = self.unpack_dword(0x4)
@@ -988,7 +991,7 @@ class LFRecord(DirectSubkeyList):
         """
         super(LFRecord, self).__init__(buf, offset, parent)
         _id = self.unpack_string(0x0, 2)
-        if _id != "lf":
+        if _id != b"lf":
             raise ParseException("Invalid LF Record ID")
 
     def __str__(self):
@@ -1013,7 +1016,7 @@ class LHRecord(DirectSubkeyList):
         """
         super(LHRecord, self).__init__(buf, offset, parent)
         _id = self.unpack_string(0x0, 2)
-        if _id != "lh":
+        if _id != b"lh":
             raise ParseException("Invalid LH Record ID")
 
     def __str__(self):
@@ -1036,7 +1039,7 @@ class NKRecord(Record):
         """
         super(NKRecord, self).__init__(buf, offset, parent)
         _id = self.unpack_string(0x0, 2)
-        if _id != "nk":
+        if _id != b"nk":
             raise ParseException("Invalid NK Record ID")
 
     def __str__(self):
@@ -1062,6 +1065,7 @@ class NKRecord(Record):
     def classname(self):
         """
         If this has a classname, get it as a string. Otherwise, return the empty string.
+        @return: unicode string containg the class name
         """
         if not self.has_classname():
             return ""
@@ -1071,7 +1075,7 @@ class NKRecord(Record):
 
         offset = self.abs_offset_from_hbin_offset(classname_offset)
         d = HBINCell(self._buf, offset, self)
-        return struct.unpack_from("<%ds" % (classname_length), self._buf, d.data_offset())[0].decode("utf-16le").rstrip("\x00")
+        return struct.unpack_from(str("<%ds") % (classname_length), self._buf, d.data_offset())[0].decode("utf-16le").rstrip("\x00")
 
     def timestamp(self):
         """
@@ -1082,13 +1086,15 @@ class NKRecord(Record):
     def name(self):
         """
         Return the registry key name as a string.
+        @return: ascii string containing the name
         """
         name_length = self.unpack_word(0x48)
-        return self.unpack_string(0x4C, name_length)
+        return self.unpack_string(0x4C, name_length).decode("ascii")
 
     def path(self):
         """
-        Return the full path of the registry key as a string.
+        Return the full path of the registry key as a unicode string
+        @return: unicode string containing the path
         """
         name = ""
         p = self
@@ -1183,13 +1189,13 @@ class NKRecord(Record):
         d = HBINCell(self._buf, subkey_list_offset, self)
         id_ = d.data_id()
 
-        if id_ == "lf":
+        if id_ == b"lf":
             l = LFRecord(self._buf, d.data_offset(), self)
-        elif id_ == "lh":
+        elif id_ == b"lh":
             l = LHRecord(self._buf, d.data_offset(), self)
-        elif id_ == "ri":
+        elif id_ == b"ri":
             l = RIRecord(self._buf, d.data_offset(), self)
-        elif id_ == "li":
+        elif id_ == b"li":
             l = LIRecord(self._buf, d.data_offset(), self)
         else:
             raise ParseException("Subkey list with type %s encountered, but not yet supported." % (id_))

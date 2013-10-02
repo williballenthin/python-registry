@@ -16,6 +16,8 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import sys
 from Registry import Registry
@@ -27,7 +29,7 @@ def usage():
 
 def main():
     if len(sys.argv) != 2:
-        print usage()
+        print(usage())
         sys.exit(-1)
 
     registry = Registry.Registry(sys.argv[1])
@@ -54,7 +56,7 @@ def main():
             dll = service.subkey("Parameters").value("ServiceDll").value()
         except:
             dll = "???"
-        print '%s, %s, "%s", "%s", "%s"' % (service.name(), display_name, image_path, dll, description)
+        print('%s, %s, "%s", "%s", "%s"' % (service.name(), display_name, image_path, dll, description))
 
 
 if __name__ == '__main__':

@@ -11,5 +11,9 @@ setup(name='python-registry',
       url='http://www.williballenthin.com/registry/',
       license='Apache License (2.0)',
       packages=['Registry'],
+      classifiers = ["Programming Language :: Python",
+                     "Programming Language :: Python :: 3",
+                     "Operating System :: OS Independent", 
+                     "License :: OSI Approved :: Apache Software License"]
      )
 
