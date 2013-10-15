@@ -17,6 +17,9 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import re, sys, datetime, time
 from Registry import Registry
 
@@ -31,7 +34,7 @@ def get_shellbags(registry):
             # Windows 7 UsrClass.dat location
             windows = registry.open("Local Settings\\Software\\Microsoft\\Windows\\Shell")
         except Registry.RegistryKeyNotFoundException:
-            print "Unable to find shellbag key."
+            print("Unable to find shellbag key.")
             sys.exit(-1)
     bagmru = windows.subkey("BagMRU")
 
@@ -39,8 +42,8 @@ def get_shellbags(registry):
         for value in key.values():
             if not re.match("\d+", value.name()):
                 continue
-            mru_type = ord(value.value()[2])
-            print "%s %s" % (hex(mru_type), bag_prefix + "\\" + value.name())
+            mru_type = ord(value.value()[2:3])
+            print("%s %s" % (hex(mru_type), bag_prefix + "\\" + value.name()))
 
             shellbag_rec(key.subkey(value.name()), bag_prefix + "\\" + value.name())
 
@@ -51,7 +54,7 @@ def usage():
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        print usage()
+        print(usage())
         sys.exit(-1)
 
     get_shellbags(Registry.Registry(sys.argv[1]))

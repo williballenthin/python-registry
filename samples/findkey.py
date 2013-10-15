@@ -23,6 +23,9 @@
 #   python findkey.py <registry file> <needle>
 #
 
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import sys
 
 import argparse
@@ -72,28 +75,28 @@ def main():
         needle = needle.lower()
 
     rec(reg.root(), 0, needle)
-    print ""
+    print("")
 
-    print "[Paths]"
+    print("[Paths]")
     for path in paths:
-        print "  - %s" % (path)
+        print("  - %s" % (path))
     if len(paths) == 0:
-        print "  (none)"
-    print ""
+        print("  (none)")
+    print("")
 
-    print "[Value Names]"
+    print("[Value Names]")
     for pair in value_names:
-        print "  - %s : %s" % (pair[0], pair[1])
+        print("  - %s : %s" % (pair[0], pair[1]))
     if len(value_names) == 0:
-        print "  (none)"
-    print ""
+        print("  (none)")
+    print("")
 
-    print "[Values]"
+    print("[Values]")
     for pair in values:
-        print "  - %s : %s" % (pair[0], pair[1])
+        print("  - %s : %s" % (pair[0], pair[1]))
     if len(values) == 0:
-        print "  (none)"
-    print ""
+        print("  (none)")
+    print("")
 
 
 if __name__ == "__main__":
