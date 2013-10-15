@@ -1,0 +1,5 @@
+Many thanks to the following contributors who submitted patches, bug reports, and great ideas:
+
+  - @3ev0: implemented Python3 support
+  - @hiddenillusion: provided example scripts
+  - @reidrac: submitted Debian packaging support
