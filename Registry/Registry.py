@@ -311,7 +311,12 @@ class Registry(object):
         # are there any other keys at this
         # level? is this the name of the hive?
         return RegistryKey(self._regf.first_key()).find_key(path)
-
+        
+    def hive_name(self):
+    	"""
+    	Returns the hive name from the REGFBlock
+    	"""
+    	return self._regf.hive_name()
 
 def print_all(key):
     if len(key.subkeys()) == 0:
