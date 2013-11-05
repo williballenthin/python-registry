@@ -706,13 +706,20 @@ class VKRecord(Record):
             if b"\x00\x00" in s:
                 index = s.index(b"\x00\x00")
                 if index > 2:
-                	# Previous code here produced an error on the utf16 decode below, when a
-                	# value was encountered that was missing a trailing \x00. This test checks
-                	# whether the length of the string is divisible by 2 (as all Unicode strings
-                	# should be) and if it isn't, it adds a trailing \x00. Not sure if this is the
-                	# best way to do it or not?
-                	if (len(s) % 2) != 0:
-                		s = s + b"\x00"
+                    if s[index - 2] != b"\x00"[0]: #py2+3 
+                        #  61 00 62 00 63 64 00 00
+                        #                    ^  ^-- end of string
+                        #                    +-- index
+                        s = s[:index + 2]
+                    else:
+                        #  61 00 62 00 63 00 00 00
+                        #                 ^     ^-- end of string
+                        #                 +-- index
+                        #  TODO(wb): really, we should check that s[index + 2] == \x00
+                        #    but i think we won't, since the Unicode decode below will fail
+                        s = s[:index + 3]
+            if (len(s) % 2) != 0:
+                s = s + b"\x00"
             s = s.decode("utf16")
             s = s.partition('\x00')[0]
             return s
