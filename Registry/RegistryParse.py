@@ -718,6 +718,8 @@ class VKRecord(Record):
                         #  TODO(wb): really, we should check that s[index + 2] == \x00
                         #    but i think we won't, since the Unicode decode below will fail
                         s = s[:index + 3]
+            if (len(s) % 2) != 0:
+                s = s + b"\x00"
             s = s.decode("utf16")
             s = s.partition('\x00')[0]
             return s
