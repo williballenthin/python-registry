@@ -50,6 +50,35 @@ def _expand_into(dest, src):
     dest.SetSizer(vbox)
 
 
+def _format_hex(data):
+    """
+    see http://code.activestate.com/recipes/142812/
+    """
+    byte_format = {}
+    for c in xrange(256):
+        if c > 126:
+            byte_format[c] = '.'
+        elif len(repr(chr(c))) == 3 and chr(c):
+            byte_format[c] = chr(c)
+        else:
+            byte_format[c] = '.'
+
+    def format_bytes(s):
+        return "".join([byte_format[ord(c)] for c in s])
+
+    def dump(src, length=16):
+        N = 0
+        result = ''
+        while src:
+            s, src = src[:length], src[length:]
+            hexa = ' '.join(["%02X" % ord(x) for x in s])
+            s = format_bytes(s)
+            result += "%04X   %-*s   %s\n" % (N, length * 3, hexa, s)
+            N += length
+        return result
+    return dump(data)
+
+
 class DataPanel(wx.Panel):
     """
     Displays the contents of a Registry value.
@@ -59,23 +88,6 @@ class DataPanel(wx.Panel):
         super(DataPanel, self).__init__(*args, **kwargs)
         self._sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self._sizer)
-
-    def _format_hex(self, data):
-        """
-        see http://code.activestate.com/recipes/142812/
-        """
-        FILTER=''.join([(len(repr(chr(x)))==3) and chr(x) or '.' for x in range(256)])
-
-        def dump(src, length=16):
-            N=0; result=''
-            while src:
-                s,src = src[:length],src[length:]
-                hexa = ' '.join(["%02X"%ord(x) for x in s])
-                s = s.translate(FILTER)
-                result += "%04X   %-*s   %s\n" % (N, length*3, hexa, s)
-                N+=length
-            return result
-        return dump(data)
 
     def display_value(self, value):
         self._sizer.Clear()
@@ -98,7 +110,7 @@ class DataPanel(wx.Panel):
             view = wx.TextCtrl(self, style=wx.TE_MULTILINE)
             font = wx.Font(8, wx.SWISS, wx.NORMAL, wx.NORMAL, False, u'Courier')
             view.SetFont(font)
-            view.SetValue(self._format_hex(value.value()))
+            view.SetValue(_format_hex(value.value()))
 
         else:
             view = wx.TextCtrl(self, style=wx.TE_MULTILINE)
