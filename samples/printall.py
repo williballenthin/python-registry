@@ -4,10 +4,12 @@ from __future__ import unicode_literals
 import sys
 from Registry import *
 
-def rec(key, depth=0):
-    print("\t" * depth + key.path())
+def rec(key):
+    print("KEY|" + key.path())
+    for value in key.values():
+        print("VALUE|" + key.path() + "|" + value.name())
     for subkey in key.subkeys():
-        rec(subkey, depth + 1)
+        rec(subkey)
 
 reg = Registry.Registry(sys.argv[1])
 rec(reg.root())
