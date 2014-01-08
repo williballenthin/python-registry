@@ -31,7 +31,10 @@ if __name__ == '__main__':
         sys.exit(-1)
 
     registry = Registry.Registry(sys.argv[1])
-    key = registry.open(sys.argv[2])
+    if sys.argv[2].startswith(registry.root().name()):
+        key = registry.open(sys.argv[2].partition("\\")[2])
+    else:
+        key = registry.open(sys.argv[2])
     if sys.argv[3] == "default":
         sys.argv[3] = "(default)"
 
