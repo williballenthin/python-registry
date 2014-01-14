@@ -4,3 +4,4 @@ Many thanks to the following contributors who submitted patches, bug reports, an
   - @hiddenillusion: provided example scripts
   - @reidrac: submitted Debian packaging support
   - @jallmantalbot: submitting a patch for better detection and handling of malformed Unicode
+  - matt.a.hastings: submitting a bug report for malformed Unicode
