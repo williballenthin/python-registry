@@ -1,7 +1,6 @@
 
 1.0.1
-  - better detection and handling of malformed Unicode, thanks to @jallmantalbot and matt.a.hastings
-  - minor changes to formatting in sample scripts
+  - better detection and handling of malformed Unicode, thanks to @jallmantalbot
 
 1.0.0
   - implemented Python3 support thanks to @3ev0
