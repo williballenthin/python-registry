@@ -22,7 +22,7 @@ import sys
 import ntpath
 from enum import Enum
 
-import RegistryParse
+from . import RegistryParse
 
 RegSZ = 0x0001
 RegExpandSZ = 0x0002
