@@ -261,6 +261,18 @@ class RegistryKey(object):
 
         (immediate, _, future) = path.partition("\\")
         return self.subkey(immediate).find_key(future)
+        
+    def values_number(self):
+    	"""
+    	Return the number of values associated with this key
+    	"""
+    	return self._nkrecord.values_number()
+    	
+    def subkeys_number(self):
+    	"""
+    	Return the number of subkeys associated with this key
+    	"""
+    	return self._nkrecord.subkey_number()
 
 
 class Registry(object):
@@ -299,7 +311,12 @@ class Registry(object):
         # are there any other keys at this
         # level? is this the name of the hive?
         return RegistryKey(self._regf.first_key()).find_key(path)
-
+        
+    def hive_name(self):
+    	"""
+    	Returns the hive name from the REGFBlock
+    	"""
+    	return self._regf.hive_name()
 
 def print_all(key):
     if len(key.subkeys()) == 0:
