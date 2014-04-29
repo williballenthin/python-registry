@@ -31,8 +31,10 @@ ID_TAB_CLOSE = wx.NewId()
 ID_FILE_EXIT = wx.NewId()
 ID_HELP_ABOUT = wx.NewId()
 
+
 def nop(*args, **kwargs):
     pass
+
 
 def basename(path):
     if "/" in path:
@@ -41,37 +43,51 @@ def basename(path):
         path = path.split("\\")[-1]
     return path
 
+
 def _expand_into(dest, src):
     vbox = wx.BoxSizer(wx.VERTICAL)
     vbox.Add(src, 1, wx.EXPAND | wx.ALL)
     dest.SetSizer(vbox)
 
+
+def _format_hex(data):
+    """
+    see http://code.activestate.com/recipes/142812/
+    """
+    byte_format = {}
+    for c in xrange(256):
+        if c > 126:
+            byte_format[c] = '.'
+        elif len(repr(chr(c))) == 3 and chr(c):
+            byte_format[c] = chr(c)
+        else:
+            byte_format[c] = '.'
+
+    def format_bytes(s):
+        return "".join([byte_format[ord(c)] for c in s])
+
+    def dump(src, length=16):
+        N = 0
+        result = ''
+        while src:
+            s, src = src[:length], src[length:]
+            hexa = ' '.join(["%02X" % ord(x) for x in s])
+            s = format_bytes(s)
+            result += "%04X   %-*s   %s\n" % (N, length * 3, hexa, s)
+            N += length
+        return result
+    return dump(data)
+
+
 class DataPanel(wx.Panel):
     """
-    Displays the contents of a Registry value. 
+    Displays the contents of a Registry value.
     Shows a text string where appropriate, or a hex dump.
     """
     def __init__(self, *args, **kwargs):
         super(DataPanel, self).__init__(*args, **kwargs)
         self._sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self._sizer)
-
-    def _format_hex(self, data):
-        """
-        see http://code.activestate.com/recipes/142812/
-        """
-        FILTER=''.join([(len(repr(chr(x)))==3) and chr(x) or '.' for x in range(256)])
-
-        def dump(src, length=16):
-            N=0; result=''
-            while src:
-                s,src = src[:length],src[length:]
-                hexa = ' '.join(["%02X"%ord(x) for x in s])
-                s = s.translate(FILTER)
-                result += "%04X   %-*s   %s\n" % (N, length*3, hexa, s)
-                N+=length
-            return result
-        return dump(data)
 
     def display_value(self, value):
         self._sizer.Clear()
@@ -94,7 +110,7 @@ class DataPanel(wx.Panel):
             view = wx.TextCtrl(self, style=wx.TE_MULTILINE)
             font = wx.Font(8, wx.SWISS, wx.NORMAL, wx.NORMAL, False, u'Courier')
             view.SetFont(font)
-            view.SetValue(self._format_hex(value.value()))            
+            view.SetValue(_format_hex(value.value()))
 
         else:
             view = wx.TextCtrl(self, style=wx.TE_MULTILINE)
@@ -108,6 +124,7 @@ class DataPanel(wx.Panel):
         self._sizer.Add(wx.Panel(self, -1), 1, wx.EXPAND)
         self._sizer.Layout()
 
+
 class ValuesListCtrl(wx.ListCtrl):
     """
     Shows a list of values associated with a Registry key.
@@ -117,7 +134,7 @@ class ValuesListCtrl(wx.ListCtrl):
         self.InsertColumn(0, "Value name")
         self.InsertColumn(1, "Value type")
         self.SetColumnWidth(1, 100)
-        self.SetColumnWidth(0, 300) 
+        self.SetColumnWidth(0, 300)
         self.values = {}
 
     def clear_values(self):
@@ -127,14 +144,15 @@ class ValuesListCtrl(wx.ListCtrl):
     def add_value(self, value):
         n = self.GetItemCount()
         self.InsertStringItem(n, value.name())
-        self.SetStringItem(n, 1, value.value_type_str())     
+        self.SetStringItem(n, 1, value.value_type_str())
         self.values[value.name()] = value
 
     def get_value(self, valuename):
         return self.values[valuename]
 
+
 class RegistryTreeCtrl(wx.TreeCtrl):
-    """ 
+    """
     Treeview control that displays the Registry key structure.
     """
     def __init__(self, *args, **kwargs):
@@ -161,7 +179,7 @@ class RegistryTreeCtrl(wx.TreeCtrl):
 
     def select_path(self, path):
         """
-        Take a Registry key path separated by back slashes and select 
+        Take a Registry key path separated by back slashes and select
         that key. The path should not contain the root key name.
         If the key is not found, the most specific ancestor key is selected.
         """
@@ -189,7 +207,7 @@ class RegistryTreeCtrl(wx.TreeCtrl):
             return
 
         key = self.GetPyData(item)["key"]
-        
+
         for subkey in key.subkeys():
             subkey_item = self.AppendItem(item, subkey.name())
             self.SetPyData(subkey_item, {"key": subkey,
@@ -198,7 +216,7 @@ class RegistryTreeCtrl(wx.TreeCtrl):
             if len(subkey.subkeys()) > 0:
                 self.SetItemHasChildren(subkey_item)
 
-        self.GetPyData(item)["has_expanded"] = True                
+        self.GetPyData(item)["has_expanded"] = True
 
     def OnExpandKey(self, event):
         item = event.GetItem()
@@ -207,6 +225,7 @@ class RegistryTreeCtrl(wx.TreeCtrl):
 
         if not self.GetPyData(item)["has_expanded"]:
             self._extend(item)
+
 
 class RegistryFileView(wx.Panel):
     """
@@ -291,6 +310,7 @@ class RegistryFileView(wx.Panel):
         """
         self._tree.select_path(path)
 
+
 class RegistryFileViewer(wx.Frame):
     """
     The main RegView GUI application.
@@ -336,7 +356,7 @@ class RegistryFileViewer(wx.Frame):
         self.Layout()
 
     def _open_registry_file(self, filename):
-        """ 
+        """
         Open a Registry file by filename into a new tab and return the window.
         """
         with open(filename, "rb") as f:
@@ -368,7 +388,7 @@ class RegistryFileViewer(wx.Frame):
 
             lines = t.split("\n")
 
-            if len(lines) % 2 != 1: # there is a trailing newline
+            if len(lines) % 2 != 1:  # there is a trailing newline
                 self.SetStatusText("Malformed session file!")
                 return
 
@@ -390,7 +410,7 @@ class RegistryFileViewer(wx.Frame):
             for i in range(0, self._nb.GetPageCount()):
                 page = self._nb.GetPage(i)
                 f.write(page.filename() + "\n")
-                
+
                 path = page.selected_path()
                 if path:
                     f.write(path)

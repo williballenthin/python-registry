@@ -521,6 +521,40 @@ class DBRecord(Record):
         return dbi.large_data(length)
 
 
+def decode_utf16le(s):
+    """
+    decode_utf16le attempts to decode a bytestring as UTF-16LE.
+      If the string has an odd length, or some unexpected feature,
+      this function does its best to handle the data. It does not
+      catch any Unicode-related exceptions, such as UnicodeDecodeError,
+      so these should be handled by the caller.
+
+    @type s: str
+    @param s: a bytestring to pase
+    @rtype: unicode
+    @return: the unicode string decoded from `s`
+    @raises: this function does not attempt to catch any Unicode-related exception, so the caller should handle these.
+    """
+    if b"\x00\x00" in s:
+        index = s.index(b"\x00\x00")
+        if index > 2:
+            if s[index - 2] != b"\x00"[0]: #py2+3 
+                #  61 00 62 00 63 64 00 00
+                #                    ^  ^-- end of string
+                #                    +-- index
+                s = s[:index + 2]
+            else:
+                #  61 00 62 00 63 00 00 00
+                #                 ^     ^-- end of string
+                #                 +-- index
+                s = s[:index + 3]
+    if (len(s) % 2) != 0:
+        s = s + b"\x00"
+    s = s.decode("utf16")
+    s = s.partition('\x00')[0]
+    return s
+
+
 class VKRecord(Record):
     """
     The VKRecord holds one name-value pair.  The data may be one many types,
@@ -703,25 +737,7 @@ class VKRecord(Record):
             else:
                 d = HBINCell(self._buf, data_offset, self)
                 s = struct.unpack_from(str("<%ds") % (data_length), self._buf, d.data_offset())[0]
-            if b"\x00\x00" in s:
-                index = s.index(b"\x00\x00")
-                if index > 2:
-                    if s[index - 2] != b"\x00"[0]: #py2+3 
-                        #  61 00 62 00 63 64 00 00
-                        #                    ^  ^-- end of string
-                        #                    +-- index
-                        s = s[:index + 2]
-                    else:
-                        #  61 00 62 00 63 00 00 00
-                        #                 ^     ^-- end of string
-                        #                 +-- index
-                        #  TODO(wb): really, we should check that s[index + 2] == \x00
-                        #    but i think we won't, since the Unicode decode below will fail
-                        s = s[:index + 3]
-            if (len(s) % 2) != 0:
-                s = s + b"\x00"
-            s = s.decode("utf16")
-            s = s.partition('\x00')[0]
+            s = decode_utf16le(s)
             return s
         elif data_type == RegBin or data_type == RegNone:
             if data_length >= 0x80000000:

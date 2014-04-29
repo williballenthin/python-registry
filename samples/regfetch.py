@@ -23,19 +23,36 @@ import sys
 from Registry import Registry
 
 def usage():
-    return "  USAGE:\n\t%s <Windows Registry file> <Registry key path> <Registry Value>" % sys.argv[0]
+    return "  USAGE:\n\t%s <Windows Registry file> <Registry key path> [<Registry Value>]" % sys.argv[0]
 
 if __name__ == '__main__':
-    if len(sys.argv) != 4:
+    if len(sys.argv) != 4 and len(sys.argv) != 3:
         print(usage())
         sys.exit(-1)
 
     registry = Registry.Registry(sys.argv[1])
-    key = registry.open(sys.argv[2])
-    if sys.argv[3] == "default":
-        sys.argv[3] = "(default)"
 
-    value = key.value(sys.argv[3])
+    try:
+        if sys.argv[2].startswith(registry.root().name()):
+            key = registry.open(sys.argv[2].partition("\\")[2])
+        else:
+            key = registry.open(sys.argv[2])
+    except Registry.RegistryKeyNotFoundException:
+        print("Specified key not found")
+        sys.exit(-1) 
 
+    if len(sys.argv) == 4:
+        if sys.argv[3] == "default":
+            sys.argv[3] = "(default)"
 
-    sys.stdout.write(str(value.value()))
+        value = key.value(sys.argv[3])
+        sys.stdout.write(str(value.value()))
+    if len(sys.argv) == 3:
+        print("Subkeys")
+        for subkey in key.subkeys():
+            print("  - {}".format(subkey.name()))
+
+        print("Values")
+        for value in key.values():
+            print("  - {}".format(value.name()))
+
