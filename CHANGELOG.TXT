@@ -1,3 +1,6 @@
+1.0.3
+  - use setuptools over distutils
+
 1.0.2
   - can now fetch hive name from a Registry hive, thanks to @woanware, @jallmantalbot
   - can now guess the Registry hive type (NTUSER, USRCLASS, etc) from the hive name, thanks to @woanware
