@@ -19,6 +19,8 @@
 from __future__ import print_function
 
 import sys
+import ntpath
+from enum import Enum
 
 from . import RegistryParse
 
@@ -34,6 +36,15 @@ RegLink = 0x0006
 RegResourceList = 0x0008
 RegFullResourceDescriptor = 0x0009
 RegResourceRequirementsList = 0x000A
+
+class HiveType(Enum):
+    Unknown = ''
+    NtUser = 'ntuser.dat'
+    Sam = 'sam'
+    Security = 'security'
+    Software = 'software'
+    System = 'system'
+    UsrClass = 'usrclass.dat'
 
 
 class RegistryKeyHasNoParentException(RegistryParse.RegistryStructureDoesNotExist):
@@ -281,6 +292,31 @@ class Registry(object):
             with open(filelikeobject, "rb") as f:
                 self._buf = f.read()
         self._regf = RegistryParse.REGFBlock(self._buf, 0, False)
+
+    def hive_name(self):
+        """Returns the internal file name"""
+        return self._regf.hive_name()
+
+    def hive_type(self):
+        """Returns the hive type"""
+        temp = self.hive_name()
+        temp = temp.replace('\\??\\', '')
+        temp = ntpath.basename(temp)
+
+        if temp.lower() == HiveType.NtUser.value:
+            return HiveType.NtUser
+        elif temp.lower() == HiveType.Sam.value:
+            return HiveType.Sam
+        elif temp.lower() == HiveType.Security.value:
+            return HiveType.Security
+        elif temp.lower() == HiveType.Software.value:
+            return HiveType.Software
+        elif temp.lower() == HiveType.System.value:
+            return HiveType.System
+        elif temp.lower() == HiveType.UsrClass.value:
+            return HiveType.UsrClass
+        else:
+            return HiveType.Unknown
 
     def root(self):
         """
