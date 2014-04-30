@@ -655,7 +655,7 @@ class VKRecord(Record):
             return ""
         else:
             name_length = self.unpack_word(0x2)
-            return self.unpack_string(0x14, name_length).decode("ascii")
+            return self.unpack_string(0x14, name_length).decode("windows-1252")
 
     def data_type(self):
         """
@@ -1107,7 +1107,7 @@ class NKRecord(Record):
         @return: ascii string containing the name
         """
         name_length = self.unpack_word(0x48)
-        return self.unpack_string(0x4C, name_length).decode("ascii")
+        return self.unpack_string(0x4C, name_length).decode("windows-1252")
 
     def path(self):
         """
