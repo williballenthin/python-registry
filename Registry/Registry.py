@@ -38,13 +38,13 @@ RegFullResourceDescriptor = 0x0009
 RegResourceRequirementsList = 0x000A
 
 class HiveType(Enum):
-    Unknown = ''
-    NtUser = 'ntuser.dat'
-    Sam = 'sam'
-    Security = 'security'
-    Software = 'software'
-    System = 'system'
-    UsrClass = 'usrclass.dat'
+    UNKNOWN = ""
+    NTUSER = "ntuser.dat"
+    SAM = "sam"
+    SECURITY = "security"
+    SOFTWARE = "software"
+    SYSTEM = "system"
+    USRCLASS = "usrclass.dat"
 
 
 class RegistryKeyHasNoParentException(RegistryParse.RegistryStructureDoesNotExist):
@@ -303,20 +303,20 @@ class Registry(object):
         temp = temp.replace('\\??\\', '')
         temp = ntpath.basename(temp)
 
-        if temp.lower() == HiveType.NtUser.value:
-            return HiveType.NtUser
-        elif temp.lower() == HiveType.Sam.value:
-            return HiveType.Sam
-        elif temp.lower() == HiveType.Security.value:
-            return HiveType.Security
-        elif temp.lower() == HiveType.Software.value:
-            return HiveType.Software
-        elif temp.lower() == HiveType.System.value:
-            return HiveType.System
-        elif temp.lower() == HiveType.UsrClass.value:
-            return HiveType.UsrClass
+        if temp.lower() == HiveType.NTUSER.value:
+            return HiveType.NTUSER
+        elif temp.lower() == HiveType.SAM.value:
+            return HiveType.SAM
+        elif temp.lower() == HiveType.SECURITY.value:
+            return HiveType.SECURITY
+        elif temp.lower() == HiveType.SOFTWARE.value:
+            return HiveType.SOFTWARE
+        elif temp.lower() == HiveType.SYSTEM.value:
+            return HiveType.SYSTEM
+        elif temp.lower() == HiveType.USRCLASS.value:
+            return HiveType.USRCLASS
         else:
-            return HiveType.Unknown
+            return HiveType.UNKNOWN
 
     def root(self):
         """
