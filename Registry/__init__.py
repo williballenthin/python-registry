@@ -15,7 +15,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-_version_ = '1.0.0'
+_version_ = '1.0.2'
 
 __all__ = [
     'Registry',
