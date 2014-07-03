@@ -36,6 +36,9 @@ RegLink = 0x0006
 RegResourceList = 0x0008
 RegFullResourceDescriptor = 0x0009
 RegResourceRequirementsList = 0x000A
+RegFileTime = 0x0010
+
+DEVPROP_MASK_TYPE = 0x00000FFF
 
 class HiveType(Enum):
     UNKNOWN = ""
