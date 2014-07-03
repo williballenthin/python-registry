@@ -41,12 +41,6 @@ RegFileTime = 0x0010
 
 DEVPROP_MASK_TYPE = 0x00000FFF
 
-_global_warning_messages = []
-def warn(msg):
-    if msg not in _global_warning_messages:
-        _global_warning_messages.append(msg)
-        print("Warning: %s" % (msg))
-
 
 def parse_windows_timestamp(qword):
     # see http://integriography.wordpress.com/2010/01/16/using-phython-to-parse-and-present-windows-64-bit-timestamps/
@@ -388,7 +382,7 @@ class HBINCell(RegistryBlock):
             raise RegistryStructureDoesNotExist("HBINCell is free at 0x%x" % (self.offset()))
 
         id_ = self.data_id()
-        
+
         if id_ == b"vk":
             return VKRecord(self._buf, self.data_offset(), self)
         elif id_ == b"nk":
@@ -1161,7 +1155,6 @@ class NKRecord(Record):
         """
         offset = self.abs_offset_from_hbin_offset(self.unpack_dword(0x10))
 
-        # TODO be careful here in setting the parent of the HBINCell
         d = HBINCell(self._buf, offset, self.parent())
         return NKRecord(self._buf, d.data_offset(), self.parent())
 
