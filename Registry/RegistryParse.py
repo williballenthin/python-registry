@@ -39,6 +39,8 @@ RegFullResourceDescriptor = 0x0009
 RegResourceRequirementsList = 0x000A
 RegFileTime = 0x0010
 
+# Added in Windows Vista. Must be applied to Registry type.
+# see: http://msdn.microsoft.com/en-us/library/windows/hardware/ff543550%28v=vs.85%29.aspx
 DEVPROP_MASK_TYPE = 0x00000FFF
 
 
@@ -116,6 +118,7 @@ class UnknownTypeException(RegistryException):
      - RegResourceList
      - RegFullResourceDescriptor
      - RegResourceRequirementsList
+     - RegFileTime
     """
     def __init__(self, value):
         """
@@ -625,7 +628,7 @@ class VKRecord(Record):
         elif data_type == RegBin:
             data = "(binary)"
         elif data_type == RegFileTime:
-            data = str(self.data())
+            data = self.data().isoformat("T") + "Z"
         else:
             data = "(unsupported)"
 
@@ -719,7 +722,7 @@ class VKRecord(Record):
         RegResourceRequirementsList:
           Not currently supported. TODO.
         RegFileTime:
-          Return a DateTime
+          Return a datime.datetime object
         """
         data_type = self.data_type()
         data_length = self.raw_data_length()
