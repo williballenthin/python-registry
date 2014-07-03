@@ -37,6 +37,9 @@ RegLink = 0x0006
 RegResourceList = 0x0008
 RegFullResourceDescriptor = 0x0009
 RegResourceRequirementsList = 0x000A
+RegFileTime = 0x0010
+
+DEVPROP_MASK_TYPE = 0x00000FFF
 
 _global_warning_messages = []
 def warn(msg):
@@ -604,6 +607,8 @@ class VKRecord(Record):
             return "RegFullResourceDescriptor"
         elif data_type == RegResourceRequirementsList:
             return "RegResourceRequirementsList"
+        elif data_type == RegFileTime:
+            return "RegFileTime"
         else:
             return "Unknown type: %s" % (hex(data_type))
 
@@ -625,6 +630,8 @@ class VKRecord(Record):
             data = "(none)"
         elif data_type == RegBin:
             data = "(binary)"
+        elif data_type == RegFileTime:
+            data = str(self.data())
         else:
             data = "(unsupported)"
 
@@ -661,7 +668,7 @@ class VKRecord(Record):
         """
         Get the data type of this value data as an unsigned integer.
         """
-        return self.unpack_dword(0xC)
+        return self.unpack_dword(0xC) & DEVPROP_MASK_TYPE
 
     def data_length(self):
         """
@@ -717,6 +724,8 @@ class VKRecord(Record):
           Not currently supported. TODO.
         RegResourceRequirementsList:
           Not currently supported. TODO.
+        RegFileTime:
+          Return a DateTime
         """
         data_type = self.data_type()
         data_length = self.raw_data_length()
@@ -793,6 +802,9 @@ class VKRecord(Record):
                 else:
                     return d.raw_data()[:data_length]
             return self._buf[data_offset + 4:data_offset + 4 + data_length]
+        elif data_type == RegFileTime:
+            temp = struct.unpack_from(("<Q"), self._buf[data_offset + 4:data_offset + 4 + data_length])[0]
+            return parse_windows_timestamp(temp)
         elif data_length < 5 or data_length >= 0x80000000:
             return self.unpack_dword(0x8)
         else:
