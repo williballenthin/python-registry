@@ -5,7 +5,7 @@ Many thanks to the following contributors who submitted patches, bug reports, an
   - @reidrac: submitted Debian packaging support
   - @jallmantalbot: submitting a patch for better detection and handling of malformed Unicode
   - @jallmantalbot: submitting a patch for a more correct Unicode code page for key/value names
-  - Joel Schnieder: suggesting that "Windows-1252" is the correct Unicode code page for NKRecord and VKRecord fields.
+  - Joel Schneider: suggesting that "Windows-1252" is the correct Unicode code page for NKRecord and VKRecord fields.
   - @woanware:
     - submitting a patch for hive detection
     - researching and submitting a patch for value types on Vista+ and RegDateTime support
