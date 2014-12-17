@@ -155,6 +155,9 @@ class RegistryValue(object):
     def value(self):
         return self._vkrecord.data()
 
+    def raw_data(self):
+        return self._vkrecord.raw_data()
+
 
 class RegistryKey(object):
     """
