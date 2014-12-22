@@ -48,6 +48,7 @@ class HiveType(Enum):
     SOFTWARE = "software"
     SYSTEM = "system"
     USRCLASS = "usrclass.dat"
+    BCD = "bcd"
 
 
 class RegistryKeyHasNoParentException(RegistryParse.RegistryStructureDoesNotExist):
@@ -333,6 +334,8 @@ class Registry(object):
             return HiveType.SYSTEM
         elif temp.lower() == HiveType.USRCLASS.value:
             return HiveType.USRCLASS
+        elif temp.lower() == HiveType.BCD.value:
+            return HiveType.BCD
         else:
             return HiveType.UNKNOWN
 
