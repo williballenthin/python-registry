@@ -48,6 +48,10 @@ class HiveType(Enum):
     SOFTWARE = "software"
     SYSTEM = "system"
     USRCLASS = "usrclass.dat"
+    BCD = "bcd"
+    COMPONENTS = "components"
+    DEFAULT = "default"
+    SCHEMA = "schema.dat"
 
 
 class RegistryKeyHasNoParentException(RegistryParse.RegistryStructureDoesNotExist):
@@ -154,6 +158,9 @@ class RegistryValue(object):
 
     def value(self):
         return self._vkrecord.data()
+
+    def raw_data(self):
+        return self._vkrecord.raw_data()
 
 
 class RegistryKey(object):
@@ -330,6 +337,14 @@ class Registry(object):
             return HiveType.SYSTEM
         elif temp.lower() == HiveType.USRCLASS.value:
             return HiveType.USRCLASS
+        elif temp.lower() == HiveType.BCD.value:
+            return HiveType.BCD
+        elif temp.lower() == HiveType.COMPONENTS.value:
+            return HiveType.COMPONENTS
+        elif temp.lower() == HiveType.DEFAULT.value:
+            return HiveType.DEFAULT
+        elif temp.lower() == HiveType.SCHEMA.value:
+            return HiveType.SCHEMA
         else:
             return HiveType.UNKNOWN
 

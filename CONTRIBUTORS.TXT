@@ -9,3 +9,5 @@ Many thanks to the following contributors who submitted patches, bug reports, an
   - @woanware:
     - submitting a patch for hive detection
     - researching and submitting a patch for value types on Vista+ and RegDateTime support
+  - @tonycpsu:
+    - Add BCD hive type
