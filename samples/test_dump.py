@@ -75,11 +75,22 @@ class TestDumper(RegistryExplorer):
 
     def handle_key(self, key):
         self._key_count += 1
-        print(format_key(key))
+        try:
+            print(format_key(key))
+        except UnicodeEncodeError:
+            pass
+        except UnicodeDecodeError:
+            pass
 
     def handle_value(self, key, value):
         self._value_count += 1
-        print(format_value(key, value))
+        try:
+            print(format_value(key, value))
+        except UnicodeEncodeError:
+            pass
+        except UnicodeDecodeError:
+            pass
+
 
     def handle_post(self):
         print(format_total_keys(self._key_count))
