@@ -47,7 +47,10 @@ def make_windows_timestamp_value_getter(value_name):
     """
     f = make_value_getter(value_name)
     def _value_getter(key):
-        return parse_windows_timestamp(f(key) or 0)
+        try:
+            return parse_windows_timestamp(f(key) or 0)
+        except ValueError:
+            return datetime.datetime.min
     return _value_getter
 
 
@@ -62,7 +65,10 @@ def make_unix_timestamp_value_getter(value_name):
     """
     f = make_value_getter(value_name)
     def _value_getter(key):
-        return parse_unix_timestamp(f(key) or 0)
+        try:
+            return parse_unix_timestamp(f(key) or 0)
+        except ValueError:
+            return datetime.datetime.min
     return _value_getter
 
 
@@ -182,6 +188,8 @@ def main():
                 if ts == UNIX_TIMESTAMP_ZERO:
                     continue
                 if ts == WINDOWS_TIMESTAMP_ZERO:
+                    continue
+                if ts == datetime.datetime.min:
                     continue
 
                 entries.append(TimelineEntry(ts, t, e))
