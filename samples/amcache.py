@@ -23,7 +23,7 @@ from collections import namedtuple
 import argparse
 import unicodecsv
 from Registry import Registry
-from Registry.RegistryParse import parse_windows_timestamp
+from Registry.RegistryParse import parse_windows_timestamp as _parse_windows_timestamp
 
 
 g_logger = logging.getLogger("amcache")
@@ -56,6 +56,13 @@ def make_windows_timestamp_value_getter(value_name):
 
 def parse_unix_timestamp(qword):
     return datetime.datetime.fromtimestamp(qword)
+
+
+def parse_windows_timestamp(qword):
+    try:
+        return _parse_windows_timestamp(qword)
+    except ValueError:
+        return datetime.datetime.min
 
 
 def make_unix_timestamp_value_getter(value_name):
