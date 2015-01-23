@@ -19,16 +19,25 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import os
 import sys
 from Registry import Registry
 
+
 def usage():
     return "  USAGE:\n\t%s <Windows Registry file> <Registry key path> [<Registry Value>]" % sys.argv[0]
+
 
 if __name__ == '__main__':
     if len(sys.argv) != 4 and len(sys.argv) != 3:
         print(usage())
         sys.exit(-1)
+
+    # this is wild, on Windows, redirection of the stream may be in text mode
+    #   so line ending characters may quietly be inserted into binary data!
+    if sys.platform == "win32":
+        import msvcrt
+        msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
 
     registry = Registry.Registry(sys.argv[1])
 
@@ -39,7 +48,7 @@ if __name__ == '__main__':
             key = registry.open(sys.argv[2])
     except Registry.RegistryKeyNotFoundException:
         print("Specified key not found")
-        sys.exit(-1) 
+        sys.exit(-1)
 
     if len(sys.argv) == 4:
         if sys.argv[3] == "default":
