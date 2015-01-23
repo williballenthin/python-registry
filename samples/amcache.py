@@ -48,9 +48,6 @@ def make_windows_timestamp_value_getter(value_name):
     f = make_value_getter(value_name)
     def _value_getter(key):
         try:
-            t = f(key)
-            if t is not None:
-                g_logger.debug("{key}: {value}".format(key=value_name, value=t))
             return parse_windows_timestamp(f(key) or 0)
         except ValueError:
             return datetime.datetime.min
