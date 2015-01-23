@@ -268,9 +268,12 @@ class RegistryKey(object):
         """
         if name == "(default)":
             name = ""
-        for v in self._nkrecord.values_list().values():
-            if v.name().lower() == name.lower():
-                return RegistryValue(v)
+        try:
+            for v in self._nkrecord.values_list().values():
+                if v.name().lower() == name.lower():
+                    return RegistryValue(v)
+        except RegistryParse.RegistryStructureDoesNotExist:
+            raise RegistryValueNotFoundException(self.path() + " : " + name)
         raise RegistryValueNotFoundException(self.path() + " : " + name)
 
     def find_key(self, path):
