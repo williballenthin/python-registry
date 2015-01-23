@@ -68,6 +68,10 @@ class FH(object):
         return len(self._data)
 
 
+class EntryNotFoundError(Exception):
+    pass
+
+
 class RegFuseOperations(Operations):
     """
     RegFuseOperations is a FUSE driver for Registry hives.
@@ -90,7 +94,7 @@ class RegFuseOperations(Operations):
             try:
                 return parent.value(value)
             except Registry.RegistryValueNotFoundException:
-                return errno.EPERM
+                raise EntryNotFoundError()
 
     def _is_directory(self, entry):
         return isinstance(entry, Registry.RegistryKey)
@@ -106,7 +110,10 @@ class RegFuseOperations(Operations):
 
         working_path = path
 
-        entry = self._get_entry(path)
+        try:
+            entry = self._get_entry(path)
+        except EntryNotFoundError:
+            return errno.ENOENT
 
         if self._is_directory(entry):
             mode = (stat.S_IFDIR | PERMISSION_ALL_READ)
@@ -133,18 +140,24 @@ class RegFuseOperations(Operations):
 
     #@log
     def readdir(self, path, fh):
-        entry = self._get_entry(path)
+        try:
+            entry = self._get_entry(path)
+        except EntryNotFoundError:
+            return errno.ENOENT
+
         if not self._is_directory(entry):
             return
 
-        yield "."
-        yield ".."
+        # can't be a generator, since we *return* ENOENT above (not yield)
+        ret = [".", ".."]
 
         for key in entry.subkeys():
-            yield key.name()
+            ret.append(key.name())
 
         for value in entry.values():
-            yield value.name()
+            ret.append(value.name())
+
+        return ret
 
     @log
     def readlink(self, path):
@@ -219,7 +232,13 @@ class RegFuseOperations(Operations):
 
         # TODO(wb): race here on fh used/unused
         fh = self._get_available_fh()
-        data = self._get_entry(path).raw_data()
+
+        try:
+            entry = self._get_entry(path)
+        except EntryNotFoundError:
+            return errno.ENOENT
+
+        data = entry.raw_data()
         self._opened_files[fh] = FH(fh, data)
 
         return fh
