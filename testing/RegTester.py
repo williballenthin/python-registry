@@ -226,10 +226,7 @@ if __name__ == '__main__':
                             incorrect_data += 1
 
                     elif rv.value_type() == Registry.RegMultiSZ:
-                        # this is very ugly. im not sure it tests consistently
-                        # should be fixed/made clean, but atm I am confused
-                        # about how unicode is being converted, and when
-                        vv = filter(lambda x: len(x) > 0, unicode(v.data).split('\x00'))
+                        vv = v.data.decode("utf16").split('\x00')
                         try:
                             rvv = map(lambda x: x.decode("utf8"), rv.value())
                         except:
