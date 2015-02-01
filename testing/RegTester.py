@@ -209,16 +209,19 @@ if __name__ == '__main__':
                             print("DATA VALUE INCORRECT: " + k.name + ":" + v.name)
                             print("                      " + rk.path() + ":" + rv.name())
                             print(key_long_str(rk))
+                            print()
 
                             print("|%s|" % (rvv))
                             print(rvv.__class__.__name__)
                             print(len(rvv))
                             print(list(rvv))
+                            print()
 
                             print("|%s|" % (vv))
                             print(vv.__class__.__name__)
                             print(len(vv))
                             print(list(vv))
+                            print()
 
                             incorrect_data += 1
 
@@ -230,21 +233,26 @@ if __name__ == '__main__':
                         try:
                             rvv = map(lambda x: x.decode("utf8"), rv.value())
                         except:
-                            print(rk.path())
-                            print(rv.name())
-                            print(rv.value())
+                            print("UNABLE TO DECODE UTF8")
+                            print("Path", rk.path())
+                            print("Name", rv.name())
+                            print("Value", rv.value())
+                            print()
+
                             raise
 
                         for vvv in vv:
                             if vvv not in rvv:
-                                print("REGMULTISZ DATA VALUE MISSING: " + vvv)
-                                print(rk.path())
-                                print(rv.name())
-                                print(rv.value())
+                                print("RegMultiSZ DATA VALUE MISSING: " + vvv)
+                                print("Path", rk.path())
+                                print("Name", rv.name())
+                                print("Value", rv.value())
+                                print()
 
-                                print(list(v.data))
-                                print(vv)
-                                print(rvv)
+                                print("reg data:", list(v.data))
+                                print("Decoded reg  value:", vv)
+                                print("Decoded Hive value:", rvv)
+                                print()
 
                                 incorrect_data += 1
 
@@ -255,9 +263,10 @@ if __name__ == '__main__':
                         if not rvv == vv:
                             print("DWORD INCORRECT: " + str(vv) + " != " + str(rvv))
                             print(list(vv))
-                            print(rk.path())
-                            print(rv.name())
-                            print(rv.value())
+                            print("Path", rk.path())
+                            print("Name", rv.name())
+                            print("Value", rv.value())
+                            print()
 
                             incorrect_data += 1
 
@@ -266,9 +275,10 @@ if __name__ == '__main__':
                         rvv = rv.value()
                         if not rvv == vv:
                             print("QWORD INCORRECT: " + str(vv) + " != " + str(rvv))
-                            print(rk.path())
-                            print(rv.name())
-                            print(rv.value())
+                            print("Path", rk.path())
+                            print("Name", rv.name())
+                            print("Value", rv.value())
+                            print()
 
                             incorrect_data += 1
 
@@ -277,9 +287,10 @@ if __name__ == '__main__':
                         vv = v.data
                         rvv = rv.value()
                         if not rvv == vv:
-                            print("BIN INCORRECT")
-                            print(rk.path())
-                            print(rv.name())
+                            print("BIN INCORRECT path: %s name: %s" % (rk.path(), rv.name()))
+                            print("Hive Value Length and Data:", len(rv.value()), list(rv.value()))
+                            print("reg  Value Length and Data:", len(v.data), list(v.data))
+                            print()
 
                             incorrect_data += 1
 
