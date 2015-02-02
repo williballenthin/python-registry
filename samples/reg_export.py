@@ -22,6 +22,9 @@ from __future__ import unicode_literals
 import sys
 from Registry import Registry
 
+stdout = sys.stdout
+if hasattr(stdout, 'buffer'):
+    stdout = stdout.buffer
 
 def usage():
     return "  USAGE:\n\t%s <Windows Registry file> <Hive prefix> <Registry key path> [<Registry Value>]" % sys.argv[0]
@@ -146,8 +149,8 @@ def main(hive, prefix, keyname, *valuenames):
     else:
         values = [v for v in key.values()]
 
-    sys.stdout.write(reg_format_header())
-    sys.stdout.write(reg_format_key_values(registry, prefix, key, values))
+    stdout.write(reg_format_header())
+    stdout.write(reg_format_key_values(registry, prefix, key, values))
 
 
 if __name__ == '__main__':
