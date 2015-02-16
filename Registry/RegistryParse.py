@@ -774,7 +774,7 @@ class VKRecord(Record):
             else:
                 ret = self._buf[data_offset + 4:data_offset + 4 + data_length]
         elif data_type == RegFileTime:
-            ret = self.unpack_qword(data_offset + 4)
+            ret = self._buf[data_offset + 4:data_offset + 4 + data_length]
         elif data_length < 5 or data_length >= 0x80000000:
             ret = self.unpack_binary(0x8, 4)
         else:
@@ -1358,3 +1358,4 @@ class HBINBlock(RegistryBlock):
                 c = c.next()
             except RegistryStructureDoesNotExist:
                 break
+
