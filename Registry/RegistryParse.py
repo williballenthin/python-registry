@@ -774,7 +774,7 @@ class VKRecord(Record):
             else:
                 ret = self._buf[data_offset + 4:data_offset + 4 + data_length]
         elif data_type == RegFileTime:
-            ret = self._buf[data_offset + 4:data_offset + 4 + data_length]
+            ret = self.unpack_qword(data_offset + 4)
         elif data_length < 5 or data_length >= 0x80000000:
             ret = self.unpack_binary(0x8, 4)
         else:
@@ -852,7 +852,7 @@ class VKRecord(Record):
             #  return raw binary for someone else to work with.
             return d
         elif data_type == RegFileTime:
-            return parse_windows_timestamp(d)
+            return parse_windows_timestamp(struct.unpack_from(str("<Q"), d, 0)[0])
         elif data_length < 5 or data_length >= 0x80000000:
             return struct.unpack_from(str("<I"), d, 0)[0]
         else:
