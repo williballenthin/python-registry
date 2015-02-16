@@ -900,7 +900,7 @@ class VKRecord(Record):
             #  return raw binary for someone else to work with.
             return d
         elif data_type == RegFileTime:
-            return parse_windows_timestamp(d)
+            return parse_windows_timestamp(struct.unpack_from(str("<Q"), d, 0)[0])
         elif data_length < 5 or data_length >= 0x80000000:
             return struct.unpack_from(str("<I"), d, 0)[0]
         else:
@@ -1406,3 +1406,4 @@ class HBINBlock(RegistryBlock):
                 c = c.next()
             except RegistryStructureDoesNotExist:
                 break
+
