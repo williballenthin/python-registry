@@ -21,7 +21,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import sys, struct
-import registry
+from Registry import Registry
 
 class Value(object):
     def __init__(self, name, data_type, data):
@@ -44,6 +44,9 @@ def parse(f):
             print("Decoded input file with UTF16 decoder")
         except:
             raise
+    elif "Windows Registry Editor Version 5.00" in h:
+        t = t.decode("iso-8859-1", "replace")
+        print("Decoded input file with ASCII decoder")
     elif "REGEDIT4" in h: # Regedit
         t = t.decode("iso-8859-1", "replace")
         print("Decoded input file with ASCII decoder")
@@ -172,7 +175,7 @@ if __name__ == '__main__':
     keys = parse(f)
     print("Parsed .reg file")
 
-    r = registry.Registry(sys.argv[2])
+    r = Registry.Registry(sys.argv[2])
     print("Parsed Registry file")
 
     not_found_keys = 0
@@ -188,8 +191,8 @@ if __name__ == '__main__':
                 try:
                     rv = rk.value(v.name)
 
-                    if rv.value_type() == registry.RegSZ or \
-                            rv.value_type() == registry.ExpandSZ:
+                    if rv.value_type() == Registry.RegSZ or \
+                            rv.value_type() == Registry.RegExpandSZ:
                         rvv = rv.value().decode("utf8")
 
                         try:
@@ -206,85 +209,93 @@ if __name__ == '__main__':
                             print("DATA VALUE INCORRECT: " + k.name + ":" + v.name)
                             print("                      " + rk.path() + ":" + rv.name())
                             print(key_long_str(rk))
+                            print()
 
                             print("|%s|" % (rvv))
                             print(rvv.__class__.__name__)
                             print(len(rvv))
                             print(list(rvv))
+                            print()
 
                             print("|%s|" % (vv))
                             print(vv.__class__.__name__)
                             print(len(vv))
                             print(list(vv))
+                            print()
 
                             incorrect_data += 1
 
-                    elif rv.value_type() == registry.RegMultiSZ:
-                        # this is very ugly. im not sure it tests consistently
-                        # should be fixed/made clean, but atm I am confused
-                        # about how unicode is being converted, and when
-                        vv = filter(lambda x: len(x) > 0, unicode(v.data).split('\x00'))
+                    elif rv.value_type() == Registry.RegMultiSZ:
+                        vv = v.data.decode("utf16").split('\x00')
                         try:
                             rvv = map(lambda x: x.decode("utf8"), rv.value())
                         except:
-                            print(rk.path())
-                            print(rv.name())
-                            print(rv.value())
+                            print("UNABLE TO DECODE UTF8")
+                            print("Path", rk.path())
+                            print("Name", rv.name())
+                            print("Value", rv.value())
+                            print()
+
                             raise
 
                         for vvv in vv:
                             if vvv not in rvv:
-                                print("REGMULTISZ DATA VALUE MISSING: " + vvv)
-                                print(rk.path())
-                                print(rv.name())
-                                print(rv.value())
+                                print("RegMultiSZ DATA VALUE MISSING: " + vvv)
+                                print("Path", rk.path())
+                                print("Name", rv.name())
+                                print("Value", rv.value())
+                                print()
 
-                                print(list(v.data))
-                                print(vv)
-                                print(rvv)
+                                print("reg data:", list(v.data))
+                                print("Decoded reg  value:", vv)
+                                print("Decoded Hive value:", rvv)
+                                print()
 
                                 incorrect_data += 1
 
-                    elif rv.value_type() == registry.RegDWord:
+                    elif rv.value_type() == Registry.RegDWord:
                         vv = v.data
                             
                         rvv = rv.value()
                         if not rvv == vv:
                             print("DWORD INCORRECT: " + str(vv) + " != " + str(rvv))
                             print(list(vv))
-                            print(rk.path())
-                            print(rv.name())
-                            print(rv.value())
+                            print("Path", rk.path())
+                            print("Name", rv.name())
+                            print("Value", rv.value())
+                            print()
 
                             incorrect_data += 1
 
-                    elif rv.value_type() == registry.RegQWord:
+                    elif rv.value_type() == Registry.RegQWord:
                         vv = struct.unpack("<Q", v.data)[0]
                         rvv = rv.value()
                         if not rvv == vv:
                             print("QWORD INCORRECT: " + str(vv) + " != " + str(rvv))
-                            print(rk.path())
-                            print(rv.name())
-                            print(rv.value())
+                            print("Path", rk.path())
+                            print("Name", rv.name())
+                            print("Value", rv.value())
+                            print()
 
                             incorrect_data += 1
 
-                    elif rv.value_type() == registry.RegBin or \
-                         rv.value_type() == registry.RegNone:
+                    elif rv.value_type() == Registry.RegBin or \
+                         rv.value_type() == Registry.RegNone:
                         vv = v.data
                         rvv = rv.value()
                         if not rvv == vv:
-                            print("BIN INCORRECT")
-                            print(rk.path())
-                            print(rv.name())
+                            print("BIN INCORRECT path: %s name: %s" % (rk.path(), rv.name()))
+                            print("Hive Value Length and Data:", len(rv.value()), list(rv.value()))
+                            print("reg  Value Length and Data:", len(v.data), list(v.data))
+                            print()
 
                             incorrect_data += 1
 
-                except registry.RegistryValueNotFoundException:
+                except Registry.RegistryValueNotFoundException:
                     print("VALUE NOT FOUND: " + k.name + ":" +  v.name)
                     not_found_values += 1
 
-        except registry.RegistryKeyNotFoundException:
+        except Registry.RegistryKeyNotFoundException:
             print("KEY NOT FOUND: " + k.name)
             not_found_keys += 1
 
