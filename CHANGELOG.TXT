@@ -1,3 +1,10 @@
+1.1.0
+  - add raw_data method
+  - fix testing scripts and methods
+  - add amcache.hve parsing script
+  - add script for mounting hive as file system via FUSE
+  - many fixes, including checksum calculations, by @NiKiZe
+  - fixes to RegDateTime parsing by @woanware
 1.0.4
   - correctly handle value types on Vista+ that require a DEVPROP_MASK_TYPE mask, thanks to @woanware
   - support the new RegDateTime value type, used for instance in some USBSTOR values, thanks to @woanware
