@@ -238,14 +238,31 @@ class REGFBlock(RegistryBlock):
         if _id != 0x66676572:
             raise ParseException("Invalid REGF ID")
 
-        _seq1 = self.unpack_dword(0x4)
-        _seq2 = self.unpack_dword(0x8)
+    def hive_sequence1(self):
+        """
+        Get first sequence number.
+        Believed to be saved when a commit is started.
+        """
+        return self.unpack_dword(0x4)
 
-        if _seq1 != _seq2:
-            # the registry was not synchronized
-            pass
+    def hive_sequence2(self):
+        """
+        Get second sequence number.
+        Believed to be saved to the same value as squence1 when a commit is completed.
+        """
+        return self.unpack_dword(0x8)
 
-        # TODO: compute checksum and check
+    def validate_sequence_numbers(self):
+        """
+        Compare if sequence numbers is correct.
+        """
+        return self.hive_sequence1() == self.hive_sequence2()
+
+    def modification_timestamp(self):
+        """
+        Get the modified timestamp as a Python datetime.
+        """
+        return parse_windows_timestamp(self.unpack_qword(0xC))
 
     def major_version(self):
         """
@@ -272,6 +289,37 @@ class REGFBlock(RegistryBlock):
         Get the buffer offset of the last HBINBlock as an unsigned integer.
         """
         return self.unpack_dword(0x28)
+
+    def calculate_checksum(self):
+        """
+        checksum is calculated over the first 0x200 bytes
+        XOR of all D-Words from 0x00000000 to 0x000001FB
+        """
+        xsum = 0
+        idx = 0x0
+        # it is possible to use 0x1FC instead and expect zero for a valid hive.
+        while idx <= 0x1FB:
+            xsum ^= self.unpack_dword(idx)
+            idx += 0x4
+        return xsum
+
+    def checksum(self):
+        """
+        Get the checksum stored in hive.
+        """
+        return self.unpack_dword(0x1FC)
+
+    def validate_checksum(self):
+        """
+        Is the file checksum valid.
+        """
+        return self.calculate_checksum() == self.checksum()
+
+    def validate(self):
+        """
+        Is the file checksum and sequence valid.
+        """
+        return self.validate_checksum() and self.validate_sequence_numbers()
 
     def first_key(self):
         first_hbin = next(self.hbins())
