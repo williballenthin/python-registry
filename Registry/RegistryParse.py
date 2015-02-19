@@ -284,6 +284,13 @@ class REGFBlock(RegistryBlock):
         """
         return self.unpack_string(0x30, 64).decode("utf-16le").rstrip("\x00")
 
+    def first_hbin_offset(self):
+        """
+        Get the buffer offset of the first HBINBlock as an unsigned integer.
+        Note: always returns 0x1000 nothing else is known.
+        """
+        return 0x1000
+
     def last_hbin_offset(self):
         """
         Get the buffer offset of the last HBINBlock as an unsigned integer.
@@ -333,7 +340,7 @@ class REGFBlock(RegistryBlock):
         """
         A generator that enumerates all HBIN (HBINBlock) structures in this Windows Registry.
         """
-        h = HBINBlock(self._buf, 0x1000, self) # sorry, but 0x1000 is a magic number
+        h = HBINBlock(self._buf, self.first_hbin_offset(), self)
         yield h
 
         while h.has_next():
@@ -1371,7 +1378,7 @@ class HBINBlock(RegistryBlock):
             return False
 
         try:
-            HBINBlock(self._buf, self._offset_next_hbin, self.parent())
+            self.next()
             return True
         except (ParseException, struct.error):
             return False
@@ -1386,24 +1393,20 @@ class HBINBlock(RegistryBlock):
     def cells(self):
         """
         Get a generator that yields each HBINCell contained in this HBIN.
-        """
-        c = HBINCell(self._buf, self._offset + 0x20, self)
-
-        while c.offset() < self._offset_next_hbin:
-            yield c
-            c = c.next()
-
-    def records(self):
-        """
-        A generator that yields each HBINCell contained in this HBIN.
         These are not necessarily in use, or linked to, from the root key.
         """
         c = HBINCell(self._buf, self._offset + 0x20, self)
 
         while c.offset() < self._offset_next_hbin:
             yield c
-            try:
-                c = c.next()
-            except RegistryStructureDoesNotExist:
+            if c.offset() + c.size() == self._offset_next_hbin:
                 break
+            c = c.next()
 
+    def records(self):
+        """
+        Obsolete, use cells instead.
+        """
+        from warnings import warn
+        warn("records is obsolete, use cells instead!")
+        return self.cells()
