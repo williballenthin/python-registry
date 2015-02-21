@@ -26,9 +26,12 @@ stdout = sys.stdout
 if hasattr(stdout, 'buffer'):
     stdout = stdout.buffer
 
-def usage():
-    return "  USAGE:\n\t%s <Windows Registry file> <Hive prefix> <Registry key path> [<Registry Value>]" % sys.argv[0]
+# Python 3 Bool constant
+PY3K = sys.version_info >= (3, 0)
 
+
+def usage():
+    return "  USAGE:\n\t%s <Windows Registry file> [<Hive prefix>] [<Registry key path>] [<Registry Value>]" % sys.argv[0]
 
 
 def reg_format_header():
@@ -41,8 +44,9 @@ def reg_format_header():
 def reg_format_value_sz(value):
     """
     @rtype: str
+    return escaped value
     """
-    return "\"{value}\"".format(value=value.value())
+    return "\"{value}\"".format(value=value.value().replace("\\", "\\\\"))
 
 
 def reg_format_value_dword(value):
@@ -63,7 +67,8 @@ def reg_format_value_bin(value):
 
     so we:
       - format into one big line of hex
-      - search for places to split, at about 80 chars or less
+      - search for places to split, no more then 80 chars or less including escape
+         (using 78 chars limit to achive this)
       - split, with the former receiving a backslash, and the latter getting the
          prefixed whitespace
 
@@ -73,9 +78,18 @@ def reg_format_value_bin(value):
 
     @rtype: str
     """
-    ret = []
 
-    s = ",".join(["%02x" % (ord(c)) for c in value.value()])
+    if value.value_type() == Registry.RegMultiSZ:
+        ret = []
+        for sv in value.value():
+            if ret:
+                ret.extend([0, 0] if PY3K else ['\x00', '\x00'])
+            ret.extend(sv.encode("utf-16le"))
+    else:
+        ret = value.value()
+
+    s = ",".join(["%02x" % (c if PY3K else ord(c)) for c in ret])
+    ret = []
 
     if value.value_type() == Registry.RegBin:
         s = "hex:" + s
@@ -84,7 +98,7 @@ def reg_format_value_bin(value):
 
     # there might be an off by one error in here somewhere...
     name_len = len(value.name()) + 2 + 1  # name + 2 * '"' + '='
-    split_index = 80 - name_len
+    split_index = 78 - name_len
     while len(s) > 0:
         if len(s) > split_index:
             # split on a comma
@@ -95,7 +109,7 @@ def reg_format_value_bin(value):
         else:
             ret.append(s)
             s = ""
-        split_index = 80
+        split_index = 78
 
     return "\r\n".join(ret)
 
@@ -106,16 +120,21 @@ def reg_format_value(value):
         Registry.RegExpandSZ: reg_format_value_bin,
         Registry.RegBin: reg_format_value_bin,
         Registry.RegDWord: reg_format_value_dword,
+        Registry.RegMultiSZ: reg_format_value_bin,
     }[value.value_type()](value)
 
 
-def reg_format_key_values(registry, prefix, key, values):
+def reg_format_key_values(prefix, key, values):
     """
     @rtype: byte string
     """
     ret = []
     path = key.path().partition("\\")[2]  # remove root key name ("$$$PROTO_HIV")
-    ret.append(u"[{prefix}\{path}]".format(prefix=prefix, path=path))
+    if len(path) > 0:
+        ret.append(u"[{prefix}\{path}]".format(prefix=prefix, path=path))
+    else:
+        ret.append(u"[{prefix}]".format(prefix=prefix))
+
     for value in values:
         ret.append("\"{name}\"={value}".format(name=value.name(),
                                                value=reg_format_value(value)))
@@ -123,22 +142,7 @@ def reg_format_key_values(registry, prefix, key, values):
     return u"\r\n".join(ret).encode("utf-16le")
 
 
-def main(hive, prefix, keyname, *valuenames):
-    """
-    @param prefix: something like "HKEY_LOCAL_MACHINE" to prepend to formatted key names.
-    """
-    registry = Registry.Registry(hive)
-
-    key = None
-    try:
-        if keyname.startswith(registry.root().name()):
-            key = registry.open(keyname.partition("\\")[2])
-        else:
-            key = registry.open(keyname)
-    except Registry.RegistryKeyNotFoundException:
-        print("Error: Specified key not found")
-        sys.exit(-1)
-
+def reg_handle_key(prefix, key, *valuenames):
     values = []
     if len(valuenames) != 0:
         for valuename in valuenames:
@@ -149,12 +153,39 @@ def main(hive, prefix, keyname, *valuenames):
     else:
         values = [v for v in key.values()]
 
-    stdout.write(reg_format_header())
-    stdout.write(reg_format_key_values(registry, prefix, key, values))
+    stdout.write(reg_format_key_values(prefix, key, values))
 
+    for subkey in key.subkeys():
+        reg_handle_key(prefix, subkey, *valuenames)
+
+
+def main(hive, prefix=None, keyname=None, *valuenames):
+    """
+    @param prefix: something like "HKEY_LOCAL_MACHINE" to prepend to formatted key names.
+    """
+    registry = Registry.Registry(hive)
+
+    key = None
+    try:
+        # use hive root values if empty
+        if keyname == None or keyname == '':
+            keyname = registry.root().name()
+        if prefix == None:
+            prefix = keyname
+
+        if keyname.startswith(registry.root().name()):
+            key = registry.open(keyname.partition("\\")[2])
+        else:
+            key = registry.open(keyname)
+    except Registry.RegistryKeyNotFoundException:
+        print("Error: Specified key not found in root " + registry.root().name())
+        sys.exit(-1)
+
+    stdout.write(reg_format_header())
+    reg_handle_key(prefix, key, *valuenames)
 
 if __name__ == '__main__':
-    if len(sys.argv) < 4:
+    if len(sys.argv) < 2:
         print(usage())
         sys.exit(-1)
 
