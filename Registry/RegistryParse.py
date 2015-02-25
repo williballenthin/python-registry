@@ -730,7 +730,7 @@ class VKRecord(Record):
         Get the length of this value data. This is the actual length of the data that should be parsed for the value.
         """
         size = self.unpack_dword(0x4)
-        if size > 0x80000000:
+        if size >= 0x80000000:
             size -= 0x80000000
         return size
 
