@@ -1,5 +1,6 @@
 next
   - [DEPRECATED] records() in HBINBlock, use the more correct cells() instead, by @NiKiZe
+  - fix bug in parsing of resident values with length zero, reported and patched by @BridgeyTheGeek
 
 1.1.0
   - add raw_data method
