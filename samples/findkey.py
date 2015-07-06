@@ -61,6 +61,8 @@ def main():
                     sys.stdout.flush()
             except UnicodeEncodeError:
                 pass
+            except UnicodeDecodeError:
+                pass
 
         for subkey in key.subkeys():
             if needle in subkey.name():
