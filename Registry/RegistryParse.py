@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 
 import struct
 from datetime import datetime
+import binascii
 
 # Constants
 RegSZ = 0x0001
@@ -1330,7 +1331,8 @@ class NKRecord(Record):
         elif id_ == b"li":
             l = LIRecord(self._buf, d.data_offset(), self)
         else:
-            raise ParseException("Subkey list with type %s encountered, but not yet supported." % (id_))
+            raise ParseException("Subkey list with type 0x%s encountered, but not yet supported." %
+                                 (binascii.hexlify(id_).decode('ascii')))
 
         return l
 
