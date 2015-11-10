@@ -712,13 +712,15 @@ class VKRecord(Record):
     def name(self):
         """
         Get the name, if it exists. If not, the empty string is returned.
-        @return: ascii string containing the name
+        @return: unicode string containing the name
         """
         if not self.has_name():
             return ""
-        else:
-            name_length = self.unpack_word(0x2)
-            return self.unpack_string(0x14, name_length).decode("windows-1252")
+        name_length = self.unpack_word(0x2)
+        unpacked_string = self.unpack_string(0x14, name_length)
+        if self.has_ascii_name():
+            return unpacked_string.decode("windows-1252")
+        return unpacked_string.decode("utf-16le")
 
     def data_type(self):
         """
@@ -1217,13 +1219,19 @@ class NKRecord(Record):
         """
         return parse_windows_timestamp(self.unpack_qword(0x4))
 
+    def has_ascii_name(self):
+        return self.unpack_word(0x2) & 0x0020
+
     def name(self):
         """
         Return the registry key name as a string.
-        @return: ascii string containing the name
+        @return: unicode string containing the name
         """
         name_length = self.unpack_word(0x48)
-        return self.unpack_string(0x4C, name_length).decode("windows-1252")
+        unpacked_string = self.unpack_string(0x4C, name_length)
+        if self.has_ascii_name():
+            return unpacked_string.decode("windows-1252")
+        return unpacked_string.decode("utf-16le")
 
     def path(self):
         """
