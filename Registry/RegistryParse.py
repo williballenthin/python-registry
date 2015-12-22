@@ -1234,19 +1234,22 @@ class NKRecord(Record):
         return unpacked_string.decode("utf-16le")
 
     def path(self):
-        """
-        Return the full path of the registry key as a unicode string
-        @return: unicode string containing the path
-        """
-        name = ""
-        p = self
+          """
+          Return the full path of the registry key as a unicode string
+          @return: unicode string containing the path
+          """ 
+          p = self
 
-        name = "\\" + name
-        name = p.name()
-        while p.has_parent_key():
-            p = p.parent_key()
-            name = p.name() + "\\" + name
-        return name
+          name = [p.name()]
+          offsets = set([p._offset])
+          while p.has_parent_key():
+              p = p.parent_key()
+              if p._offset in offsets:
+                  name.append("[path cycle]")
+                  break
+              name.append(p.name())
+              offsets.add(p._offset)
+          return '\\'.join(reversed(name))  
 
     def is_root(self):
         """
