@@ -1,6 +1,7 @@
-next
+1.2.0
   - [DEPRECATED] records() in HBINBlock, use the more correct cells() instead, by @NiKiZe
   - fix bug in parsing of resident values with length zero, reported and patched by @BridgeyTheGeek
+  - fix handling of path cycles, reported and patched by @sbv-csis
 
 1.1.0
   - add raw_data method
