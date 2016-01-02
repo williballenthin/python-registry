@@ -1,11 +1,13 @@
-from Registry import Registry
-
-import six
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 import os
+import six
 import unittest
 
+from Registry import Registry
 
-class RegistryUnicodeTests(unittest.TestCase):
+
+class TestRegistryUnicode(unittest.TestCase):
     def setUp(self):
         self.path = os.path.join(os.path.dirname(__file__), 'reg_samples', 'UNICODE_TESTS')
 
@@ -24,8 +26,8 @@ class RegistryUnicodeTests(unittest.TestCase):
                 self.assertTrue(self.is_correct_string(value.name()), value.name())
                 val = value.value()
                 if isinstance(val, list):
-                    for el in val:
-                        self.assertTrue(self.is_correct_string(el), el)
+                    for item in val:
+                        self.assertTrue(self.is_correct_string(item), item)
                 else:
                     self.assertTrue(self.is_correct_string(val), val)
 
