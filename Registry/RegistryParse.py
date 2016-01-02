@@ -588,7 +588,7 @@ def decode_utf16le(s):
       catch any Unicode-related exceptions, such as UnicodeDecodeError,
       so these should be handled by the caller.
 
-    @type s: str
+    @type s: bytes
     @param s: a bytestring to pase
     @rtype: unicode
     @return: the unicode string decoded from `s`

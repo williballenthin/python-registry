@@ -1,33 +1,34 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+import os
+import unittest
+
 from Registry import Registry
 
+EXPECTED_MD5 = "0f8f1276f2a4fafc03b2a31775898800"
+REG_KEY = "TimeZoneKeyName"
+REG_EXPECTED_VALUE = u"W. Europe Standard Time"
 
-def main():
-    import sys
-    hive = sys.argv[1]
 
-    import hashlib
-    m = hashlib.md5()
-    with open(hive, 'rb') as f:
-        m.update(f.read())
-    if m.hexdigest() != "26cb15876ceb4fd64476223c2bf1c8e3":
-        print "Please use the SYSTEM hive with MD5 26cb15876ceb4fd64476223c2bf1c8e3"
-        sys.exit(-1)
+class TestIssue22(unittest.TestCase):
+    def setUp(self):
+        self.path = os.path.join(os.path.dirname(__file__), "reg_samples", "issue22.hive")
 
-    r = Registry.Registry(hive)
-    k = r.open("ControlSet001\\Control\\TimeZoneInformation")
-    v = k.value("TimeZoneKeyName")
-    if v.value() == "Pacific Standard Time":
-        print "Passed."
-    else:
-        print "Failed."
-        print "Expected: Pacific Standard Time"
-        print "Got: %s (length: %d)" % (v.value(), len(v.value()))
-    sys.exit(0)
+        import hashlib
+        md5 = hashlib.md5()
+        with open(self.path, 'rb') as file:
+            md5.update(file.read())
+
+        self.assertEqual(md5.hexdigest(), EXPECTED_MD5, \
+               "Please use the SYSTEM hive with MD5 %s, got %s" % (EXPECTED_MD5, md5.hexdigest()))
+
+    def test_regsz_value(self):
+        reg = Registry.Registry(self.path)
+        reg_key = reg.root()
+        reg_val = reg_key.value(REG_KEY)
+        self.assertEqual(reg_val.value(), REG_EXPECTED_VALUE, \
+               "Expected: %s Got: %s (length: %d)" % (REG_EXPECTED_VALUE, reg_val.value(), len(reg_val.value())))
 
 
 if __name__ == "__main__":
-    main()
-
-
-
+    unittest.main(verbosity=2)
