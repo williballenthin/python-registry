@@ -301,14 +301,17 @@ class REGFBlock(RegistryBlock):
     def calculate_checksum(self):
         """
         checksum is calculated over the first 0x200 bytes
-        XOR of all D-Words from 0x00000000 to 0x000001FB
+        XOR of all D-Words from 0x00000000 to 0x000001FB with two edge cases.
         """
         xsum = 0
         idx = 0x0
-        # it is possible to use 0x1FC instead and expect zero for a valid hive.
         while idx <= 0x1FB:
             xsum ^= self.unpack_dword(idx)
             idx += 0x4
+        if xsum == 0:
+            return 1
+        if xsum == 0xFFFFFFFF:
+            return 0xFFFFFFFE
         return xsum
 
     def checksum(self):
