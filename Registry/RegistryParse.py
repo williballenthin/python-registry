@@ -279,6 +279,43 @@ class REGFBlock(RegistryBlock):
         """
         return self.unpack_dword(0x18)
 
+    def clustering_factor(self):
+        """
+        Get the clustering factor.
+        """
+        return self.unpack_dword(0x2C)
+
+    def file_type(self):
+        """
+        Get the file type.
+        """
+        return self.unpack_dword(0x1C)
+
+    def is_primary_file(self):
+        """
+        Check if this REGF block belongs to a primary (normal) file.
+        """
+        return self.file_type() == 0
+
+    def is_old_transaction_log_file(self):
+        """
+        Check if this REGF block belongs to an old transaction log file (used before Windows 8.1).
+        """
+        return (self.file_type() == 1) or (self.file_type() == 2)
+
+    def is_new_transaction_log_file(self):
+        """
+        Check if this REGF block belongs to a new transaction log file (used as of Windows 8.1).
+        """
+        return self.file_type() == 6
+
+    def file_format(self):
+        """
+        Get the file format.
+        TODO: consider raising an exception if this isn't set to 1 (the only value possible).
+        """
+        return self.unpack_dword(0x20)
+
     def hive_name(self):
         """
         Get the hive name of the open Windows Registry file as a string.
@@ -288,7 +325,7 @@ class REGFBlock(RegistryBlock):
     def first_hbin_offset(self):
         """
         Get the buffer offset of the first HBINBlock as an unsigned integer.
-        Note: always returns 0x1000 nothing else is known.
+        Note: always returns 0x1000, nothing else is possible.
         """
         return 0x1000
 
