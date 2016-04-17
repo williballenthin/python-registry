@@ -719,7 +719,6 @@ class VKRecord(Record):
     def has_ascii_name(self):
         """
         Is the name of this value in the ASCII charset?
-        Note, this doesnt work, yet... TODO
         """
         return self.unpack_word(0x10) & 1 == 1
 
