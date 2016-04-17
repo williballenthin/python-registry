@@ -630,7 +630,7 @@ def decode_utf16le(s):
 
 class VKRecord(Record):
     """
-    The VKRecord holds one name-value pair.  The data may be one many types,
+    The VKRecord holds one name-value pair.  The data may be one of many types,
     including strings, integers, and binary data.
     """
     def __init__(self, buf, offset, parent):
