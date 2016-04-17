@@ -242,20 +242,20 @@ class REGFBlock(RegistryBlock):
     def hive_sequence1(self):
         """
         Get first sequence number.
-        Believed to be saved when a commit is started.
+        This is incremented before writing to a primary file.
         """
         return self.unpack_dword(0x4)
 
     def hive_sequence2(self):
         """
         Get second sequence number.
-        Believed to be saved to the same value as squence1 when a commit is completed.
+        This is set to the same value as sequence1 after a primary files has been updated.
         """
         return self.unpack_dword(0x8)
 
     def validate_sequence_numbers(self):
         """
-        Compare if sequence numbers is correct.
+        Check if sequence numbers are equal.
         """
         return self.hive_sequence1() == self.hive_sequence2()
 
@@ -322,15 +322,26 @@ class REGFBlock(RegistryBlock):
 
     def validate_checksum(self):
         """
-        Is the file checksum valid.
+        Is the file checksum valid?
         """
         return self.calculate_checksum() == self.checksum()
 
-    def validate(self):
+    def recovery_required(self):
         """
-        Is the file checksum and sequence valid.
+        Are the file checksum and sequence valid.
+        Return a tuple with two boolean values:
+          - the first one is True when the REGF block recovery is required,
+          - the second one is True when data recovery is required.
         """
-        return self.validate_checksum() and self.validate_sequence_numbers()
+        if not self.validate_checksum():
+            # Header is invalid, this also implies data recovery
+            return (True, True)
+
+        if not self.validate_sequence_numbers():
+            # Header is valid, data is in the mid-update state
+            return (False, True)
+
+        return (False, False)
 
     def first_key(self):
         first_hbin = next(self.hbins())
@@ -1199,7 +1210,7 @@ class NKRecord(Record):
         """
         Does this have a classname?
         """
-        return self.unpack_dword(0x30) != 0xFFFFFFFF
+        return self.unpack_word(0x4A) > 0
 
     def classname(self):
         """
@@ -1223,7 +1234,7 @@ class NKRecord(Record):
         return parse_windows_timestamp(self.unpack_qword(0x4))
 
     def has_ascii_name(self):
-        return self.unpack_word(0x2) & 0x0020
+        return self.unpack_word(0x2) & 0x0020 > 0
 
     def name(self):
         """
@@ -1258,7 +1269,7 @@ class NKRecord(Record):
         """
         Is this a root key?
         """
-        return self.unpack_word(0x2) == 0x2C
+        return self.unpack_word(0x2) & 0x0004 > 0
 
     def has_parent_key(self):
         """
