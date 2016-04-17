@@ -292,9 +292,9 @@ class REGFBlock(RegistryBlock):
         """
         return 0x1000
 
-    def last_hbin_offset(self):
+    def hbins_size(self):
         """
-        Get the buffer offset of the last HBINBlock as an unsigned integer.
+        Size of all HBINBlock structures as an unsigned integer.
         """
         return self.unpack_dword(0x28)
 
@@ -1364,7 +1364,7 @@ class NKRecord(Record):
 class HBINBlock(RegistryBlock):
     """
     An HBINBlock is the basic allocation block of the Windows Registry.
-    It has a length of 0x1000.
+    It's length is multiple of 0x1000.
     """
     def __init__(self, buf, offset, parent):
         """
@@ -1400,7 +1400,7 @@ class HBINBlock(RegistryBlock):
         Does another HBINBlock exist after this one?
         """
         regf = self.first_hbin().parent()
-        if regf.last_hbin_offset() == self.offset():
+        if regf.hbins_size() + regf.first_hbin_offset() == self._offset_next_hbin:
             return False
 
         try:
@@ -1412,7 +1412,7 @@ class HBINBlock(RegistryBlock):
     def next(self):
         """
         Get the next HBIN after this one.
-        Note: This will blindly attempts to create it regardless of if it exists.
+        Note: This blindly attempts to create it regardless of its existence.
         """
         return HBINBlock(self._buf, self._offset_next_hbin, self.parent())
 
