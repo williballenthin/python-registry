@@ -127,7 +127,7 @@ class RegistryLog(object):
                 self._hive_flags = log_entry.hive_flags()
                 self._hive_sequence = log_entry.sequence()
 
-        return log_entry.sequence()
+            return log_entry.sequence()
 
     def recover_hive_continue(self, expected_sequence):
         """Continue the recovery from the second transaction log file."""
