@@ -95,6 +95,6 @@ elif logs_count == 2:
 primary.seek(0)
 reg = Registry.Registry(primary)
 
-# Run the tests for again
+# Run the tests again
 print_test_testAAAA_testBBBB(reg)
 print_test_fdenytsconnections(reg)
