@@ -70,7 +70,7 @@ class RegistryLog(object):
         return self._hive_flags
 
     def latest_hive_sequence(self):
-        """Update the latest hive_sequence1 (the same as hive_sequence2 after recovery)."""
+        """Return the latest hive_sequence1 (the same as hive_sequence2 after recovery)."""
         return self._hive_sequence
 
     def first_log_sequence(self):
