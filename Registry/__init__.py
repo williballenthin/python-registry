@@ -20,4 +20,5 @@ _version_ = '1.2.0'
 __all__ = [
     'Registry',
     'RegistryParse',
+    'RegistryLog'
 ]
