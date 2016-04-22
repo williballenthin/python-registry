@@ -71,26 +71,38 @@ if logs_count == 1:
     if apply_first:
         print('Applying the first log')
         seqnum = log1.recover_hive()
-    else:
+        print('Finishing with sequence number = ' + str(seqnum))
+    elif apply_second:
         print('Applying the second log')
         seqnum = log2.recover_hive()
-    print('Finishing with sequence number = ' + str(seqnum))
+        print('Finishing with sequence number = ' + str(seqnum))
+    else:
+        print('Bug!')
 elif logs_count == 2:
     first_then_second = log1.is_starting_log(log2)
-    if first_then_second:
+    if (not recover_header) and first_then_second:
         print('Applying the first log')
         seqnum = log1.recover_hive()
         print('Finishing with sequence number = ' + str(seqnum))
         print('Applying the second log')
         seqnum = log2.recover_hive_continue(seqnum + 1)
         print('Finishing with sequence number = ' + str(seqnum))
-    else:
+    elif (not recover_header):
         print('Applying the second log')
         seqnum = log2.recover_hive()
         print('Finishing with sequence number = ' + str(seqnum))
         print('Applying the first log')
         seqnum = log1.recover_hive_continue(seqnum + 1)
         print('Finishing with sequence number = ' + str(seqnum))
+    else:
+        if first_then_second:
+            print('Applying the second log')
+            seqnum = log2.recover_hive()
+            print('Finishing with sequence number = ' + str(seqnum))
+        else:
+            print('Applying the first log')
+            seqnum = log1.recover_hive()
+            print('Finishing with sequence number = ' + str(seqnum))
 
 primary.seek(0)
 reg = Registry.Registry(primary)
