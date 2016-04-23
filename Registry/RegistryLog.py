@@ -66,7 +66,7 @@ class RegistryLog(object):
         self._hive_sequence = None
 
     def latest_hive_flags(self):
-        """Return the latest hive flags. At present, only one bit mask is used."""
+        """Return the latest hive flags. At present, only one bit mask (0x1) is used."""
         return self._hive_flags
 
     def latest_hive_sequence(self):
