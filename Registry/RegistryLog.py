@@ -118,7 +118,7 @@ class RegistryLog(object):
     def recover_hive(self):
         """
         Recover the hive from the transaction log file.
-        Returns the sequence of the last log entry applied or None.
+        Returns the sequence number of the last log entry applied or None.
         """
         recover_header, recover_data = self._primary_regf.recovery_required()
 
@@ -135,7 +135,7 @@ class RegistryLog(object):
     def recover_hive_continue(self, expected_sequence):
         """
         Continue the recovery from the second transaction log file.
-        Returns the sequence of the last log entry applied or None.
+        Returns the sequence number of the last log entry applied or None.
         """
         if expected_sequence != self._regf.hive_sequence2():
             return None

@@ -386,7 +386,7 @@ class REGFBlock(RegistryBlock):
 
     def recovery_required(self):
         """
-        Are the file checksum and sequence valid?
+        Are the file checksum and sequence numbers valid?
         Return a tuple with two boolean values:
           - the first one is True when the REGF block recovery is required,
           - the second one is True when data recovery is required.
@@ -1627,7 +1627,7 @@ class HvLEBlock(RegistryBlock):
 
     def validate_log_entry(self):
         """
-        Check is this log entry is valid.
+        Check if this log entry is valid.
         """
         if (self.size() <= 40) or (self.size() % 0x200 != 0):
             return False
