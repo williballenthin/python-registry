@@ -41,6 +41,9 @@ RegFullResourceDescriptor = 0x0009
 RegResourceRequirementsList = 0x000A
 RegFileTime = 0x0010
 
+LOG_ENTRY_SIZE_MIN = 40
+LOG_ENTRY_SIZE_ALIGNMENT = 0x200
+
 # Added in Windows Vista. Must be applied to Registry type.
 # see: http://msdn.microsoft.com/en-us/library/windows/hardware/ff543550%28v=vs.85%29.aspx
 DEVPROP_MASK_TYPE = 0x00000FFF
@@ -1629,7 +1632,7 @@ class HvLEBlock(RegistryBlock):
         """
         Check if this log entry is valid.
         """
-        if (self.size() <= 40) or (self.size() % 0x200 != 0):
+        if (self.size() <= LOG_ENTRY_SIZE_MIN) or (self.size() % LOG_ENTRY_SIZE_ALIGNMENT != 0):
             return False
 
         if self.hbins_size() % 0x1000 != 0:
