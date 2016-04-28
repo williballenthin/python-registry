@@ -1580,10 +1580,10 @@ class HvLEBlock(RegistryBlock):
         val = c_uint32()
 
         while length >= 4:
-                val.value = to_uint32_le(buf[pos:pos+4])
-                state = marvin32_mix(state, val)
-                pos += 4
-                length -= 4
+            val.value = to_uint32_le(buf[pos:pos+4])
+            state = marvin32_mix(state, val)
+            pos += 4
+            length -= 4
 
         final = c_uint32(0x80)
         if length == 3:
