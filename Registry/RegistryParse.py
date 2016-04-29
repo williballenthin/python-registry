@@ -41,7 +41,7 @@ RegFullResourceDescriptor = 0x0009
 RegResourceRequirementsList = 0x000A
 RegFileTime = 0x0010
 
-LOG_ENTRY_SIZE_MIN = 40
+LOG_ENTRY_SIZE_HEADER = 40
 LOG_ENTRY_SIZE_ALIGNMENT = 0x200
 
 # Added in Windows Vista. Must be applied to Registry type.
@@ -1614,7 +1614,7 @@ class HvLEBlock(RegistryBlock):
         """
         Calculate the Hash-1.
         """
-        return self.marvin32_hash(self._buf[self._offset+40:self._offset+self.size()])
+        return self.marvin32_hash(self._buf[self._offset+LOG_ENTRY_SIZE_HEADER:self._offset+self.size()])
 
     def hash_2(self):
         """
@@ -1632,7 +1632,7 @@ class HvLEBlock(RegistryBlock):
         """
         Check if this log entry is valid.
         """
-        if (self.size() <= LOG_ENTRY_SIZE_MIN) or (self.size() % LOG_ENTRY_SIZE_ALIGNMENT != 0):
+        if (self.size() <= LOG_ENTRY_SIZE_HEADER) or (self.size() % LOG_ENTRY_SIZE_ALIGNMENT != 0):
             return False
 
         if self.hbins_size() % 0x1000 != 0:
@@ -1683,7 +1683,7 @@ class HvLEBlock(RegistryBlock):
         """
         Get the offset of the first dirty page in this log entry.
         """
-        return self._offset + 40 + 8*self.dirty_pages_count()
+        return self._offset + LOG_ENTRY_SIZE_HEADER + 8*self.dirty_pages_count()
 
     def dirty_pages_with_references(self):
         """
