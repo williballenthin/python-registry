@@ -54,8 +54,8 @@ class RegistryLog(object):
         if self._regf.clustering_factor() != 1:
             raise RegistryParse.NotSupportedException("Clustering factor not equal to 1 is not supported")
 
-        recover_header, recover_data = self._regf.recovery_required()
-        if recover_header or recover_data:
+        recover = self._regf.recovery_required()
+        if recover.recover_header or recover.recover_data:
             raise RegistryParse.NotSupportedException("This transaction log file requires self-healing")
 
         self._primary_buf = filelikeobject_primary.read(512)
@@ -120,9 +120,9 @@ class RegistryLog(object):
         Recover the hive from the transaction log file.
         Returns the sequence number of the last log entry applied or None.
         """
-        recover_header, recover_data = self._primary_regf.recovery_required()
+        recover = self._primary_regf.recovery_required()
 
-        if recover_data:
+        if recover.recover_data:
             for log_entry in self._regf.log_entries():
                 for dirty_page_reference, dirty_page in log_entry.dirty_pages_with_references():
                     self.write_dirty_page(dirty_page_reference, dirty_page)

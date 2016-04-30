@@ -46,13 +46,13 @@ reg = Registry.Registry(primary)
 print_test_testAAAA_testBBBB(reg)
 print_test_fdenytsconnections(reg)
 
-recover_header, recover_data = reg._regf.recovery_required()
-if not (recover_header or recover_data):
+r = reg._regf.recovery_required()
+if not (r.recover_header or r.recover_data):
     print('Recovery not required!')
     sys.exit(0)
 
-print('Header recovery: ' + str(recover_header))
-print('Data recovery: ' + str(recover_data))
+print('Header recovery: ' + str(r.recover_header))
+print('Data recovery: ' + str(r.recover_data))
 
 apply_first = False
 apply_second = False
@@ -80,14 +80,14 @@ if logs_count == 1:
         print('Bug!')
 elif logs_count == 2:
     first_then_second = log1.is_starting_log(log2)
-    if (not recover_header) and first_then_second:
+    if (not r.recover_header) and first_then_second:
         print('Applying the first log')
         seqnum = log1.recover_hive()
         print('Finishing with sequence number = ' + str(seqnum))
         print('Applying the second log')
         seqnum = log2.recover_hive_continue(seqnum + 1)
         print('Finishing with sequence number = ' + str(seqnum))
-    elif (not recover_header):
+    elif (not r.recover_header):
         print('Applying the second log')
         seqnum = log2.recover_hive()
         print('Finishing with sequence number = ' + str(seqnum))

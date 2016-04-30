@@ -26,6 +26,7 @@ from datetime import datetime
 import binascii
 from ctypes import c_uint32
 from enum import Enum
+from collections import namedtuple
 
 # Constants
 RegSZ = 0x0001
@@ -416,19 +417,26 @@ class REGFBlock(RegistryBlock):
     def recovery_required(self):
         """
         Are the file checksum and sequence numbers valid?
-        Return a tuple with two boolean values:
-          - the first one is True when the REGF block recovery is required,
-          - the second one is True when data recovery is required.
+        Return a named tuple with two boolean values:
+          - the recover_header is True when the REGF block recovery is required,
+          - the recover_data is True when data recovery is required.
         """
+        recover = namedtuple('recover', ['recover_header', 'recover_data'])
+
         if not self.validate_checksum():
             # Header is invalid, this also implies data recovery
-            return (True, True)
+            recover.recover_header = True
+            recover.recover_data = True
+            return recover
 
+        recover.recover_header = False
         if not self.validate_sequence_numbers():
             # Header is valid, data is in the mid-update state
-            return (False, True)
+            recover.recover_data = True
+            return recover
 
-        return (False, False)
+        recover.recover_data = False
+        return recover
 
     def first_key(self):
         first_hbin = next(self.hbins())
