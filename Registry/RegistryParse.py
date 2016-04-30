@@ -387,6 +387,15 @@ class REGFBlock(RegistryBlock):
         """
         return self.calculate_checksum() == self.checksum()
 
+    def validate(self):
+        """
+        Are the file checksum and sequence numbers valid?
+        Obsolete, use recovery_required instead.
+        """
+        from warnings import warn
+        warn("validate is obsolete, use recovery_required instead!")
+        return self.validate_checksum() and self.validate_sequence_numbers()
+
     def recovery_required(self):
         """
         Are the file checksum and sequence numbers valid?
