@@ -359,6 +359,15 @@ class REGFBlock(RegistryBlock):
         """
         return self.unpack_dword(0x28)
 
+    def last_hbin_offset(self):
+        """
+        Obsolete, use hbins_size instead.
+        This doesn't return the offset of the last HBINBlock (as was believed before).
+        """
+        from warnings import warn
+        warn("last_hbin_offset is obsolete, use hbins_size instead!")
+        return self.unpack_dword(0x28)
+
     def calculate_checksum(self):
         """
         Checksum is calculated over the first 0x200 bytes:
