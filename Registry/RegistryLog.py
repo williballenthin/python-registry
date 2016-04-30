@@ -31,6 +31,7 @@ class RegistryLog(object):
         Constructor.
         Arguments:
         - `filelikeobject_primary`: A file-like object with .read(), .write() and .seek() methods.
+              This object shall be writable, it will receive the contents of the recovered hive.
         - `filelikeobject_log`: A file-like object with a .read() method.
               If a Python string is passed, it is interpreted as a filename,
               and the corresponding file is opened.
