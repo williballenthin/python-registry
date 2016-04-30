@@ -25,6 +25,7 @@ import struct
 from datetime import datetime
 import binascii
 from ctypes import c_uint32
+from enum import Enum
 
 # Constants
 RegSZ = 0x0001
@@ -41,8 +42,15 @@ RegFullResourceDescriptor = 0x0009
 RegResourceRequirementsList = 0x000A
 RegFileTime = 0x0010
 
+# Constants to support the transaction log files (new format)
 LOG_ENTRY_SIZE_HEADER = 40
 LOG_ENTRY_SIZE_ALIGNMENT = 0x200
+
+class FileType(Enum):
+    FILE_TYPE_PRIMARY = 0
+    FILE_TYPE_LOG_OLD_1 = 1 # Starting from Windows XP
+    FILE_TYPE_LOG_OLD_2 = 2 # Before Windows XP
+    FILE_TYPE_LOG_NEW = 6 # Starting from Windows 8.1
 
 # Added in Windows Vista. Must be applied to Registry type.
 # see: http://msdn.microsoft.com/en-us/library/windows/hardware/ff543550%28v=vs.85%29.aspx
@@ -313,19 +321,19 @@ class REGFBlock(RegistryBlock):
         """
         Check if this REGF block belongs to a primary (normal) file.
         """
-        return self.file_type() == 0
+        return self.file_type() == FileType.FILE_TYPE_PRIMARY
 
     def is_old_transaction_log_file(self):
         """
         Check if this REGF block belongs to an old transaction log file (used before Windows 8.1).
         """
-        return (self.file_type() == 1) or (self.file_type() == 2)
+        return (self.file_type() == FileType.FILE_TYPE_LOG_OLD_1) or (self.file_type() == FileType.FILE_TYPE_LOG_OLD_2)
 
     def is_new_transaction_log_file(self):
         """
         Check if this REGF block belongs to a new transaction log file (used as of Windows 8.1).
         """
-        return self.file_type() == 6
+        return self.file_type() == FileType.FILE_TYPE_LOG_NEW
 
     def file_format(self):
         """
