@@ -51,6 +51,9 @@ if not (r.recover_header or r.recover_data):
     print('Recovery not required!')
     sys.exit(0)
 
+if not r.recover_header:
+    print('Current hbins size: ' + str(reg._regf.hbins_size()))
+
 print('Header recovery: ' + str(r.recover_header))
 print('Data recovery: ' + str(r.recover_data))
 
@@ -110,3 +113,17 @@ reg = Registry.Registry(primary)
 # Run the tests again
 print_test_testAAAA_testBBBB(reg)
 print_test_fdenytsconnections(reg)
+
+# Print the final values of the updated REGF block
+print('hive_sequence1 = ' + str(reg._regf.hive_sequence1()))
+print('hive_sequence2 = ' + str(reg._regf.hive_sequence2()))
+
+r = reg._regf.recovery_required()
+if not (r.recover_header or r.recover_data):
+    print('Recovery not required!')
+    print('Current hbins size: ' + str(reg._regf.hbins_size()))
+
+else:
+    print('Recovery is required! Bug!')
+    print('REGF block checksum written: ' + str(reg._regf.checksum()))
+    print('REGF block checksum calculated: ' + str(reg._regf.calculate_checksum()))

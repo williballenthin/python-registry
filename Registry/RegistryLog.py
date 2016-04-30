@@ -19,6 +19,7 @@
 from __future__ import print_function
 
 from ctypes import c_uint32
+from struct import pack
 from . import RegistryParse
 
 class RegistryLog(object):
@@ -64,10 +65,21 @@ class RegistryLog(object):
         self._primary_regf = RegistryParse.REGFBlock(self._primary_buf, 0, False)
         self._hive_flags = None
         self._hive_sequence = None
+        self._hbins_size = None
+
+    def reload_primary_regf(self):
+        """Fill the _primary_buf and _primary_regf variables again."""
+        self._primary.seek(0)
+        self._primary_buf = self._primary.read(512)
+        self._primary_regf = RegistryParse.REGFBlock(self._primary_buf, 0, False)
 
     def latest_hive_flags(self):
         """Return the latest hive flags. At present, only one bit mask (0x1) is used."""
         return self._hive_flags
+
+    def latest_hbins_size(self):
+        """Return the latest hbins_size."""
+        return self._hbins_size
 
     def latest_hive_sequence(self):
         """Return the latest hive_sequence1 (the same as hive_sequence2 after recovery)."""
@@ -115,12 +127,47 @@ class RegistryLog(object):
         self._primary.seek(offset_primary)
         self._primary.write(dirty_data)
 
+    def update_regf_header(self, hive_sequence, hbins_size, hive_flags):
+        """
+        Update the REGF block of the primary file with the new hive_sequence1, hive_sequence2, hbins_size, and hive_flags.
+        Recalculate the checksum and reload the REGF block.
+        """
+
+        def pack_dword(num):
+            return pack(str("<I"), num)
+
+        self._primary.seek(0x4)
+        seqnum = pack_dword(hive_sequence)
+        self._primary.write(seqnum) # hive_sequence1
+        self._primary.write(seqnum) # hive_sequence2
+
+        self._primary.seek(0x28)
+        size = pack_dword(hbins_size)
+        self._primary.write(size)
+
+        self._primary.seek(0x90)
+        flags = pack_dword(hive_flags)
+        self._primary.write(flags)
+
+        self.reload_primary_regf()
+
+        self._primary.seek(0x1FC)
+        checksum = pack_dword(self._primary_regf.calculate_checksum())
+        self._primary.write(checksum)
+
+        self.reload_primary_regf()
+
     def recover_hive(self):
         """
         Recover the hive from the transaction log file.
         Returns the sequence number of the last log entry applied or None.
         """
         recover = self._primary_regf.recovery_required()
+
+        if recover.recover_header:
+            self._primary.seek(0)
+            self._primary.write(self._log_buf[:512])
+            self.reload_primary_regf()
 
         if recover.recover_data:
             for log_entry in self._regf.log_entries():
@@ -129,7 +176,9 @@ class RegistryLog(object):
 
                 self._hive_flags = log_entry.hive_flags()
                 self._hive_sequence = log_entry.sequence()
+                self._hbins_size = log_entry.hbins_size()
 
+            self.update_regf_header(self.latest_hive_sequence(), self.latest_hbins_size(), self.latest_hive_flags())
             return log_entry.sequence()
 
     def recover_hive_continue(self, expected_sequence):
@@ -146,5 +195,7 @@ class RegistryLog(object):
 
             self._hive_flags = log_entry.hive_flags()
             self._hive_sequence = log_entry.sequence()
+            self._hbins_size = log_entry.hbins_size()
 
+        self.update_regf_header(self.latest_hive_sequence(), self.latest_hbins_size(), self.latest_hive_flags())
         return log_entry.sequence()
