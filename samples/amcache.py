@@ -178,6 +178,10 @@ def main():
     else:
         logging.basicConfig(level=logging.INFO)
 
+    if sys.platform == "win32":
+        import os, msvcrt
+        msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
+        
     r = Registry.Registry(args.registry_hive)
 
     try:
