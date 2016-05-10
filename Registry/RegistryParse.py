@@ -1621,7 +1621,7 @@ class HvLEBlock(RegistryBlock):
 
         final = c_uint32(0x80)
         if length == 3:
-                final.value = (final.value << 8) | buf[pos+2]
+            final.value = (final.value << 8) | buf[pos+2]
         elif length == 2:
             final.value = (final.value << 8) | buf[pos+1]
         elif length == 1:
