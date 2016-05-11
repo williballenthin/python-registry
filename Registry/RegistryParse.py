@@ -57,6 +57,8 @@ class FileType(Enum):
 # see: http://msdn.microsoft.com/en-us/library/windows/hardware/ff543550%28v=vs.85%29.aspx
 DEVPROP_MASK_TYPE = 0x00000FFF
 
+# This named tuple describes the recovery operations to be performed on a hive.
+RecoveryStatus = namedtuple('RecoveryStatus', ['recover_header', 'recover_data'])
 
 def parse_windows_timestamp(qword):
     # see http://integriography.wordpress.com/2010/01/16/using-phython-to-parse-and-present-windows-64-bit-timestamps/
@@ -421,22 +423,15 @@ class REGFBlock(RegistryBlock):
           - the recover_header is True when the REGF block recovery is required,
           - the recover_data is True when data recovery is required.
         """
-        recover = namedtuple('recover', ['recover_header', 'recover_data'])
-
         if not self.validate_checksum():
             # Header is invalid, this also implies data recovery
-            recover.recover_header = True
-            recover.recover_data = True
-            return recover
+            return RecoveryStatus(recover_header = True, recover_data = True)
 
-        recover.recover_header = False
         if not self.validate_sequence_numbers():
             # Header is valid, data is in the mid-update state
-            recover.recover_data = True
-            return recover
+            return RecoveryStatus(recover_header = False, recover_data = True)
 
-        recover.recover_data = False
-        return recover
+        return RecoveryStatus(recover_header = False, recover_data = False)
 
     def first_key(self):
         first_hbin = next(self.hbins())
