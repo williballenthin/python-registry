@@ -24,6 +24,9 @@ from __future__ import unicode_literals
 import struct
 from datetime import datetime
 import binascii
+from ctypes import c_uint32
+from enum import Enum
+from collections import namedtuple
 
 # Constants
 RegSZ = 0x0001
@@ -40,10 +43,22 @@ RegFullResourceDescriptor = 0x0009
 RegResourceRequirementsList = 0x000A
 RegFileTime = 0x0010
 
+# Constants to support the transaction log files (new format)
+LOG_ENTRY_SIZE_HEADER = 40
+LOG_ENTRY_SIZE_ALIGNMENT = 0x200
+
+class FileType(Enum):
+    FILE_TYPE_PRIMARY = 0
+    FILE_TYPE_LOG_OLD_1 = 1 # Starting from Windows XP
+    FILE_TYPE_LOG_OLD_2 = 2 # Before Windows XP
+    FILE_TYPE_LOG_NEW = 6 # Starting from Windows 8.1
+
 # Added in Windows Vista. Must be applied to Registry type.
 # see: http://msdn.microsoft.com/en-us/library/windows/hardware/ff543550%28v=vs.85%29.aspx
 DEVPROP_MASK_TYPE = 0x00000FFF
 
+# This named tuple describes the recovery operations to be performed on a hive.
+RecoveryStatus = namedtuple('RecoveryStatus', ['recover_header', 'recover_data'])
 
 def parse_windows_timestamp(qword):
     # see http://integriography.wordpress.com/2010/01/16/using-phython-to-parse-and-present-windows-64-bit-timestamps/
@@ -100,7 +115,7 @@ class ParseException(RegistryException):
         super(ParseException, self).__init__(value)
 
     def __str__(self):
-        return "Registry Parse Exception(%s)" % (self._value)
+        return "Registry Parse Exception (%s)" % (self._value)
 
 
 class UnknownTypeException(RegistryException):
@@ -130,8 +145,22 @@ class UnknownTypeException(RegistryException):
         super(UnknownTypeException, self).__init__(value)
 
     def __str__(self):
-        return "Unknown Type Exception(%s)" % (self._value)
+        return "Unknown Type Exception (%s)" % (self._value)
 
+class NotSupportedException(RegistryException):
+    """
+    An exception to be thrown during Windows Registry parsing, when something is not supported yet.
+    """
+    def __init__(self, value):
+        """
+        Constructor.
+        Arguments:
+        - `value`: A string description.
+        """
+        super(NotSupportedException, self).__init__(value)
+
+    def __str__(self):
+        return "Not Supported Exception (%s)" % (self._value)
 
 class RegistryBlock(object):
     """
@@ -242,20 +271,20 @@ class REGFBlock(RegistryBlock):
     def hive_sequence1(self):
         """
         Get first sequence number.
-        Believed to be saved when a commit is started.
+        This is incremented before writing to a primary file.
         """
         return self.unpack_dword(0x4)
 
     def hive_sequence2(self):
         """
         Get second sequence number.
-        Believed to be saved to the same value as squence1 when a commit is completed.
+        This is set to the same value as sequence1 after a primary files has been updated.
         """
         return self.unpack_dword(0x8)
 
     def validate_sequence_numbers(self):
         """
-        Compare if sequence numbers is correct.
+        Check if sequence numbers are equal.
         """
         return self.hive_sequence1() == self.hive_sequence2()
 
@@ -279,6 +308,49 @@ class REGFBlock(RegistryBlock):
         """
         return self.unpack_dword(0x18)
 
+    def clustering_factor(self):
+        """
+        Get the clustering factor.
+        """
+        return self.unpack_dword(0x2C)
+
+    def file_type(self):
+        """
+        Get the file type.
+        """
+        return self.unpack_dword(0x1C)
+
+    def is_primary_file(self):
+        """
+        Check if this REGF block belongs to a primary (normal) file.
+        """
+        return self.file_type() == FileType.FILE_TYPE_PRIMARY
+
+    def is_old_transaction_log_file(self):
+        """
+        Check if this REGF block belongs to an old transaction log file (used before Windows 8.1).
+        """
+        return (self.file_type() == FileType.FILE_TYPE_LOG_OLD_1) or (self.file_type() == FileType.FILE_TYPE_LOG_OLD_2)
+
+    def is_new_transaction_log_file(self):
+        """
+        Check if this REGF block belongs to a new transaction log file (used as of Windows 8.1).
+        """
+        return self.file_type() == FileType.FILE_TYPE_LOG_NEW
+
+    def file_format(self):
+        """
+        Get the file format.
+        TODO: consider raising an exception if this isn't set to 1 (the only value possible).
+        """
+        return self.unpack_dword(0x20)
+
+    def hive_flags(self):
+        """
+        Get the hive flags as an unsigned integer.
+        """
+        return self.unpack_dword(0x90)
+
     def hive_name(self):
         """
         Get the hive name of the open Windows Registry file as a string.
@@ -288,19 +360,28 @@ class REGFBlock(RegistryBlock):
     def first_hbin_offset(self):
         """
         Get the buffer offset of the first HBINBlock as an unsigned integer.
-        Note: always returns 0x1000 nothing else is known.
+        Note: always returns 0x1000, nothing else is possible.
         """
         return 0x1000
 
+    def hbins_size(self):
+        """
+        Size of all HBINBlock structures as an unsigned integer.
+        """
+        return self.unpack_dword(0x28)
+
     def last_hbin_offset(self):
         """
-        Get the buffer offset of the last HBINBlock as an unsigned integer.
+        Obsolete, use hbins_size instead.
+        This doesn't return the offset of the last HBINBlock (as was believed before).
         """
+        from warnings import warn
+        warn("last_hbin_offset is obsolete, use hbins_size instead!")
         return self.unpack_dword(0x28)
 
     def calculate_checksum(self):
         """
-        checksum is calculated over the first 0x200 bytes
+        Checksum is calculated over the first 0x200 bytes:
         XOR of all D-Words from 0x00000000 to 0x000001FB with two edge cases.
         """
         xsum = 0
@@ -322,15 +403,35 @@ class REGFBlock(RegistryBlock):
 
     def validate_checksum(self):
         """
-        Is the file checksum valid.
+        Is the file checksum valid?
         """
         return self.calculate_checksum() == self.checksum()
 
     def validate(self):
         """
-        Is the file checksum and sequence valid.
+        Are the file checksum and sequence numbers valid?
+        Obsolete, use recovery_required instead.
         """
+        from warnings import warn
+        warn("validate is obsolete, use recovery_required instead!")
         return self.validate_checksum() and self.validate_sequence_numbers()
+
+    def recovery_required(self):
+        """
+        Are the file checksum and sequence numbers valid?
+        Return a named tuple with two boolean values:
+          - the recover_header is True when the REGF block recovery is required,
+          - the recover_data is True when data recovery is required.
+        """
+        if not self.validate_checksum():
+            # Header is invalid, this also implies data recovery
+            return RecoveryStatus(recover_header = True, recover_data = True)
+
+        if not self.validate_sequence_numbers():
+            # Header is valid, data is in the mid-update state
+            return RecoveryStatus(recover_header = False, recover_data = True)
+
+        return RecoveryStatus(recover_header = False, recover_data = False)
 
     def first_key(self):
         first_hbin = next(self.hbins())
@@ -350,6 +451,30 @@ class REGFBlock(RegistryBlock):
         while h.has_next():
             h = h.next()
             yield h
+
+    def first_log_entry_offset(self):
+        """
+        Get the offset of the first log entry as an unsigned integer.
+        Note: always returns 0x200, nothing else is possible in new transaction log files.
+        """
+        return 0x200
+
+    def log_entries(self):
+        """
+        A generator that enumerates all valid HvLE (HvLEBlock) structures in the transaction log file.
+        """
+        expected_seqnum = c_uint32(self.hive_sequence2())
+        h = HvLEBlock(self._buf, self.first_log_entry_offset(), self)
+        if h.sequence() == expected_seqnum.value and h.validate_log_entry():
+            yield h
+
+            while h.has_next():
+                h = h.next()
+                expected_seqnum.value += 1
+                if h.sequence() == expected_seqnum.value and h.validate_log_entry():
+                    yield h
+                else:
+                    break
 
 
 class HBINCell(RegistryBlock):
@@ -619,7 +744,7 @@ def decode_utf16le(s):
 
 class VKRecord(Record):
     """
-    The VKRecord holds one name-value pair.  The data may be one many types,
+    The VKRecord holds one name-value pair.  The data may be one of many types,
     including strings, integers, and binary data.
     """
     def __init__(self, buf, offset, parent):
@@ -708,7 +833,6 @@ class VKRecord(Record):
     def has_ascii_name(self):
         """
         Is the name of this value in the ASCII charset?
-        Note, this doesnt work, yet... TODO
         """
         return self.unpack_word(0x10) & 1 == 1
 
@@ -1199,7 +1323,7 @@ class NKRecord(Record):
         """
         Does this have a classname?
         """
-        return self.unpack_dword(0x30) != 0xFFFFFFFF
+        return self.unpack_word(0x4A) > 0
 
     def classname(self):
         """
@@ -1223,7 +1347,7 @@ class NKRecord(Record):
         return parse_windows_timestamp(self.unpack_qword(0x4))
 
     def has_ascii_name(self):
-        return self.unpack_word(0x2) & 0x0020
+        return self.unpack_word(0x2) & 0x0020 > 0
 
     def name(self):
         """
@@ -1258,7 +1382,7 @@ class NKRecord(Record):
         """
         Is this a root key?
         """
-        return self.unpack_word(0x2) == 0x2C
+        return self.unpack_word(0x2) & 0x0004 > 0
 
     def has_parent_key(self):
         """
@@ -1353,8 +1477,8 @@ class NKRecord(Record):
 
 class HBINBlock(RegistryBlock):
     """
-    An HBINBlock is the basic allocation block of the Windows Registry.
-    It has a length of 0x1000.
+    A HBINBlock is the basic allocation block of the Windows Registry.
+    It's length is multiple of 0x1000.
     """
     def __init__(self, buf, offset, parent):
         """
@@ -1390,7 +1514,7 @@ class HBINBlock(RegistryBlock):
         Does another HBINBlock exist after this one?
         """
         regf = self.first_hbin().parent()
-        if regf.last_hbin_offset() == self.offset():
+        if regf.hbins_size() + regf.first_hbin_offset() == self._offset_next_hbin:
             return False
 
         try:
@@ -1402,7 +1526,7 @@ class HBINBlock(RegistryBlock):
     def next(self):
         """
         Get the next HBIN after this one.
-        Note: This will blindly attempts to create it regardless of if it exists.
+        Note: This blindly attempts to create it regardless of its existence.
         """
         return HBINBlock(self._buf, self._offset_next_hbin, self.parent())
 
@@ -1426,3 +1550,242 @@ class HBINBlock(RegistryBlock):
         from warnings import warn
         warn("records is obsolete, use cells instead!")
         return self.cells()
+
+class HvLEBlock(RegistryBlock):
+    """
+    A HvLEBlock is the log entry in a new transaction log file.
+    It's length is multiple of 0x200.
+    """
+    def __init__(self, buf, offset, parent):
+        """
+        Constructor.
+        Arguments:
+        - `buf`: Byte string containing Windows Registry transaction log file.
+        - `offset`: The offset into the file-like object at which the block starts.
+        - `parent`: The parent block, which links to this block. The parent of the first HvLEBlock
+        should be the REGFBlock, and the parents of other HvLEBlocks should be the preceeding
+        HvLEBlocks.
+        """
+        super(HvLEBlock, self).__init__(buf, offset, parent)
+
+        _id = self.unpack_dword(0)
+        if _id != 0x454C7648:
+            raise ParseException("Invalid HvLE ID")
+
+        self._offset_next_hvle = self._offset + self.size()
+        self._marvin32seed = 0x82EF4D887A4E55C5
+
+    def __str__(self):
+        return "HvLE at 0x%x" % (self._offset)
+
+    def marvin32_hash(self, buf):
+        """
+        Hash the buf using Marvin32 with a predefined seed.
+        """
+        def rotl(x, n, w):
+            return (x.value << n) | (x.value >> (w - n))
+
+        def to_uint32_le(four_bytes):
+            b1, b2, b3, b4 = bytearray(four_bytes)
+            return b1 | (b2 << 8) | (b3 << 16) | (b4 << 24)
+
+        def marvin32_mix(state, val):
+            lo, hi = state
+            lo.value += val.value
+            hi.value ^= lo.value
+            lo.value = rotl(lo, 20, 32) + hi.value
+            hi.value = rotl(hi, 9, 32) ^ lo.value
+            lo.value = rotl(lo, 27, 32) + hi.value
+            hi.value = rotl(hi, 19, 32)
+            return (lo, hi)
+
+        seed = self._marvin32seed
+        lo = c_uint32(seed)
+        hi = c_uint32(seed >> 32)
+        state = (lo, hi)
+
+        length = len(buf)
+        pos = 0
+        val = c_uint32()
+
+        while length >= 4:
+            val.value = to_uint32_le(buf[pos:pos+4])
+            state = marvin32_mix(state, val)
+            pos += 4
+            length -= 4
+
+        final = c_uint32(0x80)
+        if length == 3:
+            final.value = (final.value << 8) | buf[pos+2]
+        elif length == 2:
+            final.value = (final.value << 8) | buf[pos+1]
+        elif length == 1:
+            final.value = (final.value << 8) | buf[pos]
+
+        state = marvin32_mix(state, final)
+        state = marvin32_mix(state, c_uint32(0))
+        lo, hi = state
+        return (hi.value << 32 | lo.value)
+
+    def size(self):
+        """
+        Get the size of this HvLEBlock.
+        """
+        return self.unpack_dword(0x4)
+
+    def hash_1(self):
+        """
+        Get the value of Hash-1.
+        """
+        return self.unpack_qword(0x18)
+
+    def calculate_hash_1(self):
+        """
+        Calculate the Hash-1.
+        """
+        return self.marvin32_hash(self._buf[self._offset+LOG_ENTRY_SIZE_HEADER:self._offset+self.size()])
+
+    def hash_2(self):
+        """
+        Get the value of Hash-2.
+        """
+        return self.unpack_qword(0x20)
+
+    def calculate_hash_2(self):
+        """
+        Calculate the Hash-2.
+        """
+        return self.marvin32_hash(self._buf[self._offset:self._offset+32])
+
+    def validate_log_entry(self):
+        """
+        Check if this log entry is valid.
+        """
+        if (self.size() <= LOG_ENTRY_SIZE_HEADER) or (self.size() % LOG_ENTRY_SIZE_ALIGNMENT != 0):
+            return False
+
+        if self.hbins_size() % 0x1000 != 0:
+            return False
+
+        if self.hash_2() != self.calculate_hash_2() or self.hash_1() != self.calculate_hash_1():
+            return False
+
+        return True
+
+    def hive_flags(self):
+        """
+        Get the hive flags as an unsigned integer.
+        """
+        return self.unpack_dword(0x8)
+
+    def sequence(self):
+        """
+        Get the sequence number as an unsigned integer.
+        """
+        return self.unpack_dword(0xC)
+
+    def hbins_size(self):
+        """
+        Get the size of all HBINBlock structures as an unsigned integer.
+        """
+        return self.unpack_dword(0x10)
+
+    def dirty_pages_count(self):
+        """
+        Get the number of dirty pages in this log entry.
+        """
+        return self.unpack_dword(0x14)
+
+    def dirty_pages_references(self):
+        """
+        Get a generator that yields dirty pages references in this log entry.
+        """
+        i = self.dirty_pages_count()
+        rel_offset = 0
+        while i > 0:
+            c = DirtyPageReference(self._buf, self._offset + rel_offset + 0x28, self)
+            yield c
+            rel_offset += 8
+            i -= 1
+
+    def first_dirty_page_offset(self):
+        """
+        Get the offset of the first dirty page in this log entry.
+        """
+        return self._offset + LOG_ENTRY_SIZE_HEADER + 8*self.dirty_pages_count()
+
+    def dirty_pages_with_references(self):
+        """
+        Get a generator that yields tuples with a DirtyPageReference and a DirtyPage.
+        """
+        current_offset = self.first_dirty_page_offset()
+        for dirty_page_reference in self.dirty_pages_references():
+            current_size = dirty_page_reference.size()
+            dirty_page = DirtyPage(self._buf, current_offset, current_size, self)
+            yield (dirty_page_reference, dirty_page)
+            current_offset += dirty_page_reference.size()
+
+    def has_next(self):
+        """
+        Does another HvLEBlock exist after this one?
+        """
+        try:
+            self.next()
+            return True
+        except (ParseException, struct.error):
+            return False
+
+    def next(self):
+        """
+        Get the next HvLE after this one.
+        Note: This blindly attempts to create it regardless of its existence.
+        """
+        return HvLEBlock(self._buf, self._offset_next_hvle, self.parent())
+
+
+class DirtyPageReference(RegistryBlock):
+    """
+    A structure describing a single dirty page in the HvLEBlock.
+    """
+    def __init__(self, buf, offset, parent):
+        """
+        Constructor.
+        Arguments:
+        - `buf`: Byte string containing Windows Registry transaction log file.
+        - `offset`: The offset into the buffer at which the block starts.
+        - `parent`: The parent block, which links to this block.
+        """
+        super(DirtyPageReference, self).__init__(buf, offset, parent)
+
+    def offset(self):
+        """
+        Offset of a dirty page in a primary file (relative from the first HBINBlock).
+        """
+        return self.unpack_dword(0x0)
+
+    def size(self):
+        """
+        Size of a dirty page.
+        """
+        return self.unpack_dword(0x4)
+
+class DirtyPage(RegistryBlock):
+    """
+    A a single dirty page in the HvLEBlock.
+    """
+    def __init__(self, buf, offset, size, parent):
+        """
+        Constructor.
+        Arguments:
+        - `buf`: Byte string containing Windows Registry transaction log file.
+        - `offset`: The offset into the buffer at which the block starts.
+        - `parent`: The parent block, which links to this block.
+        """
+        super(DirtyPage, self).__init__(buf, offset, parent)
+        self._size = size
+
+    def data(self):
+        """
+        Return the dirty page.
+        """
+        return self._buf[self._offset : self._offset + self._size]

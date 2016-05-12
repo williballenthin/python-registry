@@ -18,3 +18,6 @@ Many thanks to the following contributors who submitted patches, bug reports, an
     - identify issue in data size parsing
   - @sbv-csis
     - identify path cycle issue and suggest fix
+  - @msuhanov
+    - transaction log files (new format) support
+    - various improvements to the primary files parser
