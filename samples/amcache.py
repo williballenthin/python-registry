@@ -139,7 +139,8 @@ ExecutionEntry = namedtuple("ExecutionEntry", map(lambda e: e.name, FIELDS))
 
 
 def parse_execution_entry(key):
-    return ExecutionEntry(dict(e.name, e.getter(key)) for e in FIELDS)
+    return ExecutionEntry(**dict((e.name, e.getter(key)) for e in FIELDS))
+
 
 
 class NotAnAmcacheHive(Exception):
