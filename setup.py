@@ -15,6 +15,6 @@ setup(name='python-registry',
                      "Programming Language :: Python :: 3",
                      "Operating System :: OS Independent", 
                      "License :: OSI Approved :: Apache Software License"],
-     install_requires=["enum34"]
+     install_requires=['enum34','unicodecsv']
      )
 
