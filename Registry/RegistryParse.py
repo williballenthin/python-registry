@@ -1358,7 +1358,7 @@ class NKRecord(Record):
         Get the access bits of the registry key as an unsigned integer.
         The field is used as of Windows 8.
         """
-        return self.unpack_dword(0xC)
+        return self.unpack_dword(0xC) & 0xFF
 
     def has_ascii_name(self):
         return self.unpack_word(0x2) & 0x0020 > 0
