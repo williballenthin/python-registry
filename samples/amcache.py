@@ -163,7 +163,10 @@ def parse_execution_entries(registry):
 TimelineEntry = namedtuple("TimelineEntry", ["timestamp", "type", "entry"])
 
 
-def main():
+def main(argv=None):
+    if argv is None:
+        argv = sys.argv
+        
     parser = argparse.ArgumentParser(
         description="Parse program execution entries from the Amcache.hve Registry hive")
     parser.add_argument("registry_hive", type=str,
@@ -172,7 +175,7 @@ def main():
                         help="Enable verbose output")
     parser.add_argument("-t", action="store_true", dest="do_timeline",
                         help="Output in simple timeline format")
-    args = parser.parse_args()
+    args = parser.parse_args(argv[1:])
 
     if args.verbose:
         logging.basicConfig(level=logging.DEBUG)
@@ -219,4 +222,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(argv=sys.argv)
