@@ -172,14 +172,15 @@ def main(argv=None):
         
     parser = argparse.ArgumentParser(
         description="Parse program execution entries from the Amcache.hve Registry hive")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("-t", action="store_true", dest="do_timeline",
+                        help="Output in simple timeline format")
+    group.add_argument("-j", action="store_true", dest="do_json",
+                        help="Output in JSON-formatted strings")
     parser.add_argument("registry_hive", type=str,
                         help="Path to the Amcache.hve hive to process")
     parser.add_argument("-v", action="store_true", dest="verbose",
                         help="Enable verbose output")
-    parser.add_argument("-t", action="store_true", dest="do_timeline",
-                        help="Output in simple timeline format")
-    parser.add_argument("-j", action="store_true", dest="do_json",
-                        help="Output in JSON-formatted strings")
     args = parser.parse_args(argv[1:])
 
     if args.verbose:
