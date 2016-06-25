@@ -227,7 +227,7 @@ def main(argv=None):
                 elif type(document[i.name]) == datetime.datetime:
                     document[i.name] = str(document[i.name])
 
-            print json.dumps(document, ensure_ascii=False).encode("utf8")
+            print json.dumps(document, ensure_ascii=False).encode("utf-8")
 
     else:
         w = unicodecsv.writer(sys.stdout, delimiter="|", quotechar="\"",
