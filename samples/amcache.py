@@ -17,11 +17,12 @@
 #   limitations under the License.
 
 from __future__ import print_function
+
 import sys
+import json
 import logging
 import datetime
 from collections import namedtuple
-import json
 
 import argparse
 import unicodecsv
@@ -236,6 +237,8 @@ def main(argv=None):
                               quoting=unicodecsv.QUOTE_MINIMAL, encoding="utf-8")
         w.writerow(map(lambda e: e.name, FIELDS))
         for e in ee:
+            print(e)
+            exit(type(e.path))
             w.writerow(map(lambda i: getattr(e, i.name), FIELDS))
 
 
