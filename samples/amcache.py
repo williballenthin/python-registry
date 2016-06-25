@@ -19,6 +19,7 @@ import sys
 import logging
 import datetime
 from collections import namedtuple
+import json
 
 import argparse
 import unicodecsv
@@ -175,6 +176,8 @@ def main(argv=None):
                         help="Enable verbose output")
     parser.add_argument("-t", action="store_true", dest="do_timeline",
                         help="Output in simple timeline format")
+    parser.add_argument("-j", action="store_true", dest="do_json",
+                        help="Output in JSON-formatted strings")
     args = parser.parse_args(argv[1:])
 
     if args.verbose:
@@ -213,6 +216,19 @@ def main(argv=None):
         w.writerow(["timestamp", "timestamp_type", "path", "sha1"])
         for e in sorted(entries, key=lambda e: e.timestamp):
             w.writerow([e.timestamp, e.type, e.entry.path, e.entry.sha1])
+
+    elif args.do_json:
+        for e in ee:
+            document = {}
+            for i in FIELDS:
+                document[i.name] = getattr(e, i.name)
+                if document[i.name] is None:
+                    document[i.name] = "-"
+                elif type(document[i.name]) == datetime.datetime:
+                    document[i.name] = str(document[i.name])
+
+            print json.dumps(document, ensure_ascii=False).encode("utf8")
+
     else:
         w = unicodecsv.writer(sys.stdout, delimiter="|", quotechar="\"",
                               quoting=unicodecsv.QUOTE_MINIMAL, encoding="utf-8")
