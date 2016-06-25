@@ -15,7 +15,6 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-
 from __future__ import print_function
 
 import sys
@@ -224,12 +223,10 @@ def main(argv=None):
         for e in ee:
             document = {}
             for i in FIELDS:
-                document[i.name] = getattr(e, i.name)
-                if document[i.name] is None:
-                    document[i.name] = "-"
-                elif type(document[i.name]) == datetime.datetime:
-                    document[i.name] = str(document[i.name])
-
+                val = getattr(e, i.name, "-")
+                if isinstance(val, datetime.datetime):
+                    val = val.isoformat(" ")
+                document[i.name] = val
             print(json.dumps(document, ensure_ascii=False).encode("utf-8"))
 
     else:
@@ -237,8 +234,6 @@ def main(argv=None):
                               quoting=unicodecsv.QUOTE_MINIMAL, encoding="utf-8")
         w.writerow(map(lambda e: e.name, FIELDS))
         for e in ee:
-            print(e)
-            exit(type(e.path))
             w.writerow(map(lambda i: getattr(e, i.name), FIELDS))
 
 
