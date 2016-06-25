@@ -15,6 +15,8 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+
+from __future__ import print_function
 import sys
 import logging
 import datetime
@@ -227,7 +229,7 @@ def main(argv=None):
                 elif type(document[i.name]) == datetime.datetime:
                     document[i.name] = str(document[i.name])
 
-            print json.dumps(document, ensure_ascii=False).encode("utf-8")
+            print(json.dumps(document, ensure_ascii=False).encode("utf-8"))
 
     else:
         w = unicodecsv.writer(sys.stdout, delimiter="|", quotechar="\"",
