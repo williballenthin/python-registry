@@ -2,7 +2,7 @@
 #    This file is part of python-registry.
 #
 #   Copyright 2015 Will Ballenthin <william.ballenthin@mandiant.com>
-#                    while at Mandiant <http://www.mandiant.com>
+#                    while at Mandiant <http://www.mandiant.com>Exe
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -139,7 +139,8 @@ ExecutionEntry = namedtuple("ExecutionEntry", map(lambda e: e.name, FIELDS))
 
 
 def parse_execution_entry(key):
-    return ExecutionEntry(**{e.name:e.getter(key) for e in FIELDS})
+    return ExecutionEntry(**dict((e.name, e.getter(key)) for e in FIELDS))
+
 
 
 class NotAnAmcacheHive(Exception):
@@ -162,7 +163,10 @@ def parse_execution_entries(registry):
 TimelineEntry = namedtuple("TimelineEntry", ["timestamp", "type", "entry"])
 
 
-def main():
+def main(argv=None):
+    if argv is None:
+        argv = sys.argv
+        
     parser = argparse.ArgumentParser(
         description="Parse program execution entries from the Amcache.hve Registry hive")
     parser.add_argument("registry_hive", type=str,
@@ -171,13 +175,17 @@ def main():
                         help="Enable verbose output")
     parser.add_argument("-t", action="store_true", dest="do_timeline",
                         help="Output in simple timeline format")
-    args = parser.parse_args()
+    args = parser.parse_args(argv[1:])
 
     if args.verbose:
         logging.basicConfig(level=logging.DEBUG)
     else:
         logging.basicConfig(level=logging.INFO)
 
+    if sys.platform == "win32":
+        import os, msvcrt
+        msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
+        
     r = Registry.Registry(args.registry_hive)
 
     try:
@@ -214,4 +222,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(argv=sys.argv)
