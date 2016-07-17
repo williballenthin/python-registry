@@ -294,6 +294,13 @@ class REGFBlock(RegistryBlock):
         """
         return parse_windows_timestamp(self.unpack_qword(0xC))
 
+    def reorganized_timestamp(self):
+        """
+        Get the last reorganized timestamp as a Python datetime.
+        The field is used as of Windows 8, the value returned is garbage in previous versions of Windows.
+        """
+        return parse_windows_timestamp(self.unpack_qword(0xA8))
+
     def major_version(self):
         """
         Get the major version of the Windows Registry file format
@@ -1345,6 +1352,13 @@ class NKRecord(Record):
         Get the modified timestamp as a Python datetime.
         """
         return parse_windows_timestamp(self.unpack_qword(0x4))
+
+    def access_bits(self):
+        """
+        Get the access bits of the registry key as an unsigned integer.
+        The field is used as of Windows 8.
+        """
+        return self.unpack_dword(0xC) & 0xFF
 
     def has_ascii_name(self):
         return self.unpack_word(0x2) & 0x0020 > 0
