@@ -117,7 +117,7 @@ FIELDS = [
     Field("sha1", make_value_getter("101")),
     Field("size", make_value_getter("6")),
     Field("file_description", make_value_getter("c")),
-    Field("first_run", lambda key: key.timestamp()),
+    Field("source_key_timestamp", lambda key: key.timestamp()),
     Field("created_timestamp", make_windows_timestamp_value_getter("12")),
     Field("modified_timestamp", make_windows_timestamp_value_getter("11")),
     Field("modified_timestamp2", make_windows_timestamp_value_getter("17")),
