@@ -197,7 +197,7 @@ def main(argv=None):
     if args.do_timeline:
         entries = []
         for e in ee:
-            for t in ["first_run", "created_timestamp", "modified_timestamp",
+            for t in ["source_key_timestamp", "created_timestamp", "modified_timestamp",
                     "modified_timestamp2", "linker_timestamp"]:
                 ts = getattr(e, t)
                 if ts == UNIX_TIMESTAMP_ZERO:
