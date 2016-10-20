@@ -191,7 +191,7 @@ def main(argv=None):
     try:
         ee = parse_execution_entries(r)
     except NotAnAmcacheHive:
-        g_logging.error("doesn't appear to be an Amcache.hve hive")
+        g_logger.error("doesn't appear to be an Amcache.hve hive")
         return
 
     if args.do_timeline:
