@@ -679,7 +679,7 @@ class DBIndirectBlock(Record):
 
             count += 1
             length -= size
-        return str(b)
+        return bytes(b)
 
 
 class DBRecord(Record):
@@ -732,7 +732,7 @@ def decode_utf16le(s):
     if b"\x00\x00" in s:
         index = s.index(b"\x00\x00")
         if index > 2:
-            if s[index - 2] != b"\x00"[0]: #py2+3 
+            if s[index - 2] != b"\x00"[0]: #py2+3
                 #  61 00 62 00 63 64 00 00
                 #                    ^  ^-- end of string
                 #                    +-- index
@@ -1378,7 +1378,7 @@ class NKRecord(Record):
           """
           Return the full path of the registry key as a unicode string
           @return: unicode string containing the path
-          """ 
+          """
           p = self
 
           name = [p.name()]
@@ -1390,7 +1390,7 @@ class NKRecord(Record):
                   break
               name.append(p.name())
               offsets.add(p._offset)
-          return '\\'.join(reversed(name))  
+          return '\\'.join(reversed(name))
 
     def is_root(self):
         """
