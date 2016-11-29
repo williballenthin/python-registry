@@ -996,7 +996,7 @@ class VKRecord(Record):
             else:
                 ret = self._buf[data_offset + 4:data_offset + 4 + data_length]
         elif data_type == RegFileTime:
-            ret = self._buf[data_offset + 4:data_offset + 4 + data_length]
+            ret = struct.unpack_from(("<Q"), self._buf[data_offset + 4:data_offset + 4 + data_length])[0]
         elif data_length < 5 or data_length >= 0x80000000:
             ret = self.unpack_binary(0x8, 4)
         else:
