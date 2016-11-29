@@ -18,7 +18,7 @@ class TestReorganizedValues(unittest.TestCase):
 
     def test_timestamp(self):
         timestamp = Registry.Registry(self.path)._regf.reorganized_timestamp()
-        assert(timestamp == datetime(2016, 7, 17, 10, 40, 0, 41864))
+        self.assertEqual(datetime(2016, 7, 17, 10, 40, 0, 41865), timestamp)
 
 # Run Tests
 if __name__ == '__main__':

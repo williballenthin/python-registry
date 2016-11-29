@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 
 import struct
 from datetime import datetime
+import decimal
 import binascii
 from ctypes import c_uint32
 from enum import Enum
@@ -60,9 +61,38 @@ DEVPROP_MASK_TYPE = 0x00000FFF
 # This named tuple describes the recovery operations to be performed on a hive.
 RecoveryStatus = namedtuple('RecoveryStatus', ['recover_header', 'recover_data'])
 
+
+def parse_timestamp(qword, resolution, epoch_shift, mode=decimal.ROUND_HALF_EVEN):
+    """
+    Generalized function for parsing timestamps
+
+    :param qword: number of time units since the epoch
+    :param resolution: number of time units per second
+    :param epoch_shift: difference in seconds between UNIX epoch (1970-1-1)
+                        and epoch of qword
+    :param mode: decimal rounding mode
+    :return: datetime.datetime
+    """
+    # convert qword from given epoch to UNIX epoch
+    shifted = qword - epoch_shift * resolution
+    # python's datetime.datetime supports microsecond precision
+    datetime_resolution = int(1e6)
+
+    # total number of microseconds since UNIX epoch
+    # python 3 round() returns int, python 2 round() returns float
+    total_microseconds = (decimal.Decimal(shifted * datetime_resolution) / decimal.Decimal(resolution)).quantize(1, mode)
+
+    # convert to datetime
+    return datetime.utcfromtimestamp(total_microseconds // datetime_resolution).replace(microsecond=total_microseconds % datetime_resolution)
+
+
 def parse_windows_timestamp(qword):
-    # see http://integriography.wordpress.com/2010/01/16/using-phython-to-parse-and-present-windows-64-bit-timestamps/
-    return datetime.utcfromtimestamp(float(qword) * 1e-7 - 11644473600 )
+    """
+    :param qword: number of 100-nanoseconds since 1601-01-01
+    :return: datetime.datetime
+    """
+    # see https://msdn.microsoft.com/en-us/library/windows/desktop/ms724290(v=vs.85).aspx
+    return parse_timestamp(qword, int(1e7), 11644473600)
 
 
 class RegistryException(Exception):
