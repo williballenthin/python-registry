@@ -68,8 +68,8 @@ This module implements all known structures of the Windows Registry.
 
 Wanted
 ------
-*) Bug reports.
-*) Feedback.
+  - Bug reports.
+  - Feedback.
 
 python-registry was originally developed to scratch one of
 the author's itches.  Now he hopes it can be of use to
