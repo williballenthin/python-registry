@@ -15,8 +15,6 @@ from __future__ import unicode_literals
 
 import subprocess
 import os
-import errno
-import fnmatch
 import sys
 import time
 from Registry import Registry
