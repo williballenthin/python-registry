@@ -62,11 +62,11 @@ DEVPROP_MASK_TYPE = 0x00000FFF
 RecoveryStatus = namedtuple('RecoveryStatus', ['recover_header', 'recover_data'])
 
 
-def parse_timestamp(tics, resolution, epoch, mode=decimal.ROUND_HALF_EVEN):
+def parse_timestamp(ticks, resolution, epoch, mode=decimal.ROUND_HALF_EVEN):
     """
     Generalized function for parsing timestamps
 
-    :param tics: number of time units since the epoch
+    :param ticks: number of time units since the epoch
     :param resolution: number of time units per second
     :param epoch: the datetime of this timestamp's epoch
     :param mode: decimal rounding mode
@@ -75,8 +75,8 @@ def parse_timestamp(tics, resolution, epoch, mode=decimal.ROUND_HALF_EVEN):
     # python's datetime.datetime supports microsecond precision
     datetime_resolution = int(1e6)
 
-    # convert tics since epoch to microseconds since epoch
-    us = int((decimal.Decimal(tics * datetime_resolution) / decimal.Decimal(resolution)).quantize(1, mode))
+    # convert ticks since epoch to microseconds since epoch
+    us = int((decimal.Decimal(ticks * datetime_resolution) / decimal.Decimal(resolution)).quantize(1, mode))
 
     # convert to datetime
     return epoch + datetime.timedelta(microseconds=us)
