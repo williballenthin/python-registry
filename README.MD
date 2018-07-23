@@ -5,11 +5,11 @@ python-registry
 Introduction
 ------------
 python-registry is a pure Python library that provides read-only
-access to Windows Registry files.
+access to Windows NT Registry files.
 These include NTUSER.DAT, userdiff, and SAM. The interface is two-fold:
 a high-level interface suitable for most tasks, and a low level
 set of parsing objects and methods which may be used for advanced
-study of the Windows Registry. The library is portable across all
+study of the Windows NT Registry. The library is portable across all
 major platforms.
 
 Usage
@@ -19,7 +19,7 @@ Most users will find the `Registry.Registry` module most appropriate.
 The module exposes three classes: the `Registry`, the `RegistryKey`,
 and the `RegistryValue`. The `Registry` organizes parsing and access
 to the Windows Registry file. The `RegistryKey` is a convenient
-interface into the tree-like structure of the Windows Registry.
+interface into the tree-like structure of the Windows NT Registry.
 A `RegistryKey` may have children `RegistryKeys`, and may also have
 values associated with it. A `RegistryValue` can be thought of as
 the tuple (name, datatype, value) associated with a `RegistryKey`.
