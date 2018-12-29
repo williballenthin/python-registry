@@ -912,7 +912,7 @@ class VKRecord(Record):
         else:
             return self.abs_offset_from_hbin_offset(self.unpack_dword(0x8))
 
-    def raw_data(self):
+    def raw_data(self, overrun=0):
         """
         Get the unparsed raw data.
         """
@@ -930,27 +930,27 @@ class VKRecord(Record):
                 if d.data_id() == b"db":
                     # this should always be the case
                     # but empirical testing does not confirm this
-                    ret = d.child().large_data(data_length)
+                    ret = d.child().large_data(data_length + overrun)
                 else:
-                    ret = d.raw_data()[:data_length]
+                    ret = d.raw_data()[:data_length + overrun]
             else:
                 d = HBINCell(self._buf, data_offset, self)
                 data_offset = d.data_offset()
-                ret = self._buf[data_offset:data_offset + data_length]
+                ret = self._buf[data_offset:data_offset + data_length + overrun]
         elif data_type == RegBin or data_type == RegNone:
             if data_length >= 0x80000000:
                 data_length -= 0x80000000
-                ret = self._buf[data_offset:data_offset + data_length]
+                ret = self._buf[data_offset:data_offset + data_length + overrun]
             elif 0x3fd8 < data_length < 0x80000000:
                 d = HBINCell(self._buf, data_offset, self)
                 if d.data_id() == b"db":
                     # this should always be the case
                     # but empirical testing does not confirm this
-                    ret = d.child().large_data(data_length)
+                    ret = d.child().large_data(data_length + overrun)
                 else:
-                    ret = d.raw_data()[:data_length]
+                    ret = d.raw_data()[:data_length + overrun]
             else:
-                ret = self._buf[data_offset + 4:data_offset + 4 + data_length]
+                ret = self._buf[data_offset + 4:data_offset + 4 + data_length + overrun]
         elif data_type == RegDWord:
             ret = self.unpack_binary(0x8, 0x4)
         elif data_type == RegMultiSZ:
@@ -961,11 +961,11 @@ class VKRecord(Record):
             elif 0x3fd8 < data_length < 0x80000000:
                 d = HBINCell(self._buf, data_offset, self)
                 if d.data_id() == b"db":
-                    ret = d.child().large_data(data_length)
+                    ret = d.child().large_data(data_length + overrun)
                 else:
-                    ret = d.raw_data()[:data_length]
+                    ret = d.raw_data()[:data_length + overrun]
             else:
-                ret = self._buf[data_offset + 4:data_offset + 4 + data_length]
+                ret = self._buf[data_offset + 4:data_offset + 4 + data_length + overrun]
         elif data_type == RegQWord:
             d = HBINCell(self._buf, data_offset, self)
             data_offset = d.data_offset()
@@ -1011,7 +1011,7 @@ class VKRecord(Record):
                 ret = self._buf[data_offset + 4:data_offset + 4 + data_length]
         return ret
 
-    def data(self):
+    def data(self, overrun=0):
         """
         Get the parsed data.
         This method will return various types based on the data type.
@@ -1047,10 +1047,10 @@ class VKRecord(Record):
         """
         data_type = self.data_type()
         data_length = self.raw_data_length()
-        d = self.raw_data()
+        d = self.raw_data(overrun)
 
         if data_type == RegSZ or data_type == RegExpandSZ:
-            return decode_utf16le(d)
+            return d.decode('utf16')  #decode_utf16le(d)
         elif data_type == RegBin or data_type == RegNone:
             return d
         elif data_type == RegDWord:
