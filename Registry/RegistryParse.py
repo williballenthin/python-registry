@@ -1047,10 +1047,15 @@ class VKRecord(Record):
         """
         data_type = self.data_type()
         data_length = self.raw_data_length()
-        d = self.raw_data(overrun)
+        d = self.raw_data(overrun=overrun)
 
         if data_type == RegSZ or data_type == RegExpandSZ:
-            return d.decode('utf16')  #decode_utf16le(d)
+            if overrun > 0:
+                # decode_utf16le() only returns the first string, but if we explicitly
+                # ask for overrun, let's make a best-effort to decode as much as possible.
+                return d.decode('utf16')
+            else:
+                return decode_utf16le(d)
         elif data_type == RegBin or data_type == RegNone:
             return d
         elif data_type == RegDWord:
