@@ -156,11 +156,11 @@ class RegistryValue(object):
         """
         return self._vkrecord.data_type_str()
 
-    def value(self):
-        return self._vkrecord.data()
+    def value(self, overrun=0):
+        return self._vkrecord.data(overrun)
 
-    def raw_data(self):
-        return self._vkrecord.raw_data()
+    def raw_data(self, overrun=0):
+        return self._vkrecord.raw_data(overrun)
 
 
 class RegistryKey(object):
