@@ -56,7 +56,7 @@ Find a key and print all string values
         print "Couldn't find Run key. Exiting..."
         sys.exit(-1)
     
-    for value in [v for v key.values() \
+    for value in [v for v in key.values() \
                        if v.value_type() == Registry.RegSZ or \
                           v.value_type() == Registry.RegExpandSZ]:
         print "%s: %s" % (value.name(), value.value())
