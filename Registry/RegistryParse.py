@@ -28,6 +28,7 @@ import binascii
 from ctypes import c_uint32
 from enum import Enum
 from collections import namedtuple
+from . import SettingsParse
 
 # Constants
 RegSZ = 0x0001
@@ -43,6 +44,38 @@ RegResourceList = 0x0008
 RegFullResourceDescriptor = 0x0009
 RegResourceRequirementsList = 0x000A
 RegFileTime = 0x0010
+# Following are new types from settings.dat
+RegUint8 = 0x101
+RegInt16 = 0x102
+RegUint16 = 0x103
+RegInt32 = 0x104
+RegUint32 = 0x105
+RegInt64 = 0x106
+RegUint64 = 0x107
+RegFloat = 0x108
+RegDouble = 0x109
+RegUnicodeChar = 0x10A
+RegBoolean = 0x10B
+RegUnicodeString = 0x10C
+RegCompositeValue = 0x10D
+RegDateTimeOffset = 0x10E
+RegTimeSpan = 0x10F
+RegGUID = 0x110
+RegUnk111 = 0x111
+RegUnk112 = 0x112
+RegUnk113 = 0x113
+RegBytesArray = 0x114
+RegInt16Array = 0x115
+RegUint16Array = 0x116
+RegInt32Array = 0x117
+RegUInt32Array = 0x118
+RegInt64Array = 0x119
+RegUInt64Array = 0x11A
+RegFloatArray = 0x11B
+RegDoubleArray = 0x11C
+RegUnicodeCharArray = 0x11D
+RegBooleanArray = 0x11E
+RegUnicodeStringArray = 0x11F
 
 # Constants to support the transaction log files (new format)
 LOG_ENTRY_SIZE_HEADER = 40
@@ -826,6 +859,68 @@ class VKRecord(Record):
             return "RegResourceRequirementsList"
         elif data_type == RegFileTime:
             return "RegFileTime"
+        elif data_type == RegUint8:
+            return "RegUint8"
+        elif data_type == RegInt16:
+            return "RegInt16"
+        elif data_type == RegUint16:
+            return "RegUint16"
+        elif data_type == RegInt32:
+            return "RegInt32"
+        elif data_type == RegUint32:
+            return "RegUint32"
+        elif data_type == RegInt64:
+            return "RegInt64"
+        elif data_type == RegUint64:
+            return "RegUint64"
+        elif data_type == RegFloat:
+            return "RegFloat"
+        elif data_type == RegDouble:
+            return "RegDouble"
+        elif data_type == RegUnicodeChar:
+            return "RegUnicodeChar"
+        elif data_type == RegBoolean:
+            return "RegBoolean"
+        elif data_type == RegUnicodeString:
+            return "RegUnicodeString"
+        elif data_type == RegCompositeValue:
+            return "RegCompositeValue"
+        elif data_type == RegDateTimeOffset:
+            return "RegDateTimeOffset"
+        elif data_type == RegTimeSpan:
+            return "RegTimeSpan"
+        elif data_type == RegGUID:
+            return "RegGUID"
+        elif data_type == RegUnk111:
+            return "RegUnk111"
+        elif data_type == RegUnk112:
+            return "RegUnk112"
+        elif data_type == RegUnk113:
+            return "RegUnk113"
+        elif data_type == RegBytesArray:
+            return "RegBytesArray"
+        elif data_type == RegInt16Array:
+            return "RegInt16Array"
+        elif data_type == RegUint16Array:
+            return "RegUint16Array"
+        elif data_type == RegInt32Array:
+            return "RegInt32Array"
+        elif data_type == RegUInt32Array:
+            return "RegUInt32Array"
+        elif data_type == RegInt64Array:
+            return "RegInt64Array"
+        elif data_type == RegUInt64Array:
+            return "RegUInt64Array"
+        elif data_type == RegFloatArray:
+            return "RegFloatArray"
+        elif data_type == RegDoubleArray:
+            return "RegDoubleArray"
+        elif data_type == RegUnicodeCharArray:
+            return "RegUnicodeCharArray"
+        elif data_type == RegBooleanArray:
+            return "RegBooleanArray"
+        elif data_type == RegUnicodeStringArray:
+            return "RegUnicodeStringArray"
         else:
             return "Unknown type: %s" % (hex(data_type))
 
@@ -847,8 +942,16 @@ class VKRecord(Record):
             data = "(none)"
         elif data_type == RegBin:
             data = "(binary)"
-        elif data_type == RegFileTime:
+        elif data_type in (RegFileTime, RegDateTimeOffset):
             data = self.data().isoformat("T") + "Z"
+        elif data_type in (RegUint8, RegInt16, RegUint16, RegInt32, RegUint32, 
+                              RegInt64, RegUint64, RegFloat, RegDouble, RegUnicodeChar, 
+                              RegBoolean, RegUnicodeString, RegCompositeValue, 
+                              RegTimeSpan, RegGUID, RegUnk111, RegUnk112, RegUnk113, RegBytesArray, 
+                              RegInt16Array, RegUint16Array, RegInt32Array, RegUInt32Array, 
+                              RegInt64Array, RegUInt64Array, RegFloatArray, RegDoubleArray, 
+                              RegUnicodeCharArray, RegBooleanArray, RegUnicodeStringArray):
+            data = str(self.data())
         else:
             data = "(unsupported)"
 
@@ -881,6 +984,21 @@ class VKRecord(Record):
         if self.has_ascii_name():
             return unpacked_string.decode("windows-1252")
         return unpacked_string.decode("utf-16le")
+    
+    def has_timestamp(self):
+        """
+        Has a timestamp? Only AppContainer settings.dat registry hive has this!
+        """
+        return (self.data_type() & 0x100 == 0x100) and (self.raw_data_length() >= 8)
+
+    def timestamp(self):
+        """
+        Get the modified timestamp as a Python datetime. This is only valid for
+        AppContainer settings.dat registry hive
+        """
+        if self.has_timestamp():
+            return parse_windows_timestamp(struct.unpack_from(str("<Q"), self.raw_data()[-8:])[0])
+        return None
 
     def data_type(self):
         """
@@ -936,8 +1054,15 @@ class VKRecord(Record):
             else:
                 d = HBINCell(self._buf, data_offset, self)
                 data_offset = d.data_offset()
-                ret = self._buf[data_offset:data_offset + data_length + overrun]
-        elif data_type == RegBin or data_type == RegNone:
+                ret = self._buf[data_offset:data_offset + data_length]
+        elif data_type == RegBin or data_type == RegNone \
+             or data_type in (RegUint8, RegInt16, RegUint16, RegInt32, RegUint32, 
+                              RegInt64, RegUint64, RegFloat, RegDouble, RegUnicodeChar, 
+                              RegBoolean, RegUnicodeString, RegCompositeValue,RegDateTimeOffset, 
+                              RegTimeSpan, RegGUID, RegUnk111, RegUnk112, RegUnk113, RegBytesArray, 
+                              RegInt16Array, RegUint16Array, RegInt32Array, RegUInt32Array, 
+                              RegInt64Array, RegUInt64Array, RegFloatArray, RegDoubleArray, 
+                              RegUnicodeCharArray, RegBooleanArray, RegUnicodeStringArray):
             if data_length >= 0x80000000:
                 data_length -= 0x80000000
                 ret = self._buf[data_offset:data_offset + data_length + overrun]
@@ -1074,6 +1199,16 @@ class VKRecord(Record):
             # we don't really support these types, but can at least
             #  return raw binary for someone else to work with.
             return d
+        elif data_type in (RegUint8, RegInt16, RegUint16, RegInt32, RegUint32, 
+                        RegInt64, RegUint64, RegFloat, RegDouble, RegUnicodeChar, 
+                        RegBoolean, RegUnicodeString, RegCompositeValue,RegDateTimeOffset, 
+                        RegTimeSpan, RegGUID, RegUnk111, RegUnk112, RegUnk113, RegBytesArray, 
+                        RegInt16Array, RegUint16Array, RegInt32Array, RegUInt32Array, 
+                        RegInt64Array, RegUInt64Array, RegFloatArray, RegDoubleArray, 
+                        RegUnicodeCharArray, RegBooleanArray, RegUnicodeStringArray):
+            d = d[0:-8] # remove timestamp from end
+            comp_type = data_type & 0xEFF # Apply mask for composite types
+            return SettingsParse.ParseAppDataCompositeValue(comp_type, d, len(d))
         elif data_type == RegFileTime:
             return parse_windows_timestamp(struct.unpack_from(str("<Q"), d, 0)[0])
         elif data_length < 5 or data_length >= 0x80000000:
