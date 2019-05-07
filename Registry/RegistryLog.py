@@ -17,10 +17,11 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 from __future__ import print_function
+from __future__ import absolute_import
 
 from ctypes import c_uint32
 from struct import pack
-from . import RegistryParse
+from Registry import RegistryParse
 
 class RegistryLog(object):
     """
@@ -39,8 +40,8 @@ class RegistryLog(object):
         try:
             self._log_buf = filelikeobject_log.read()
         except AttributeError:
-                with open(filelikeobject_log, "rb") as f:
-                    self._log_buf = f.read()
+            with open(filelikeobject_log, "rb") as f:
+                self._log_buf = f.read()
 
         self._regf = RegistryParse.REGFBlock(self._log_buf, 0, False)
 

@@ -20,6 +20,7 @@
 # Added for python2-3 compatibility
 from __future__ import print_function
 from __future__ import unicode_literals
+from __future__ import absolute_import
 
 import struct
 import datetime
@@ -28,7 +29,7 @@ import binascii
 from ctypes import c_uint32
 from enum import Enum
 from collections import namedtuple
-from . import SettingsParse
+from Registry import SettingsParse
 
 # Constants
 RegSZ = 0x0001
