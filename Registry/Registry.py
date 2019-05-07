@@ -52,6 +52,7 @@ class HiveType(Enum):
     COMPONENTS = "components"
     DEFAULT = "default"
     SCHEMA = "schema.dat"
+    SETTINGS = "settings.dat"
 
 
 class RegistryKeyHasNoParentException(RegistryParse.RegistryStructureDoesNotExist):
@@ -133,6 +134,37 @@ class RegistryValue(object):
          - RegResourceList = 0x0008
          - RegFullResourceDescriptor = 0x0009
          - RegResourceRequirementsList = 0x000A
+         - RegUint8 = 0x101
+         - RegInt16 = 0x102
+         - RegUint16 = 0x103
+         - RegInt32 = 0x104
+         - RegUint32 = 0x105
+         - RegInt64 = 0x106
+         - RegUint64 = 0x107
+         - RegFloat = 0x108
+         - RegDouble = 0x109
+         - RegUnicodeChar = 0x10A
+         - RegBoolean = 0x10B
+         - RegUnicodeString = 0x10C
+         - RegCompositeValue = 0x10D
+         - RegDateTimeOffset = 0x10E
+         - RegTimeSpan = 0x10F
+         - RegGUID = 0x110
+         - RegUnk111 = 0x111
+         - RegUnk112 = 0x112
+         - RegUnk113 = 0x113
+         - RegBytesArray = 0x114
+         - RegInt16Array = 0x115
+         - RegUint16Array = 0x116
+         - RegInt32Array = 0x117
+         - RegUInt32Array = 0x118
+         - RegInt64Array = 0x119
+         - RegUInt64Array = 0x11A
+         - RegFloatArray = 0x11B
+         - RegDoubleArray = 0x11C
+         - RegUnicodeCharArray = 0x11D
+         - RegBooleanArray = 0x11E
+         - RegUnicodeStringArray = 0x11F
         """
         return self._vkrecord.data_type()
 
@@ -153,6 +185,37 @@ class RegistryValue(object):
          - RegResourceList
          - RegFullResourceDescriptor
          - RegResourceRequirementsList
+         - RegUint8
+         - RegInt16
+         - RegUint16
+         - RegInt32
+         - RegUint32
+         - RegInt64
+         - RegUint64
+         - RegFloat
+         - RegDouble
+         - RegUnicodeChar
+         - RegBoolean
+         - RegUnicodeString
+         - RegCompositeValue
+         - RegDateTimeOffset
+         - RegTimeSpan
+         - RegGUID
+         - RegUnk111
+         - RegUnk112
+         - RegUnk113
+         - RegBytesArray
+         - RegInt16Array
+         - RegUint16Array
+         - RegInt32Array
+         - RegUInt32Array
+         - RegInt64Array
+         - RegUInt64Array
+         - RegFloatArray
+         - RegDoubleArray
+         - RegUnicodeCharArray
+         - RegBooleanArray
+         - RegUnicodeStringArray
         """
         return self._vkrecord.data_type_str()
 
@@ -161,6 +224,13 @@ class RegistryValue(object):
 
     def raw_data(self, overrun=0):
         return self._vkrecord.raw_data(overrun)
+        
+    def timestamp(self):
+        """
+        Get the last modified timestamp as a Python datetime. Only valid for 
+        AppContainer settings.dat reg hive
+        """
+        return self._vkrecord.timestamp()
 
 
 class RegistryKey(object):
@@ -348,6 +418,8 @@ class Registry(object):
             return HiveType.DEFAULT
         elif temp.lower() == HiveType.SCHEMA.value:
             return HiveType.SCHEMA
+        elif temp.lower() == HiveType.SETTINGS.value:
+            return HiveType.SETTINGS
         else:
             return HiveType.UNKNOWN
 
