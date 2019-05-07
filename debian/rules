@@ -1,8 +1,0 @@
-#!/usr/bin/make -f
-
-export DH_ALWAYS_EXCLUDE=.git
-export DH_MD5SUMS_ARGS := --exclude=.git
-export DH_VERBOSE=1
-
-%:
-	dh $@
