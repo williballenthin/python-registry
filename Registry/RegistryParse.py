@@ -985,7 +985,7 @@ class VKRecord(Record):
         if self.has_ascii_name():
             return unpacked_string.decode("windows-1252")
         return unpacked_string.decode("utf-16le")
-    
+
     def has_timestamp(self):
         """
         Has a timestamp? Only AppContainer settings.dat registry hive has this!
@@ -999,7 +999,7 @@ class VKRecord(Record):
         """
         if self.has_timestamp():
             return parse_windows_timestamp(struct.unpack_from(str("<Q"), self.raw_data()[-8:])[0])
-        return None
+        raise ValueError('value does not have a timestamp')
 
     def data_type(self):
         """
