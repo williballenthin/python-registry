@@ -385,7 +385,7 @@ class REGFBlock(RegistryBlock):
         """
         Get the file type.
         """
-        return self.unpack_dword(0x1C)
+        return FileType(self.unpack_dword(0x1C))
 
     def is_primary_file(self):
         """
