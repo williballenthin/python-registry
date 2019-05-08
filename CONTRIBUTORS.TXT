@@ -21,3 +21,5 @@ Many thanks to the following contributors who submitted patches, bug reports, an
   - @msuhanov
     - transaction log files (new format) support
     - various improvements to the primary files parser
+  - John Ormonde and Tim Heaney
+    - identifing and providing a fix for regf file type detection
