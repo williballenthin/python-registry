@@ -945,12 +945,12 @@ class VKRecord(Record):
             data = "(binary)"
         elif data_type in (RegFileTime, RegDateTimeOffset):
             data = self.data().isoformat("T") + "Z"
-        elif data_type in (RegUint8, RegInt16, RegUint16, RegInt32, RegUint32, 
-                              RegInt64, RegUint64, RegFloat, RegDouble, RegUnicodeChar, 
-                              RegBoolean, RegUnicodeString, RegCompositeValue, 
-                              RegTimeSpan, RegGUID, RegUnk111, RegUnk112, RegUnk113, RegBytesArray, 
-                              RegInt16Array, RegUint16Array, RegInt32Array, RegUInt32Array, 
-                              RegInt64Array, RegUInt64Array, RegFloatArray, RegDoubleArray, 
+        elif data_type in (RegUint8, RegInt16, RegUint16, RegInt32, RegUint32,
+                              RegInt64, RegUint64, RegFloat, RegDouble, RegUnicodeChar,
+                              RegBoolean, RegUnicodeString, RegCompositeValue,
+                              RegTimeSpan, RegGUID, RegUnk111, RegUnk112, RegUnk113, RegBytesArray,
+                              RegInt16Array, RegUint16Array, RegInt32Array, RegUInt32Array,
+                              RegInt64Array, RegUInt64Array, RegFloatArray, RegDoubleArray,
                               RegUnicodeCharArray, RegBooleanArray, RegUnicodeStringArray):
             data = str(self.data())
         else:

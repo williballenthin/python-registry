@@ -224,10 +224,10 @@ class RegistryValue(object):
 
     def raw_data(self, overrun=0):
         return self._vkrecord.raw_data(overrun)
-        
+
     def timestamp(self):
         """
-        Get the last modified timestamp as a Python datetime. Only valid for 
+        Get the last modified timestamp as a Python datetime. Only valid for
         AppContainer settings.dat reg hive
         """
         return self._vkrecord.timestamp()
@@ -355,13 +355,13 @@ class RegistryKey(object):
 
         (immediate, _, future) = path.partition("\\")
         return self.subkey(immediate).find_key(future)
-        
+
     def values_number(self):
     	"""
     	Return the number of values associated with this key
     	"""
     	return self._nkrecord.values_number()
-    	
+
     def subkeys_number(self):
     	"""
     	Return the number of subkeys associated with this key
