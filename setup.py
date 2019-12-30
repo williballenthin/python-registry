@@ -8,13 +8,13 @@ setup(name='python-registry',
       description='Read access to Windows Registry files.',
       author='Willi Ballenthin',
       author_email='willi.ballenthin@gmail.com',
-      url='http://www.williballenthin.com/registry/',
+      url='https://github.com/williballenthin.com/python-registry/',
       license='Apache License (2.0)',
       packages=['Registry'],
       classifiers = ["Programming Language :: Python",
                      "Programming Language :: Python :: 3",
                      "Operating System :: OS Independent", 
                      "License :: OSI Approved :: Apache Software License"],
-     install_requires=['enum-compat','unicodecsv']
+     install_requires=['enum-compat', 'unicodecsv']
      )
 
