@@ -258,8 +258,6 @@ class RegistryKey(object):
     def __repr__(self):
         return 'RegistryKey(name="{0}", path="{1}")'.format(self.name(), self.path())
     
-    def __repr__(self):
-        return f"RegistryKey(name={self.name()}, path={self.path()})" 
 
     def __getitem__(self, key):
         return self.value(key)
