@@ -107,6 +107,9 @@ class RegistryValue(object):
     def __init__(self, vkrecord):
         self._vkrecord = vkrecord
 
+    def __repr__(self):
+        return f"RegistryValue(name={self.name()}, value={self.value()}, type={self.value_type_str()})"
+
     def name(self):
         """
         Get the name of the value as a string.
@@ -252,6 +255,9 @@ class RegistryKey(object):
         return "Registry Key %s with %d values and %d subkeys" % \
             (self.path(), len(self.values()), len(self.subkeys()))
 
+    def __repr__(self):
+        return f"RegistryKey(name={self.name()}, path={self.path()})" 
+
     def __getitem__(self, key):
         return self.value(key)
 
@@ -387,6 +393,9 @@ class Registry(object):
             with open(filelikeobject, "rb") as f:
                 self._buf = f.read()
         self._regf = RegistryParse.REGFBlock(self._buf, 0, False)
+
+    def __repr__(self):
+        return f"Registry(hive_name={self.hive_name()}, hive_type={self.hive_type()})"
 
     def hive_name(self):
         """Returns the internal file name"""
