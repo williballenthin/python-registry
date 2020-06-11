@@ -31,7 +31,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from datetime import datetime, timedelta
-from uuid import UUID
 import binascii
 import struct
 
@@ -90,8 +89,13 @@ def ReadUnicodeStringArray(buf):
     return strings
 
 def ReadGuid(buf):
-    guid = UUID(bytes_le=buf[0:16])
-    return guid
+    # mimics UUID(bytes_le=buf[0:16]) but without the security vulnerabilities of uuid (see https://bugs.python.org/issue40501 , normally fixed in python 3.9)
+    b = buf[0:16]
+    if isinstance(b, str):  # python 2
+        return "{:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}".format(ord(b[3]),ord(b[2]),ord(b[1]),ord(b[0]),ord(b[5]),ord(b[4]),ord(b[7]),ord(b[6]),ord(b[8]),ord(b[9]),ord(b[10]),ord(b[11]),ord(b[12]),ord(b[13]), ord(b[14]),ord(b[15]))
+    else:  # python 3
+        return "{:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}".format(b[3],b[2],b[1],b[0],b[5],b[4],b[7],b[6],b[8],b[9],b[10],b[11],b[12],b[13],b[14],b[15])
+
 
 def ParseAppDataCompositeValue(item_type, data, data_size):
     """
