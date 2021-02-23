@@ -54,8 +54,13 @@ if __name__ == '__main__':
         if sys.argv[3] == "default":
             sys.argv[3] = "(default)"
 
-        value = key.value(sys.argv[3])
-        sys.stdout.write(str(value.value()))
+        value = key.value(sys.argv[3]).value()
+        if isinstance(value, str):
+            sys.stdout.write(value)
+        elif isinstance(value, bytes):
+            sys.stdout.buffer.write(value)
+        else:
+            raise ValueError("unexpected value type: " + str(type(value)))
     if len(sys.argv) == 3:
         print("Subkeys")
         for subkey in key.subkeys():
