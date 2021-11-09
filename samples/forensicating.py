@@ -261,7 +261,7 @@ def network_settings(sys_reg, soft_reg):
             if v.name() == "DhcpSubnetMask":
                 results_dict['DhcpSubnetMask'] = v.value()      
    
-        # Just to avoid key errors and continue to do becuase not all will have these fields 
+        # Just to avoid key errors and continue to do because not all will have these fields 
         if not 'Domain' in results_dict: 
             results_dict['Domain'] = "N/A"
         if not 'IPAddress' in results_dict: 
