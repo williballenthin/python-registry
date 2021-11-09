@@ -1169,7 +1169,7 @@ class VKRecord(Record):
         RegResourceRequirementsList:
           Not currently supported. TODO.
         RegFileTime:
-          Return a datime.datetime object
+          Return a datetime.datetime object
         """
         data_type = self.data_type()
         data_length = self.raw_data_length()
@@ -1416,7 +1416,7 @@ class LFRecord(DirectSubkeyList):
     The LFRecord is a simple structure containing a list of offsets/pointers
     to subkey NKRecords.
     The LFRecord also contains a hash for the name of the subkey pointed to
-    by the offset, which enables more efficient seaching of the Registry tree.
+    by the offset, which enables more efficient searching of the Registry tree.
     """
     def __init__(self, buf, offset, parent):
         """
@@ -1440,7 +1440,7 @@ class LHRecord(DirectSubkeyList):
     The LHRecord is a simple structure containing a list of offsets/pointers
     to subkey NKRecords.
     The LHRecord also contains a hash for the name of the subkey pointed to
-    by the offset, which enables more efficient seaching of the Registry tree.
+    by the offset, which enables more efficient searching of the Registry tree.
     The LHRecord is analogous to the LFRecord, but it uses a different hashing function.
     """
     def __init__(self, buf, offset, parent):
@@ -1502,7 +1502,7 @@ class NKRecord(Record):
     def classname(self):
         """
         If this has a classname, get it as a string. Otherwise, return the empty string.
-        @return: unicode string containg the class name
+        @return: unicode string containing the class name
         """
         if not self.has_classname():
             return ""
@@ -1631,7 +1631,7 @@ class NKRecord(Record):
         """
         Get the subkeys of this key as a descendant of SubkeyList.
         Raises RegistryStructureDoesNotExists if this NKRecord does not have any subkeys.
-        See NKRecord.subkey_number() to check for the existance of subkeys.
+        See NKRecord.subkey_number() to check for the existence of subkeys.
         """
         if self.subkey_number() == 0:
             raise RegistryStructureDoesNotExist("NKRecord has no subkey list at 0x%x" % (self.offset()))
@@ -1668,7 +1668,7 @@ class HBINBlock(RegistryBlock):
         - `buf`: Byte string containing Windows Registry file.
         - `offset`: The offset into the buffer at which the block starts.
         - `parent`: The parent block, which links to this block. The parent of the first HBINBlock
-        should be the REGFBlock, and the parents of other HBINBlocks should be the preceeding
+        should be the REGFBlock, and the parents of other HBINBlocks should be the preceding
         HBINBlocks.
         """
         super(HBINBlock, self).__init__(buf, offset, parent)
@@ -1744,7 +1744,7 @@ class HvLEBlock(RegistryBlock):
         - `buf`: Byte string containing Windows Registry transaction log file.
         - `offset`: The offset into the file-like object at which the block starts.
         - `parent`: The parent block, which links to this block. The parent of the first HvLEBlock
-        should be the REGFBlock, and the parents of other HvLEBlocks should be the preceeding
+        should be the REGFBlock, and the parents of other HvLEBlocks should be the preceding
         HvLEBlocks.
         """
         super(HvLEBlock, self).__init__(buf, offset, parent)

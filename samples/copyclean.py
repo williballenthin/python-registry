@@ -58,7 +58,7 @@ class Copy(RegistryParse.REGFBlock):
         write little-endian DWORDs (4 bytes) to the relative offset.
         Arguments:
         - `offset`: The relative offset from the start of the block.
-        - `data`: The data to be writen, can be multiple
+        - `data`: The data to be written, can be multiple
         """
         g_logger.debug("write dword 0x%08x at offset 0x%08x" % (data[0], self._offset + offset))
         #return struct.pack_into(str("<I"), self._writer, self._offset + offset, *data)
@@ -70,7 +70,7 @@ class Copy(RegistryParse.REGFBlock):
         write little-endian QWORDs (8 bytes) to the relative offset.
         Arguments:
         - `offset`: The relative offset from the start of the block.
-        - `data`: The data to be writen, can be multiple
+        - `data`: The data to be written, can be multiple
         """
         g_logger.debug("write qword 0x%016x at offset 0x%08x" % (data[0], self._offset + offset))
         self._writer.seek(offset)
