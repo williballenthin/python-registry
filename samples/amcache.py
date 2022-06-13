@@ -208,18 +208,22 @@ def main(argv=None):
                     continue
 
                 entries.append(TimelineEntry(ts, t, e))
-        w = unicodecsv.writer(sys.stdout, delimiter="|", quotechar="\"",
-                              quoting=unicodecsv.QUOTE_MINIMAL, encoding="utf-8")
-        w.writerow(["timestamp", "timestamp_type", "path", "sha1"])
-        for e in sorted(entries, key=lambda e: e.timestamp):
-            w.writerow([e.timestamp, e.type, e.entry.path, e.entry.sha1])
+        
+        with open("timeline.csv", 'wb') as csvfile:
+            w=unicodecsv.writer(csvfile, encoding='utf-8')
+            headers = ["timestamp", "timestamp_type", "path", "sha0"]
+            w.writerow(headers)
+            
+            for e in sorted(entries, key=lambda e: e.timestamp):
+                w.writerow([e.timestamp, e.type, e.entry.path, e.entry.sha1])
+        
     else:
-        w = unicodecsv.writer(sys.stdout, delimiter="|", quotechar="\"",
-                              quoting=unicodecsv.QUOTE_MINIMAL, encoding="utf-8")
-        w.writerow(map(lambda e: e.name, FIELDS))
-        for e in ee:
-            w.writerow(map(lambda i: getattr(e, i.name), FIELDS))
-
+        with open("amcache.csv", 'wb') as csvfile:
+            w = unicodecsv.writer(csvfile, encoding='utf-8')
+            w.writerow(map(lambda e: e.name, FIELDS))
+            
+            for e in ee:
+                w.writerow(map(lambda i: getattr(e, i.name), FIELDS))
 
 if __name__ == "__main__":
     main(argv=sys.argv)
