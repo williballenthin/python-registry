@@ -21,7 +21,7 @@ import datetime
 from collections import namedtuple
 
 import argparse
-import unicodecsv
+import csv
 from Registry import Registry
 from Registry.RegistryParse import parse_windows_timestamp as _parse_windows_timestamp
 
@@ -166,7 +166,7 @@ TimelineEntry = namedtuple("TimelineEntry", ["timestamp", "type", "entry"])
 def main(argv=None):
     if argv is None:
         argv = sys.argv
-        
+
     parser = argparse.ArgumentParser(
         description="Parse program execution entries from the Amcache.hve Registry hive")
     parser.add_argument("registry_hive", type=str,
@@ -185,7 +185,7 @@ def main(argv=None):
     if sys.platform == "win32":
         import os, msvcrt
         msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
-        
+
     r = Registry.Registry(args.registry_hive)
 
     try:
@@ -208,14 +208,14 @@ def main(argv=None):
                     continue
 
                 entries.append(TimelineEntry(ts, t, e))
-        w = unicodecsv.writer(sys.stdout, delimiter="|", quotechar="\"",
-                              quoting=unicodecsv.QUOTE_MINIMAL, encoding="utf-8")
+        w = csv.writer(sys.stdout, delimiter="|", quotechar="\"",
+                              quoting=csv.QUOTE_MINIMAL, encoding="utf-8")
         w.writerow(["timestamp", "timestamp_type", "path", "sha1"])
         for e in sorted(entries, key=lambda e: e.timestamp):
             w.writerow([e.timestamp, e.type, e.entry.path, e.entry.sha1])
     else:
-        w = unicodecsv.writer(sys.stdout, delimiter="|", quotechar="\"",
-                              quoting=unicodecsv.QUOTE_MINIMAL, encoding="utf-8")
+        w = csv.writer(sys.stdout, delimiter="|", quotechar="\"",
+                              quoting=csv.QUOTE_MINIMAL, encoding="utf-8")
         w.writerow(map(lambda e: e.name, FIELDS))
         for e in ee:
             w.writerow(map(lambda i: getattr(e, i.name), FIELDS))
