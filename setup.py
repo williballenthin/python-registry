@@ -13,8 +13,8 @@ setup(name='python-registry',
       packages=['Registry'],
       classifiers = ["Programming Language :: Python",
                      "Programming Language :: Python :: 3",
-                     "Operating System :: OS Independent", 
+                     "Operating System :: OS Independent",
                      "License :: OSI Approved :: Apache Software License"],
-     install_requires=['enum-compat', 'unicodecsv']
+     install_requires=['enum-compat']
      )
 
