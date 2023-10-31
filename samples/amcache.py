@@ -15,7 +15,10 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+from __future__ import print_function
+
 import sys
+import json
 import logging
 import datetime
 from collections import namedtuple
@@ -169,12 +172,15 @@ def main(argv=None):
 
     parser = argparse.ArgumentParser(
         description="Parse program execution entries from the Amcache.hve Registry hive")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("-t", action="store_true", dest="do_timeline",
+                        help="Output in simple timeline format")
+    group.add_argument("-j", action="store_true", dest="do_json",
+                        help="Output in JSON-formatted strings")
     parser.add_argument("registry_hive", type=str,
                         help="Path to the Amcache.hve hive to process")
     parser.add_argument("-v", action="store_true", dest="verbose",
                         help="Enable verbose output")
-    parser.add_argument("-t", action="store_true", dest="do_timeline",
-                        help="Output in simple timeline format")
     args = parser.parse_args(argv[1:])
 
     if args.verbose:
@@ -213,6 +219,17 @@ def main(argv=None):
         w.writerow(["timestamp", "timestamp_type", "path", "sha1"])
         for e in sorted(entries, key=lambda e: e.timestamp):
             w.writerow([e.timestamp, e.type, e.entry.path, e.entry.sha1])
+
+    elif args.do_json:
+        for e in ee:
+            document = {}
+            for i in FIELDS:
+                val = getattr(e, i.name, "-")
+                if isinstance(val, datetime.datetime):
+                    val = val.isoformat(" ")
+                document[i.name] = val
+            print(json.dumps(document, ensure_ascii=False).encode("utf-8"))
+
     else:
         w = csv.writer(sys.stdout, delimiter="|", quotechar="\"",
                               quoting=csv.QUOTE_MINIMAL, encoding="utf-8")
