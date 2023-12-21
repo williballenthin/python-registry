@@ -220,6 +220,8 @@ def main(argv=None):
         for e in ee:
             w.writerow(map(lambda i: getattr(e, i.name), FIELDS))
 
+def _main():
+    main(argv=sys.argv)
 
 if __name__ == "__main__":
-    main(argv=sys.argv)
+    main()
