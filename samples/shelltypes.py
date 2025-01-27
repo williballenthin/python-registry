@@ -40,7 +40,7 @@ def get_shellbags(registry):
 
     def shellbag_rec(key, bag_prefix):
         for value in key.values():
-            if not re.match("\d+", value.name()):
+            if not re.match(r"\d+", value.name()):
                 continue
             mru_type = ord(value.value()[2:3])
             print("%s %s" % (hex(mru_type), bag_prefix + "\\" + value.name()))
