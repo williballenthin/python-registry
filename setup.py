@@ -15,6 +15,13 @@ setup(name='python-registry',
                      "Programming Language :: Python :: 3",
                      "Operating System :: OS Independent",
                      "License :: OSI Approved :: Apache Software License"],
-     install_requires=['enum-compat']
+     install_requires=['enum-compat'],
+     entry_points = {
+         "console_scripts": [
+             "forensicating.py = samples.forensicating:main",
+             "amcache.py = samples.amcache:main",
+             "registry-timeline.py = samples.timeline:main",
+         ]
+     }
      )
 
