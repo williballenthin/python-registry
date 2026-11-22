@@ -730,6 +730,9 @@ class DBIndirectBlock(Record):
         Get the data pointed to by the indirect block. It may be large.
         Return a byte string.
         """
+        if length > len(self._buf):
+            raise ParseException(
+                "Invalid data length 0x%x exceeds file size 0x%x" % (length, len(self._buf)))
         b = bytearray()
         count = 0
         while length > 0:
