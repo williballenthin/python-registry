@@ -1,75 +1,46 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""Regression test for #114: an RI subkey list that references itself
-(directly or through another RI list) must not recurse forever.
+"""Regression tests for #114: an RI subkey list that references itself
+(directly or through another RI list), or points at a non-list cell, must not
+recurse forever or raise AttributeError.
 
-The hive is built in memory, so no fixture file is needed.
+The hive bytes are committed fixtures. See
+testing/reg_samples/ri_cycle/README.md for provenance, hashes, layout and
+limitations. The tests neither construct nor modify the fixtures.
 """
-import io
-import struct
+import hashlib
+import os
 import unittest
 
 from Registry import Registry
 from Registry.RegistryParse import ParseException
 
-HBIN_SIZE = 0x1000
-NK_OFFSET = 0x20   # relative to the first HBIN
-RI_OFFSET = 0x80
-
-
-def _cell(data, size):
-    data = struct.pack("<i", -size) + data
-    return data + b"\x00" * (size - len(data))
-
-
-def _hive(ri_targets):
-    """
-    Build a minimal hive whose root key has a single RI subkey list at
-    RI_OFFSET. Each entry of `ri_targets` is the HBIN-relative offset of one
-    RI list; the list at index i points at ri_targets[i].
-    """
-    regf = bytearray(0x1000)
-    regf[0x0:0x4] = b"regf"
-    struct.pack_into("<I", regf, 0x24, NK_OFFSET)
-    struct.pack_into("<I", regf, 0x28, HBIN_SIZE)
-
-    hbin = bytearray(HBIN_SIZE)
-    hbin[0x0:0x4] = b"hbin"
-    struct.pack_into("<I", hbin, 0x8, HBIN_SIZE)
-
-    nk = bytearray(0x4C)
-    nk[0x0:0x2] = b"nk"
-    struct.pack_into("<H", nk, 0x2, 0x2C)          # root key flags
-    struct.pack_into("<I", nk, 0x14, 1)            # subkey count
-    struct.pack_into("<I", nk, 0x1C, RI_OFFSET)    # subkey list
-    struct.pack_into("<I", nk, 0x24, 0)            # value count
-    hbin[NK_OFFSET:NK_OFFSET + 0x60] = _cell(bytes(nk), 0x60)
-
-    offset = RI_OFFSET
-    for target in ri_targets:
-        ri = b"ri" + struct.pack("<HI", 1, target)
-        hbin[offset:offset + 0x10] = _cell(ri, 0x10)
-        offset += 0x10
-
-    struct.pack_into("<i", hbin, offset, HBIN_SIZE - offset)  # free remainder
-    return io.BytesIO(bytes(regf) + bytes(hbin))
+FIXTURE_SHA256 = {
+    'ri-self-reference.hive': '6f14e63654b15bf5ce194133a00a957ba3286fb744f2bf8add5dcfa952692edf',
+    'ri-mutual-reference.hive': '51ea82b27fc22cbcb4883f4914613e9ff6040f3c58a79de51f3a7ba9cfdd1861',
+    'ri-points-to-nk.hive': 'f1d9a7dd2b5b8f8b3d7e1ded7fe55ee24ded42ce05e97078d63468e01fda6f6e',
+}
 
 
 class TestRICycle(unittest.TestCase):
+    def _subkeys(self, filename):
+        path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                            'testing', 'reg_samples', 'ri_cycle', filename)
+        with open(path, 'rb') as f:
+            self.assertEqual(FIXTURE_SHA256[filename], hashlib.sha256(f.read()).hexdigest())
+        return Registry.Registry(path).root().subkeys()
+
     def test_self_referencing_ri_list(self):
-        reg = Registry.Registry(_hive([RI_OFFSET]))
         with self.assertRaises(ParseException):
-            reg.root().subkeys()
+            self._subkeys('ri-self-reference.hive')
 
     def test_mutually_referencing_ri_lists(self):
-        reg = Registry.Registry(_hive([RI_OFFSET + 0x10, RI_OFFSET]))
         with self.assertRaises(ParseException):
-            reg.root().subkeys()
+            self._subkeys('ri-mutual-reference.hive')
 
     def test_ri_list_pointing_to_non_list(self):
-        reg = Registry.Registry(_hive([NK_OFFSET]))
         with self.assertRaises(ParseException):
-            reg.root().subkeys()
+            self._subkeys('ri-points-to-nk.hive')
 
 
 if __name__ == "__main__":
