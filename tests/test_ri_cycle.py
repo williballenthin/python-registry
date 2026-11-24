@@ -66,6 +66,11 @@ class TestRICycle(unittest.TestCase):
         with self.assertRaises(ParseException):
             reg.root().subkeys()
 
+    def test_ri_list_pointing_to_non_list(self):
+        reg = Registry.Registry(_hive([NK_OFFSET]))
+        with self.assertRaises(ParseException):
+            reg.root().subkeys()
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
