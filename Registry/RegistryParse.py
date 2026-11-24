@@ -1344,7 +1344,14 @@ class RIRecord(SubkeyList):
             d = HBINCell(self._buf, key_offset, self)
 
             try:
-                for k in d.child().keys():
+                l = d.child()
+
+                # An ri list may only point to li/lf/lh lists. Following a nested
+                # ri list could recurse forever on a list that points back to itself.
+                if isinstance(l, RIRecord):
+                    raise ParseException("Nested RI subkey list at 0x%x" % (l.offset()))
+
+                for k in l.keys():
                     yield k
             except RegistryStructureDoesNotExist:
                 raise ParseException("Unsupported subkey list encountered.")
