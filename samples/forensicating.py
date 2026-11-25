@@ -300,7 +300,7 @@ def users_info(soft_reg):
         print(line)
 
 
-if __name__ == "__main__":
+def main():
     """
     Print out all of the information
     """            
@@ -317,3 +317,7 @@ if __name__ == "__main__":
     network_settings(sys_reg, soft_reg)
     users_info(soft_reg)
     user_reg_locs(users_paths(soft_reg, users_sids(soft_reg)))
+
+if __name__ == "__main__":
+    main()
+
